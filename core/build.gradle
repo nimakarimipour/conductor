@@ -1,3 +1,14 @@
+plugins {
+    // we assume you are already using the Java plugin
+    id "net.ltgt.errorprone" version "0.6"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+
 dependencies {
     implementation project(':conductor-common')
     compileOnly 'org.springframework.boot:spring-boot-starter'
@@ -26,4 +37,25 @@ dependencies {
     implementation "org.apache.bval:bval-jsr:${revBval}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    annotationProcessor "edu.ucr.cs.riple:nullaway:0.7.12-SNAPSHOT"
+
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    errorprone "com.google.errorprone:error_prone_core:2.3.2"
+    errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
+}
+
+import net.ltgt.gradle.errorprone.CheckSeverity
+
+tasks.withType(JavaCompile) {
+    // remove the if condition if you want to run NullAway on test code
+    if (!name.toLowerCase().contains("test")) {
+        options.errorprone {
+            check("NullAway", CheckSeverity.ERROR)
+            option("NullAway:AnnotatedPackages", "com.netflix.conductor")
+            option("NullAway:AutoFix", "true")
+        }
+        options.compilerArgs << "-Xmaxerrs" << "100000"
+        options.compilerArgs << "-Xmaxwarns" << "1"
+    }
 }
