@@ -34,7 +34,6 @@ import com.netflix.conductor.metrics.Monitors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.Collections;
@@ -43,8 +42,8 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import static com.netflix.conductor.core.execution.WorkflowExecutor.DECIDER_QUEUE;
+import javax.annotation.Nullable;
 
 /**
  * Service that acts as a facade for accessing execution data from the {@link ExecutionDAO}, {@link RateLimitingDAO} and
@@ -57,21 +56,26 @@ public class ExecutionDAOFacade {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionDAOFacade.class);
 
     private static final String ARCHIVED_FIELD = "archived";
+
     private static final String RAW_JSON_FIELD = "rawJSON";
 
     private final ExecutionDAO executionDAO;
+
     private final QueueDAO queueDAO;
+
     private final IndexDAO indexDAO;
+
     private final RateLimitingDAO rateLimitingDao;
+
     private final PollDataDAO pollDataDAO;
+
     private final ObjectMapper objectMapper;
+
     private final ConductorProperties properties;
 
     private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
-    public ExecutionDAOFacade(ExecutionDAO executionDAO, QueueDAO queueDAO, IndexDAO indexDAO,
-        RateLimitingDAO rateLimitingDao, PollDataDAO pollDataDAO, ObjectMapper objectMapper,
-        ConductorProperties properties) {
+    public ExecutionDAOFacade(ExecutionDAO executionDAO, QueueDAO queueDAO, IndexDAO indexDAO, RateLimitingDAO rateLimitingDao, PollDataDAO pollDataDAO, ObjectMapper objectMapper, ConductorProperties properties) {
         this.executionDAO = executionDAO;
         this.queueDAO = queueDAO;
         this.indexDAO = indexDAO;
@@ -79,11 +83,10 @@ public class ExecutionDAOFacade {
         this.pollDataDAO = pollDataDAO;
         this.objectMapper = objectMapper;
         this.properties = properties;
-        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(4,
-            (runnable, executor) -> {
-                LOGGER.warn("Request {} to delay updating index dropped in executor {}", runnable, executor);
-                Monitors.recordDiscardedIndexingCount("delayQueue");
-            });
+        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(4, (runnable, executor) -> {
+            LOGGER.warn("Request {} to delay updating index dropped in executor {}", runnable, executor);
+            Monitors.recordDiscardedIndexingCount("delayQueue");
+        });
         this.scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
     }
 
@@ -92,8 +95,7 @@ public class ExecutionDAOFacade {
         try {
             LOGGER.info("Gracefully shutdown executor service");
             scheduledThreadPoolExecutor.shutdown();
-            if (scheduledThreadPoolExecutor.awaitTermination(properties.getAsyncUpdateDelay().getSeconds(),
-                TimeUnit.SECONDS)) {
+            if (scheduledThreadPoolExecutor.awaitTermination(properties.getAsyncUpdateDelay().getSeconds(), TimeUnit.SECONDS)) {
                 LOGGER.debug("tasks completed, shutting down");
             } else {
                 LOGGER.warn("Forcing shutdown after waiting for {} seconds", properties.getAsyncUpdateDelay());
@@ -129,7 +131,6 @@ public class ExecutionDAOFacade {
                 LOGGER.error(errorMsg);
                 throw new ApplicationException(ApplicationException.Code.NOT_FOUND, errorMsg);
             }
-
             try {
                 workflow = objectMapper.readValue(json, Workflow.class);
                 if (!includeTasks) {
@@ -157,20 +158,15 @@ public class ExecutionDAOFacade {
         if (!executionDAO.canSearchAcrossWorkflows()) {
             String query = "correlationId='" + correlationId + "' AND workflowType='" + workflowName + "'";
             SearchResult<String> result = indexDAO.searchWorkflows(query, "*", 0, 1000, null);
-            return result.getResults().stream()
-                .parallel()
-                .map(workflowId -> {
-                    try {
-                        return getWorkflowById(workflowId, includeTasks);
-                    } catch (ApplicationException e) {
-                        // This might happen when the workflow archival failed and the workflow was removed from primary datastore
-                        LOGGER.error("Error getting the workflow: {}  for correlationId: {} from datastore/index",
-                            workflowId, correlationId, e);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            return result.getResults().stream().parallel().map(workflowId -> {
+                try {
+                    return getWorkflowById(workflowId, includeTasks);
+                } catch (ApplicationException e) {
+                    // This might happen when the workflow archival failed and the workflow was removed from primary datastore
+                    LOGGER.error("Error getting the workflow: {}  for correlationId: {} from datastore/index", workflowId, correlationId, e);
+                    return null;
+                }
+            }).filter(Objects::nonNull).collect(Collectors.toList());
         }
         return executionDAO.getWorkflowsByCorrelationId(workflowName, correlationId, includeTasks);
     }
@@ -201,8 +197,7 @@ public class ExecutionDAOFacade {
         workflow.setCreateTime(System.currentTimeMillis());
         executionDAO.createWorkflow(workflow);
         // Add to decider queue
-        queueDAO.push(DECIDER_QUEUE, workflow.getWorkflowId(), workflow.getPriority(),
-            properties.getWorkflowOffsetTimeout().getSeconds());
+        queueDAO.push(DECIDER_QUEUE, workflow.getWorkflowId(), workflow.getPriority(), properties.getWorkflowOffsetTimeout().getSeconds());
         if (properties.isAsyncIndexingEnabled()) {
             indexDAO.asyncIndexWorkflow(workflow);
         } else {
@@ -224,14 +219,11 @@ public class ExecutionDAOFacade {
         }
         executionDAO.updateWorkflow(workflow);
         if (properties.isAsyncIndexingEnabled()) {
-            if (workflow.getStatus().isTerminal() && workflow.getEndTime() - workflow.getStartTime()
-                < properties.getAsyncUpdateShortRunningWorkflowDuration().toMillis()) {
+            if (workflow.getStatus().isTerminal() && workflow.getEndTime() - workflow.getStartTime() < properties.getAsyncUpdateShortRunningWorkflowDuration().toMillis()) {
                 final String workflowId = workflow.getWorkflowId();
                 DelayWorkflowUpdate delayWorkflowUpdate = new DelayWorkflowUpdate(workflowId);
-                LOGGER.debug("Delayed updating workflow: {} in the index by {} seconds", workflowId,
-                    properties.getAsyncUpdateDelay());
-                scheduledThreadPoolExecutor
-                    .schedule(delayWorkflowUpdate, properties.getAsyncUpdateDelay().getSeconds(), TimeUnit.SECONDS);
+                LOGGER.debug("Delayed updating workflow: {} in the index by {} seconds", workflowId, properties.getAsyncUpdateDelay());
+                scheduledThreadPoolExecutor.schedule(delayWorkflowUpdate, properties.getAsyncUpdateDelay().getSeconds(), TimeUnit.SECONDS);
                 Monitors.recordWorkerQueueSize("delayQueue", scheduledThreadPoolExecutor.getQueue().size());
             } else {
                 indexDAO.asyncIndexWorkflow(workflow);
@@ -259,7 +251,6 @@ public class ExecutionDAOFacade {
     public void removeWorkflow(String workflowId, boolean archiveWorkflow) {
         try {
             Workflow workflow = getWorkflowById(workflowId, true);
-
             removeWorkflowIndex(workflow, archiveWorkflow);
             // remove workflow from DAO
             try {
@@ -271,8 +262,7 @@ public class ExecutionDAOFacade {
         } catch (ApplicationException ae) {
             throw ae;
         } catch (Exception e) {
-            throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR,
-                "Error removing workflow: " + workflowId, e);
+            throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, "Error removing workflow: " + workflowId, e);
         }
     }
 
@@ -281,14 +271,9 @@ public class ExecutionDAOFacade {
             if (workflow.getStatus().isTerminal()) {
                 // Only allow archival if workflow is in terminal state
                 // DO NOT archive async, since if archival errors out, workflow data will be lost
-                indexDAO.updateWorkflow(workflow.getWorkflowId(),
-                    new String[]{RAW_JSON_FIELD, ARCHIVED_FIELD},
-                    new Object[]{objectMapper.writeValueAsString(workflow), true});
+                indexDAO.updateWorkflow(workflow.getWorkflowId(), new String[] { RAW_JSON_FIELD, ARCHIVED_FIELD }, new Object[] { objectMapper.writeValueAsString(workflow), true });
             } else {
-                throw new ApplicationException(Code.INVALID_INPUT,
-                    String.format("Cannot archive workflow: %s with status: %s",
-                        workflow.getWorkflowId(),
-                        workflow.getStatus()));
+                throw new ApplicationException(Code.INVALID_INPUT, String.format("Cannot archive workflow: %s with status: %s", workflow.getWorkflowId(), workflow.getStatus()));
             }
         } else {
             // Not archiving, also remove workflow from index
@@ -299,7 +284,6 @@ public class ExecutionDAOFacade {
     public void removeWorkflowWithExpiry(String workflowId, boolean archiveWorkflow, int ttlSeconds) {
         try {
             Workflow workflow = getWorkflowById(workflowId, true);
-
             removeWorkflowIndex(workflow, archiveWorkflow);
             // remove workflow from DAO with TTL
             try {
@@ -311,8 +295,7 @@ public class ExecutionDAOFacade {
         } catch (ApplicationException ae) {
             throw ae;
         } catch (Exception e) {
-            throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR,
-                "Error removing workflow: " + workflowId, e);
+            throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, "Error removing workflow: " + workflowId, e);
         }
     }
 
@@ -334,8 +317,7 @@ public class ExecutionDAOFacade {
         } catch (ApplicationException ae) {
             throw ae;
         } catch (Exception e) {
-            throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR,
-                "Error resetting workflow state: " + workflowId, e);
+            throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, "Error resetting workflow state: " + workflowId, e);
         }
     }
 
@@ -391,8 +373,7 @@ public class ExecutionDAOFacade {
                 indexDAO.indexTask(task);
             }
         } catch (Exception e) {
-            String errorMsg = String
-                .format("Error updating task: %s in workflow: %s", task.getTaskId(), task.getWorkflowInstanceId());
+            String errorMsg = String.format("Error updating task: %s in workflow: %s", task.getTaskId(), task.getWorkflowInstanceId());
             LOGGER.error(errorMsg, e);
             throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, errorMsg, e);
         }
@@ -414,6 +395,7 @@ public class ExecutionDAOFacade {
         return pollDataDAO.getAllPollData();
     }
 
+    @Nullable()
     public PollData getTaskPollDataByDomain(String taskName, String domain) {
         try {
             return pollDataDAO.getPollData(taskName, domain);
@@ -427,8 +409,7 @@ public class ExecutionDAOFacade {
         try {
             pollDataDAO.updateLastPollData(taskName, domain, workerId);
         } catch (Exception e) {
-            LOGGER.error("Error updating PollData for task: {} in domain: {} from worker: {}", taskName, domain,
-                workerId, e);
+            LOGGER.error("Error updating PollData for task: {} in domain: {} from worker: {}", taskName, domain, workerId, e);
             Monitors.error(this.getClass().getCanonicalName(), "updateTaskLastPoll");
         }
     }
@@ -442,11 +423,9 @@ public class ExecutionDAOFacade {
      */
     public boolean addEventExecution(EventExecution eventExecution) {
         boolean added = executionDAO.addEventExecution(eventExecution);
-
         if (added) {
             indexEventExecution(eventExecution);
         }
-
         return added;
     }
 
@@ -473,7 +452,7 @@ public class ExecutionDAOFacade {
         return executionDAO.exceedsInProgressLimit(task);
     }
 
-    public boolean exceedsRateLimitPerFrequency(Task task, TaskDef taskDef) {
+    public boolean exceedsRateLimitPerFrequency(Task task, @Nullable() TaskDef taskDef) {
         return rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef);
     }
 
@@ -495,8 +474,7 @@ public class ExecutionDAOFacade {
         }
     }
 
-    public SearchResult<String> searchWorkflows(String query, String freeText, int start, int count,
-        List<String> sort) {
+    public SearchResult<String> searchWorkflows(String query, String freeText, int start, int count, List<String> sort) {
         return indexDAO.searchWorkflows(query, freeText, start, count, sort);
     }
 
@@ -505,8 +483,7 @@ public class ExecutionDAOFacade {
     }
 
     public List<TaskExecLog> getTaskExecutionLogs(String taskId) {
-        return properties.isTaskExecLogIndexingEnabled() ? indexDAO.getTaskExecutionLogs(taskId)
-            : Collections.emptyList();
+        return properties.isTaskExecLogIndexingEnabled() ? indexDAO.getTaskExecutionLogs(taskId) : Collections.emptyList();
     }
 
     class DelayWorkflowUpdate implements Runnable {

@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Audit
@@ -45,7 +45,9 @@ import java.util.stream.Collectors;
 public class TaskServiceImpl implements TaskService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskServiceImpl.class);
+
     private final ExecutionService executionService;
+
     private final QueueDAO queueDAO;
 
     public TaskServiceImpl(ExecutionService executionService, QueueDAO queueDAO) {
@@ -61,6 +63,7 @@ public class TaskServiceImpl implements TaskService {
      * @param domain   Domain of the workflow
      * @return polled {@link Task}
      */
+    @Nullable()
     public Task poll(String taskType, String workerId, String domain) {
         LOGGER.debug("Task being polled: /tasks/poll/{}?{}&{}", taskType, workerId, domain);
         Task task = executionService.getLastPollTask(taskType, workerId, domain);
@@ -83,10 +86,7 @@ public class TaskServiceImpl implements TaskService {
      */
     public List<Task> batchPoll(String taskType, String workerId, String domain, Integer count, Integer timeout) {
         List<Task> polledTasks = executionService.poll(taskType, workerId, domain, count, timeout);
-        LOGGER.debug("The Tasks {} being returned for /tasks/poll/{}?{}&{}",
-            polledTasks.stream()
-                .map(Task::getTaskId)
-                .collect(Collectors.toList()), taskType, workerId, domain);
+        LOGGER.debug("The Tasks {} being returned for /tasks/poll/{}?{}&{}", polledTasks.stream().map(Task::getTaskId).collect(Collectors.toList()), taskType, workerId, domain);
         Monitors.recordTaskPollCount(taskType, domain, polledTasks.size());
         return polledTasks;
     }
@@ -110,6 +110,7 @@ public class TaskServiceImpl implements TaskService {
      * @param taskReferenceName Task reference name.
      * @return instance of {@link Task}
      */
+    @Nullable()
     public Task getPendingTaskForWorkflow(String workflowId, String taskReferenceName) {
         return executionService.getPendingTaskForWorkflow(taskReferenceName, workflowId);
     }
@@ -123,8 +124,7 @@ public class TaskServiceImpl implements TaskService {
     public String updateTask(TaskResult taskResult) {
         LOGGER.debug("Update Task: {} with callback time: {}", taskResult, taskResult.getCallbackAfterSeconds());
         executionService.updateTask(taskResult);
-        LOGGER.debug("Task: {} updated successfully with callback time: {}", taskResult,
-            taskResult.getCallbackAfterSeconds());
+        LOGGER.debug("Task: {} updated successfully with callback time: {}", taskResult, taskResult.getCallbackAfterSeconds());
         return taskResult.getTaskId();
     }
 
@@ -156,7 +156,6 @@ public class TaskServiceImpl implements TaskService {
                 ackResult.set(executionService.ackTaskReceived(taskId));
                 return null;
             }, null, null, 3, ackTaskDesc, ackTaskOperation);
-
         } catch (Exception e) {
             // Fail the task and let decide reevaluate the workflow, thereby preventing workflow being stuck from transient ack errors.
             String errorMsg = String.format("Error when trying to ack task %s", taskId);
@@ -263,9 +262,7 @@ public class TaskServiceImpl implements TaskService {
      * @return map of details about each queue.
      */
     public Map<String, Long> getAllQueueDetails() {
-        return queueDAO.queuesDetail().entrySet().stream()
-            .sorted(Comparator.comparing(Entry::getKey))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, LinkedHashMap::new));
+        return queueDAO.queuesDetail().entrySet().stream().sorted(Comparator.comparing(Entry::getKey)).collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, LinkedHashMap::new));
     }
 
     /**
@@ -323,17 +320,13 @@ public class TaskServiceImpl implements TaskService {
      */
     public ExternalStorageLocation getExternalStorageLocation(String path, String operation, String type) {
         try {
-            ExternalPayloadStorage.Operation payloadOperation = ExternalPayloadStorage.Operation
-                .valueOf(StringUtils.upperCase(operation));
-            ExternalPayloadStorage.PayloadType payloadType = ExternalPayloadStorage.PayloadType
-                .valueOf(StringUtils.upperCase(type));
+            ExternalPayloadStorage.Operation payloadOperation = ExternalPayloadStorage.Operation.valueOf(StringUtils.upperCase(operation));
+            ExternalPayloadStorage.PayloadType payloadType = ExternalPayloadStorage.PayloadType.valueOf(StringUtils.upperCase(type));
             return executionService.getExternalStorageLocation(payloadOperation, payloadType, path);
         } catch (Exception e) {
             // FIXME: for backwards compatibility
-            LOGGER.error("Invalid input - Operation: {}, PayloadType: {}, defaulting to WRITE/TASK_OUTPUT", operation,
-                type);
-            return executionService.getExternalStorageLocation(ExternalPayloadStorage.Operation.WRITE,
-                ExternalPayloadStorage.PayloadType.TASK_OUTPUT, path);
+            LOGGER.error("Invalid input - Operation: {}, PayloadType: {}, defaulting to WRITE/TASK_OUTPUT", operation, type);
+            return executionService.getExternalStorageLocation(ExternalPayloadStorage.Operation.WRITE, ExternalPayloadStorage.PayloadType.TASK_OUTPUT, path);
         }
     }
 }

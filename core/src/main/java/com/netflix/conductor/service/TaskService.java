@@ -20,7 +20,6 @@ import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.TaskSummary;
 import org.springframework.validation.annotation.Validated;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -50,8 +49,7 @@ public interface TaskService {
      * @param timeout  Timeout for polling in milliseconds
      * @return list of {@link Task}
      */
-    List<Task> batchPoll(@NotEmpty(message = "TaskType cannot be null or empty.") String taskType, String workerId,
-        String domain, Integer count, Integer timeout);
+    List<Task> batchPoll(@NotEmpty(message = "TaskType cannot be null or empty.") String taskType, String workerId, String domain, Integer count, Integer timeout);
 
     /**
      * Get in progress tasks. The results are paginated.
@@ -61,8 +59,7 @@ public interface TaskService {
      * @param count    Number of entries
      * @return list of {@link Task}
      */
-    List<Task> getTasks(@NotEmpty(message = "TaskType cannot be null or empty.") String taskType, String startKey,
-        Integer count);
+    List<Task> getTasks(@NotEmpty(message = "TaskType cannot be null or empty.") String taskType, String startKey, Integer count);
 
     /**
      * Get in progress task for a given workflow id.
@@ -71,8 +68,7 @@ public interface TaskService {
      * @param taskReferenceName Task reference name.
      * @return instance of {@link Task}
      */
-    Task getPendingTaskForWorkflow(@NotEmpty(message = "WorkflowId cannot be null or empty.") String workflowId,
-        @NotEmpty(message = "TaskReferenceName cannot be null or empty.") String taskReferenceName);
+    Task getPendingTaskForWorkflow(@NotEmpty(message = "WorkflowId cannot be null or empty.") String workflowId, @NotEmpty(message = "TaskReferenceName cannot be null or empty.") String taskReferenceName);
 
     /**
      * Updates a task.
@@ -129,8 +125,7 @@ public interface TaskService {
      * @param taskType Task Name
      * @param taskId   ID of the task
      */
-    void removeTaskFromQueue(@NotEmpty(message = "TaskType cannot be null or empty.") String taskType,
-        @NotEmpty(message = "TaskId cannot be null or empty.") String taskId);
+    void removeTaskFromQueue(@NotEmpty(message = "TaskType cannot be null or empty.") String taskType, @NotEmpty(message = "TaskId cannot be null or empty.") String taskId);
 
     /**
      * Remove Task from a Task type queue.

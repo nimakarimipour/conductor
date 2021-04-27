@@ -14,16 +14,18 @@ package com.netflix.conductor.core.utils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import org.apache.commons.lang3.StringUtils;
+import javax.annotation.Nullable;
 
 public class QueueUtils {
 
     public static final String DOMAIN_SEPARATOR = ":";
+
     public static final String ISOLATION_SEPARATOR = "-";
+
     public static final String EXECUTION_NAME_SPACE_SEPRATOR = "@";
 
     public static String getQueueName(Task task) {
-        return getQueueName(task.getTaskType(), task.getDomain(), task.getIsolationGroupId(),
-            task.getExecutionNameSpace());
+        return getQueueName(task.getTaskType(), task.getDomain(), task.getIsolationGroupId(), task.getExecutionNameSpace());
     }
 
     /**
@@ -33,20 +35,16 @@ public class QueueUtils {
      * @param executionNameSpace
      * @return //domain:taskType@eexecutionNameSpace-isolationGroup
      */
-    public static String getQueueName(String taskType, String domain, String isolationGroup,
-        String executionNameSpace) {
-
+    public static String getQueueName(String taskType, @Nullable() String domain, @Nullable() String isolationGroup, @Nullable() String executionNameSpace) {
         String queueName;
         if (domain == null) {
             queueName = taskType;
         } else {
             queueName = domain + DOMAIN_SEPARATOR + taskType;
         }
-
         if (executionNameSpace != null) {
             queueName = queueName + EXECUTION_NAME_SPACE_SEPRATOR + executionNameSpace;
         }
-
         if (isolationGroup != null) {
             queueName = queueName + ISOLATION_SEPARATOR + isolationGroup;
         }
@@ -58,8 +56,7 @@ public class QueueUtils {
     }
 
     public static String getExecutionNameSpace(String queueName) {
-        if (StringUtils.contains(queueName, ISOLATION_SEPARATOR) && StringUtils
-            .contains(queueName, EXECUTION_NAME_SPACE_SEPRATOR)) {
+        if (StringUtils.contains(queueName, ISOLATION_SEPARATOR) && StringUtils.contains(queueName, EXECUTION_NAME_SPACE_SEPRATOR)) {
             return StringUtils.substringBetween(queueName, EXECUTION_NAME_SPACE_SEPRATOR, ISOLATION_SEPARATOR);
         } else if (StringUtils.contains(queueName, EXECUTION_NAME_SPACE_SEPRATOR)) {
             return StringUtils.substringAfter(queueName, EXECUTION_NAME_SPACE_SEPRATOR);
@@ -77,11 +74,9 @@ public class QueueUtils {
     }
 
     public static String getTaskType(String queue) {
-
         if (StringUtils.isBlank(queue)) {
             return StringUtils.EMPTY;
         }
-
         int domainSeperatorIndex = StringUtils.indexOf(queue, DOMAIN_SEPARATOR);
         int startIndex;
         if (domainSeperatorIndex == -1) {
@@ -90,14 +85,12 @@ public class QueueUtils {
             startIndex = domainSeperatorIndex + 1;
         }
         int endIndex = StringUtils.indexOf(queue, EXECUTION_NAME_SPACE_SEPRATOR);
-
         if (endIndex == -1) {
             endIndex = StringUtils.lastIndexOf(queue, ISOLATION_SEPARATOR);
         }
         if (endIndex == -1) {
             endIndex = queue.length();
         }
-
         return StringUtils.substring(queue, startIndex, endIndex);
     }
 }

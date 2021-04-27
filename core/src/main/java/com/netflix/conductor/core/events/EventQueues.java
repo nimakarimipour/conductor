@@ -19,10 +19,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /**
  * Holders for internal event queues
@@ -35,29 +35,26 @@ public class EventQueues {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventQueues.class);
 
     private final ParametersUtils parametersUtils;
+
     private final Map<String, EventQueueProvider> providers;
 
     @Autowired
-    public EventQueues(@Qualifier(EVENT_QUEUE_PROVIDERS_QUALIFIER) Map<String, EventQueueProvider> providers,
-        ParametersUtils parametersUtils) {
+    public EventQueues(@Qualifier(EVENT_QUEUE_PROVIDERS_QUALIFIER) Map<String, EventQueueProvider> providers, ParametersUtils parametersUtils) {
         this.providers = providers;
         this.parametersUtils = parametersUtils;
     }
 
     public List<String> getProviders() {
-        return providers.values().stream()
-            .map(p -> p.getClass().getName())
-            .collect(Collectors.toList());
+        return providers.values().stream().map(p -> p.getClass().getName()).collect(Collectors.toList());
     }
 
-    public ObservableQueue getQueue(String eventType) {
+    public ObservableQueue getQueue(@Nullable() String eventType) {
         String event = parametersUtils.replace(eventType).toString();
         int index = event.indexOf(':');
         if (index == -1) {
             LOGGER.error("Queue cannot be configured for illegal event: {}", event);
             throw new IllegalArgumentException("Illegal event " + event);
         }
-
         String type = event.substring(0, index);
         String queueURI = event.substring(index + 1);
         EventQueueProvider provider = providers.get(type);

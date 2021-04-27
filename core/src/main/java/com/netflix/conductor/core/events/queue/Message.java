@@ -13,12 +13,16 @@
 package com.netflix.conductor.core.events.queue;
 
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class Message {
 
     private String payload;
+
     private String id;
+
     private String receipt;
+
     private int priority;
 
     public Message() {
@@ -111,10 +115,7 @@ public class Message {
             return false;
         }
         Message message = (Message) o;
-        return Objects.equals(payload, message.payload) &&
-            Objects.equals(id, message.id) &&
-            Objects.equals(priority, message.priority) &&
-            Objects.equals(receipt, message.receipt);
+        return Objects.equals(payload, message.payload) && Objects.equals(id, message.id) && Objects.equals(priority, message.priority) && Objects.equals(receipt, message.receipt);
     }
 
     @Override

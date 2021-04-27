@@ -13,6 +13,7 @@
 package com.netflix.conductor.validations;
 
 import com.netflix.conductor.dao.MetadataDAO;
+import javax.annotation.Nullable;
 
 /**
  * This context is defined to get access to {@link MetadataDAO} inside {@link WorkflowTaskValidConstraint} constraint
@@ -20,6 +21,7 @@ import com.netflix.conductor.dao.MetadataDAO;
  */
 public class ValidationContext {
 
+    @Nullable()
     private static MetadataDAO metadataDAO;
 
     public static void initialize(MetadataDAO metadataDAO) {

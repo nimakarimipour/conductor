@@ -26,15 +26,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
+import javax.annotation.Nullable;
 
 /**
  * Monitors and processes messages on the default event queues that Conductor listens on.
@@ -45,14 +44,17 @@ import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAI
 public class DefaultEventQueueProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventQueueProcessor.class);
+
     private final Map<Status, ObservableQueue> queues;
+
     private final ExecutionService executionService;
+
     private static final TypeReference<Map<String, Object>> _mapType = new TypeReference<Map<String, Object>>() {
     };
+
     private final ObjectMapper objectMapper;
 
-    public DefaultEventQueueProcessor(Map<Status, ObservableQueue> queues, ExecutionService executionService,
-        ObjectMapper objectMapper) {
+    public DefaultEventQueueProcessor(Map<Status, ObservableQueue> queues, ExecutionService executionService, ObjectMapper objectMapper) {
         this.queues = queues;
         this.executionService = executionService;
         this.objectMapper = objectMapper;
@@ -60,9 +62,7 @@ public class DefaultEventQueueProcessor {
     }
 
     private void startMonitor(Status status, ObservableQueue queue) {
-
         queue.observe().subscribe((Message msg) -> {
-
             try {
                 LOGGER.debug("Got message {}", msg.getPayload());
                 String payload = msg.getPayload();
@@ -73,13 +73,12 @@ public class DefaultEventQueueProcessor {
                     queue.ack(Collections.singletonList(msg));
                     return;
                 }
-
                 JsonNode json = objectMapper.readTree(externalId);
                 String workflowId = getValue("workflowId", json);
                 String taskRefName = getValue("taskRefName", json);
                 String taskId = getValue("taskId", json);
                 if (workflowId == null || "".equals(workflowId)) {
-                    //This is a bad message, we cannot process it
+                    // This is a bad message, we cannot process it
                     LOGGER.error("No workflow id found in the message. {}", payload);
                     queue.ack(Collections.singletonList(msg));
                     return;
@@ -87,34 +86,22 @@ public class DefaultEventQueueProcessor {
                 Workflow workflow = executionService.getExecutionStatus(workflowId, true);
                 Optional<Task> taskOptional;
                 if (StringUtils.isNotEmpty(taskId)) {
-                    taskOptional = workflow.getTasks().stream()
-                        .filter(task -> !task.getStatus().isTerminal() && task.getTaskId().equals(taskId)).findFirst();
+                    taskOptional = workflow.getTasks().stream().filter(task -> !task.getStatus().isTerminal() && task.getTaskId().equals(taskId)).findFirst();
                 } else if (StringUtils.isEmpty(taskRefName)) {
-                    LOGGER.error(
-                        "No taskRefName found in the message. If there is only one WAIT task, will mark it as completed. {}",
-                        payload);
-                    taskOptional = workflow.getTasks().stream()
-                        .filter(task -> !task.getStatus().isTerminal() && task.getTaskType().equals(
-                                TASK_TYPE_WAIT)).findFirst();
+                    LOGGER.error("No taskRefName found in the message. If there is only one WAIT task, will mark it as completed. {}", payload);
+                    taskOptional = workflow.getTasks().stream().filter(task -> !task.getStatus().isTerminal() && task.getTaskType().equals(TASK_TYPE_WAIT)).findFirst();
                 } else {
-                    taskOptional = workflow.getTasks().stream().filter(
-                        task -> !task.getStatus().isTerminal() && task.getReferenceTaskName().equals(taskRefName))
-                        .findFirst();
+                    taskOptional = workflow.getTasks().stream().filter(task -> !task.getStatus().isTerminal() && task.getReferenceTaskName().equals(taskRefName)).findFirst();
                 }
-
                 if (!taskOptional.isPresent()) {
-                    LOGGER.error(
-                        "No matching tasks found to be marked as completed for workflow {}, taskRefName {}, taskId {}",
-                        workflowId, taskRefName, taskId);
+                    LOGGER.error("No matching tasks found to be marked as completed for workflow {}, taskRefName {}, taskId {}", workflowId, taskRefName, taskId);
                     queue.ack(Collections.singletonList(msg));
                     return;
                 }
-
                 Task task = taskOptional.get();
                 task.setStatus(status);
                 task.getOutputData().putAll(objectMapper.convertValue(payloadJSON, _mapType));
                 executionService.updateTask(task);
-
                 List<String> failures = queue.ack(Collections.singletonList(msg));
                 if (!failures.isEmpty()) {
                     LOGGER.error("Not able to ack the messages {}", failures.toString());
@@ -122,7 +109,6 @@ public class DefaultEventQueueProcessor {
             } catch (JsonParseException e) {
                 LOGGER.error("Bad message? : {} ", msg, e);
                 queue.ack(Collections.singletonList(msg));
-
             } catch (ApplicationException e) {
                 if (e.getCode().equals(Code.NOT_FOUND)) {
                     LOGGER.error("Workflow ID specified is not valid for this environment");
@@ -136,6 +122,7 @@ public class DefaultEventQueueProcessor {
         LOGGER.info("QueueListener::STARTED...listening for " + queue.getName());
     }
 
+    @Nullable()
     private String getValue(String fieldName, JsonNode json) {
         JsonNode node = json.findValue(fieldName);
         if (node == null) {
@@ -156,30 +143,24 @@ public class DefaultEventQueueProcessor {
         return size;
     }
 
-    public void updateByTaskRefName(String workflowId, String taskRefName, Map<String, Object> output, Status status)
-        throws Exception {
+    public void updateByTaskRefName(String workflowId, String taskRefName, Map<String, Object> output, Status status) throws Exception {
         Map<String, Object> externalIdMap = new HashMap<>();
         externalIdMap.put("workflowId", workflowId);
         externalIdMap.put("taskRefName", taskRefName);
-
         update(externalIdMap, output, status);
     }
 
-    public void updateByTaskId(String workflowId, String taskId, Map<String, Object> output, Status status)
-        throws Exception {
+    public void updateByTaskId(String workflowId, String taskId, Map<String, Object> output, Status status) throws Exception {
         Map<String, Object> externalIdMap = new HashMap<>();
         externalIdMap.put("workflowId", workflowId);
         externalIdMap.put("taskId", taskId);
-
         update(externalIdMap, output, status);
     }
 
     private void update(Map<String, Object> externalIdMap, Map<String, Object> output, Status status) throws Exception {
         Map<String, Object> outputMap = new HashMap<>();
-
         outputMap.put("externalId", objectMapper.writeValueAsString(externalIdMap));
         outputMap.putAll(output);
-
         Message msg = new Message(UUID.randomUUID().toString(), objectMapper.writeValueAsString(outputMap), null);
         ObservableQueue queue = queues.get(status);
         if (queue == null) {

@@ -27,7 +27,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import com.netflix.conductor.Initializer;
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Component
@@ -47,26 +47,30 @@ public class SystemTaskWorkerCoordinator extends LifecycleAwareComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTaskWorkerCoordinator.class);
 
     private SystemTaskExecutor systemTaskExecutor;
+
     private final ConductorProperties properties;
 
     private final long pollInterval;
+
     private final String executionNameSpace;
 
     static final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+
     private final Set<String> listeningTaskQueues = new HashSet<>();
+
     public static Map<String, WorkflowSystemTask> taskNameWorkflowTaskMapping = new ConcurrentHashMap<>();
 
     private static final String CLASS_NAME = SystemTaskWorkerCoordinator.class.getName();
 
     private final List<WorkflowSystemTask> workflowSystemTasks;
+
     private final QueueDAO queueDAO;
+
     private final WorkflowExecutor workflowExecutor;
+
     private final ExecutionService executionService;
 
-    public SystemTaskWorkerCoordinator(QueueDAO queueDAO, WorkflowExecutor workflowExecutor,
-        ConductorProperties properties,
-        ExecutionService executionService,
-        List<WorkflowSystemTask> workflowSystemTasks) {
+    public SystemTaskWorkerCoordinator(QueueDAO queueDAO, WorkflowExecutor workflowExecutor, ConductorProperties properties, ExecutionService executionService, List<WorkflowSystemTask> workflowSystemTasks) {
         this.properties = properties;
         this.workflowSystemTasks = workflowSystemTasks;
         this.executionNameSpace = properties.getSystemTaskWorkerExecutionNamespace();
@@ -77,11 +81,11 @@ public class SystemTaskWorkerCoordinator extends LifecycleAwareComponent {
     }
 
     @EventListener(ApplicationReadyEvent.class)
+    @Initializer()
     public void initSystemTaskExecutor() {
         int threadCount = properties.getSystemTaskWorkerThreadCount();
         if (threadCount <= 0) {
-            throw new IllegalStateException("Cannot set system task worker thread count to <=0. To disable system "
-                + "task workers, set conductor.system-task-workers.enabled=false.");
+            throw new IllegalStateException("Cannot set system task worker thread count to <=0. To disable system " + "task workers, set conductor.system-task-workers.enabled=false.");
         }
         this.workflowSystemTasks.forEach(this::add);
         this.systemTaskExecutor = new SystemTaskExecutor(queueDAO, workflowExecutor, properties, executionService);
@@ -99,8 +103,7 @@ public class SystemTaskWorkerCoordinator extends LifecycleAwareComponent {
         try {
             for (; ; ) {
                 String workflowSystemTaskQueueName = queue.poll(60, TimeUnit.SECONDS);
-                if (workflowSystemTaskQueueName != null && !listeningTaskQueues.contains(workflowSystemTaskQueueName)
-                    && shouldListen(workflowSystemTaskQueueName)) {
+                if (workflowSystemTaskQueueName != null && !listeningTaskQueues.contains(workflowSystemTaskQueueName) && shouldListen(workflowSystemTaskQueueName)) {
                     listen(workflowSystemTaskQueueName);
                     listeningTaskQueues.add(workflowSystemTaskQueueName);
                 }
@@ -112,8 +115,7 @@ public class SystemTaskWorkerCoordinator extends LifecycleAwareComponent {
     }
 
     private void listen(String queueName) {
-        Executors.newSingleThreadScheduledExecutor()
-            .scheduleWithFixedDelay(() -> pollAndExecute(queueName), 1000, pollInterval, TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(() -> pollAndExecute(queueName), 1000, pollInterval, TimeUnit.MILLISECONDS);
         LOGGER.info("Started listening for queue: {}", queueName);
     }
 
@@ -132,8 +134,7 @@ public class SystemTaskWorkerCoordinator extends LifecycleAwareComponent {
     }
 
     private boolean shouldListen(String workflowSystemTaskQueueName) {
-        return isFromCoordinatorExecutionNameSpace(workflowSystemTaskQueueName)
-            && isAsyncSystemTask(workflowSystemTaskQueueName);
+        return isFromCoordinatorExecutionNameSpace(workflowSystemTaskQueueName) && isAsyncSystemTask(workflowSystemTaskQueueName);
     }
 
     @VisibleForTesting

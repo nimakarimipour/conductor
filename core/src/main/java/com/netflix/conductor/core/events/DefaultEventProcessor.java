@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import javax.annotation.Nullable;
 
 /**
  * Event Processor is used to dispatch actions configured in the event handlers, based on incoming events to the event
@@ -53,36 +54,34 @@ import org.springframework.stereotype.Component;
 public class DefaultEventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventProcessor.class);
+
     private static final int RETRY_COUNT = 3;
 
     private final MetadataService metadataService;
+
     private final ExecutionService executionService;
+
     private final ActionProcessor actionProcessor;
 
     private final ExecutorService eventActionExecutorService;
+
     private final ObjectMapper objectMapper;
+
     private final JsonUtils jsonUtils;
+
     private final boolean isEventMessageIndexingEnabled;
 
-    public DefaultEventProcessor(ExecutionService executionService, MetadataService metadataService,
-        ActionProcessor actionProcessor, JsonUtils jsonUtils, ConductorProperties properties,
-        ObjectMapper objectMapper) {
+    public DefaultEventProcessor(ExecutionService executionService, MetadataService metadataService, ActionProcessor actionProcessor, JsonUtils jsonUtils, ConductorProperties properties, ObjectMapper objectMapper) {
         this.executionService = executionService;
         this.metadataService = metadataService;
         this.actionProcessor = actionProcessor;
         this.objectMapper = objectMapper;
         this.jsonUtils = jsonUtils;
-
         if (properties.getEventProcessorThreadCount() <= 0) {
-            throw new IllegalStateException("Cannot set event processor thread count to <=0. To disable event "
-                + "processing, set conductor.default-event-processor.enabled=false.");
+            throw new IllegalStateException("Cannot set event processor thread count to <=0. To disable event " + "processing, set conductor.default-event-processor.enabled=false.");
         }
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-            .setNameFormat("event-action-executor-thread-%d")
-            .build();
-        eventActionExecutorService = Executors
-            .newFixedThreadPool(properties.getEventProcessorThreadCount(), threadFactory);
-
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("event-action-executor-thread-%d").build();
+        eventActionExecutorService = Executors.newFixedThreadPool(properties.getEventProcessorThreadCount(), threadFactory);
         this.isEventMessageIndexingEnabled = properties.isEventMessageIndexingEnabled();
         LOGGER.info("Event Processing is ENABLED");
     }
@@ -95,7 +94,6 @@ public class DefaultEventProcessor {
             String event = queue.getType() + ":" + queue.getName();
             LOGGER.debug("Evaluating message: {} for event: {}", msg.getId(), event);
             List<EventExecution> transientFailures = executeEvent(event, msg);
-
             if (transientFailures.isEmpty()) {
                 queue.ack(Collections.singletonList(msg));
                 LOGGER.debug("Message: {} acked on queue: {}", msg.getId(), queue.getName());
@@ -123,7 +121,6 @@ public class DefaultEventProcessor {
     protected List<EventExecution> executeEvent(String event, Message msg) throws Exception {
         List<EventHandler> eventHandlerList = metadataService.getEventHandlersForEvent(event, true);
         Object payloadObject = getPayloadObject(msg.getPayload());
-
         List<EventExecution> transientFailures = new ArrayList<>();
         for (EventHandler eventHandler : eventHandlerList) {
             String condition = eventHandler.getCondition();
@@ -140,12 +137,10 @@ public class DefaultEventProcessor {
                     eventExecution.getOutput().put("msg", msg.getPayload());
                     eventExecution.getOutput().put("condition", condition);
                     executionService.addEventExecution(eventExecution);
-                    LOGGER.debug("Condition: {} not successful for event: {} with payload: {}", condition,
-                        eventHandler.getEvent(), msg.getPayload());
+                    LOGGER.debug("Condition: {} not successful for event: {} with payload: {}", condition, eventHandler.getEvent(), msg.getPayload());
                     continue;
                 }
             }
-
             CompletableFuture<List<EventExecution>> future = executeActionsForEventHandler(eventHandler, msg);
             future.whenComplete((result, error) -> result.forEach(eventExecution -> {
                 if (error != null || eventExecution.getStatus() == Status.IN_PROGRESS) {
@@ -175,8 +170,7 @@ public class DefaultEventProcessor {
      * @return a {@link CompletableFuture} holding a list of {@link EventExecution}s for the {@link Action}s executed in
      * the event handler
      */
-    protected CompletableFuture<List<EventExecution>> executeActionsForEventHandler(EventHandler eventHandler,
-        Message msg) {
+    protected CompletableFuture<List<EventExecution>> executeActionsForEventHandler(EventHandler eventHandler, Message msg) {
         List<CompletableFuture<EventExecution>> futuresList = new ArrayList<>();
         int i = 0;
         for (Action action : eventHandler.getActions()) {
@@ -188,9 +182,7 @@ public class DefaultEventProcessor {
             eventExecution.setAction(action.getAction());
             eventExecution.setStatus(Status.IN_PROGRESS);
             if (executionService.addEventExecution(eventExecution)) {
-                futuresList.add(CompletableFuture
-                    .supplyAsync(() -> execute(eventExecution, action, getPayloadObject(msg.getPayload())),
-                        eventActionExecutorService));
+                futuresList.add(CompletableFuture.supplyAsync(() -> execute(eventExecution, action, getPayloadObject(msg.getPayload())), eventActionExecutorService));
             } else {
                 LOGGER.warn("Duplicate delivery/execution of message: {}", msg.getId());
             }
@@ -208,29 +200,21 @@ public class DefaultEventProcessor {
     protected EventExecution execute(EventExecution eventExecution, Action action, Object payload) {
         try {
             String methodName = "executeEventAction";
-            String description = String
-                .format("Executing action: %s for event: %s with messageId: %s with payload: %s", action.getAction(),
-                    eventExecution.getId(), eventExecution.getMessageId(), payload);
+            String description = String.format("Executing action: %s for event: %s with messageId: %s with payload: %s", action.getAction(), eventExecution.getId(), eventExecution.getMessageId(), payload);
             LOGGER.debug(description);
-
-            Map<String, Object> output = new RetryUtil<Map<String, Object>>().retryOnException(() -> actionProcessor
-                    .execute(action, payload, eventExecution.getEvent(), eventExecution.getMessageId()),
-                this::isTransientException, null, RETRY_COUNT, description, methodName);
+            Map<String, Object> output = new RetryUtil<Map<String, Object>>().retryOnException(() -> actionProcessor.execute(action, payload, eventExecution.getEvent(), eventExecution.getMessageId()), this::isTransientException, null, RETRY_COUNT, description, methodName);
             if (output != null) {
                 eventExecution.getOutput().putAll(output);
             }
             eventExecution.setStatus(Status.COMPLETED);
-            Monitors.recordEventExecutionSuccess(eventExecution.getEvent(), eventExecution.getName(),
-                eventExecution.getAction().name());
+            Monitors.recordEventExecutionSuccess(eventExecution.getEvent(), eventExecution.getName(), eventExecution.getAction().name());
         } catch (RuntimeException e) {
-            LOGGER.error("Error executing action: {} for event: {} with messageId: {}", action.getAction(),
-                eventExecution.getEvent(), eventExecution.getMessageId(), e);
+            LOGGER.error("Error executing action: {} for event: {} with messageId: {}", action.getAction(), eventExecution.getEvent(), eventExecution.getMessageId(), e);
             if (!isTransientException(e.getCause())) {
                 // not a transient error, fail the event execution
                 eventExecution.setStatus(Status.FAILED);
                 eventExecution.getOutput().put("exception", e.getMessage());
-                Monitors.recordEventExecutionError(eventExecution.getEvent(), eventExecution.getName(),
-                    eventExecution.getAction().name(), e.getClass().getSimpleName());
+                Monitors.recordEventExecutionError(eventExecution.getEvent(), eventExecution.getName(), eventExecution.getAction().name(), e.getClass().getSimpleName());
             }
         }
         return eventExecution;
@@ -245,10 +229,7 @@ public class DefaultEventProcessor {
      */
     protected boolean isTransientException(Throwable throwableException) {
         if (throwableException != null) {
-            return !((throwableException instanceof UnsupportedOperationException) ||
-                (throwableException instanceof ApplicationException
-                    && ((ApplicationException) throwableException).getCode()
-                    != ApplicationException.Code.BACKEND_ERROR));
+            return !((throwableException instanceof UnsupportedOperationException) || (throwableException instanceof ApplicationException && ((ApplicationException) throwableException).getCode() != ApplicationException.Code.BACKEND_ERROR));
         }
         return true;
     }

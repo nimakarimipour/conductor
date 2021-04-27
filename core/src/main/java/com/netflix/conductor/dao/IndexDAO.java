@@ -18,9 +18,9 @@ import com.netflix.conductor.common.metadata.tasks.TaskExecLog;
 import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.core.events.queue.Message;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 
 /**
  * DAO to index the workflow and task details for searching.
@@ -35,7 +35,6 @@ public interface IndexDAO {
     /**
      * This method should return an unique identifier of the indexed doc
      * @param workflow Workflow to be indexed
-     *
      */
     void indexWorkflow(Workflow workflow);
 
@@ -52,14 +51,12 @@ public interface IndexDAO {
     void indexTask(Task task);
 
     /**
-     *
      * @param task Task to be indexed asynchronously
      * @return CompletableFuture of type void
      */
     CompletableFuture<Void> asyncIndexTask(Task task);
 
     /**
-     *
      * @param query SQL like query for workflow search parameters.
      * @param freeText    Additional query in free text.  Lucene syntax
      * @param start    start start index for pagination
@@ -67,10 +64,9 @@ public interface IndexDAO {
      * @param sort sort options
      * @return List of workflow ids for the matching query
      */
-    SearchResult<String> searchWorkflows(String query, String freeText, int start, int count, List<String> sort);
+    SearchResult<String> searchWorkflows(String query, String freeText, int start, int count, @Nullable() List<String> sort);
 
     /**
-     *
      * @param query SQL like query for task search parameters.
      * @param freeText    Additional query in free text.  Lucene syntax
      * @param start    start start index for pagination
@@ -94,7 +90,6 @@ public interface IndexDAO {
     CompletableFuture<Void> asyncRemoveWorkflow(String workflowId);
 
     /**
-     *
      * Updates the index
      * @param workflowInstanceId id of the workflow
      * @param keys keys to be updated
@@ -125,14 +120,12 @@ public interface IndexDAO {
     void addTaskExecutionLogs(List<TaskExecLog> logs);
 
     /**
-     *
      * @param logs Task Execution logs to be indexed
      * @return CompletableFuture of type void
      */
     CompletableFuture<Void> asyncAddTaskExecutionLogs(List<TaskExecLog> logs);
 
     /**
-     *
      * @param taskId Id of the task for which to fetch the execution logs
      * @return Returns the task execution logs for given task id
      */
@@ -146,7 +139,6 @@ public interface IndexDAO {
     List<EventExecution> getEventExecutions(String event);
 
     /**
-     *
      * @param eventExecution Event Execution to be indexed
      * @return CompletableFuture of type void
      */
