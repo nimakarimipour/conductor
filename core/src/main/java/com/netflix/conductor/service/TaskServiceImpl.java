@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Audit
@@ -61,6 +62,7 @@ public class TaskServiceImpl implements TaskService {
      * @param domain   Domain of the workflow
      * @return polled {@link Task}
      */
+    @Nullable
     public Task poll(String taskType, String workerId, String domain) {
         LOGGER.debug("Task being polled: /tasks/poll/{}?{}&{}", taskType, workerId, domain);
         Task task = executionService.getLastPollTask(taskType, workerId, domain);
@@ -110,6 +112,7 @@ public class TaskServiceImpl implements TaskService {
      * @param taskReferenceName Task reference name.
      * @return instance of {@link Task}
      */
+    @Nullable
     public Task getPendingTaskForWorkflow(String workflowId, String taskReferenceName) {
         return executionService.getPendingTaskForWorkflow(taskReferenceName, workflowId);
     }

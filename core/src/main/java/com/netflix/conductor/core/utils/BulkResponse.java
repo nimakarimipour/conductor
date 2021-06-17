@@ -17,11 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
+import javax.annotation.Nullable;
 /**
  * Response object to return a list of succeeded entities and a map of failed ones, including error message, for the
  * bulk request.
  */
+
 public class BulkResponse {
 
     /**
@@ -48,7 +49,7 @@ public class BulkResponse {
         bulkSuccessfulResults.add(id);
     }
 
-    public void appendFailedResponse(String id, String errorMessage) {
+    public void appendFailedResponse(String id, @Nullable String errorMessage) {
         bulkErrorResults.put(id, errorMessage);
     }
 

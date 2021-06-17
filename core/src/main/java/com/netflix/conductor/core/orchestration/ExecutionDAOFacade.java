@@ -45,11 +45,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.netflix.conductor.core.execution.WorkflowExecutor.DECIDER_QUEUE;
-
+import javax.annotation.Nullable;
 /**
  * Service that acts as a facade for accessing execution data from the {@link ExecutionDAO}, {@link RateLimitingDAO} and
  * {@link IndexDAO} storage layers
  */
+
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Component
 public class ExecutionDAOFacade {
@@ -414,6 +415,7 @@ public class ExecutionDAOFacade {
         return pollDataDAO.getAllPollData();
     }
 
+    @Nullable
     public PollData getTaskPollDataByDomain(String taskName, String domain) {
         try {
             return pollDataDAO.getPollData(taskName, domain);
@@ -473,7 +475,7 @@ public class ExecutionDAOFacade {
         return executionDAO.exceedsInProgressLimit(task);
     }
 
-    public boolean exceedsRateLimitPerFrequency(Task task, TaskDef taskDef) {
+    public boolean exceedsRateLimitPerFrequency(Task task, @Nullable TaskDef taskDef) {
         return rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef);
     }
 

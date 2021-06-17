@@ -21,10 +21,11 @@ import com.netflix.conductor.core.events.queue.Message;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
+import javax.annotation.Nullable;
 /**
  * DAO to index the workflow and task details for searching.
  */
+
 public interface IndexDAO {
 
     /**
@@ -67,7 +68,7 @@ public interface IndexDAO {
      * @param sort sort options
      * @return List of workflow ids for the matching query
      */
-    SearchResult<String> searchWorkflows(String query, String freeText, int start, int count, List<String> sort);
+    SearchResult<String> searchWorkflows(String query, String freeText, int start, int count, @Nullable List<String> sort);
 
     /**
      *

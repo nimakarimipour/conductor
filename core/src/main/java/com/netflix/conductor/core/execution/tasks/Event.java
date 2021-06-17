@@ -34,6 +34,7 @@ import java.util.Map;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_EVENT;
 import static com.netflix.conductor.core.exception.ApplicationException.Code.INTERNAL_ERROR;
+import javax.annotation.Nullable;
 
 @Component(TASK_TYPE_EVENT)
 public class Event extends WorkflowSystemTask {
@@ -98,6 +99,7 @@ public class Event extends WorkflowSystemTask {
     }
 
     @VisibleForTesting
+    @Nullable
     ObservableQueue getQueue(Workflow workflow, Task task) {
         if (task.getInputData().get("sink") == null) {
             task.setStatus(Status.FAILED);

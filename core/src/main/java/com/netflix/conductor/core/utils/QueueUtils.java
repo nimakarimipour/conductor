@@ -14,6 +14,7 @@ package com.netflix.conductor.core.utils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import org.apache.commons.lang3.StringUtils;
+import javax.annotation.Nullable;
 
 public class QueueUtils {
 
@@ -33,8 +34,8 @@ public class QueueUtils {
      * @param executionNameSpace
      * @return //domain:taskType@eexecutionNameSpace-isolationGroup
      */
-    public static String getQueueName(String taskType, String domain, String isolationGroup,
-        String executionNameSpace) {
+    public static String getQueueName(String taskType, @Nullable String domain, @Nullable String isolationGroup,
+        @Nullable String executionNameSpace) {
 
         String queueName;
         if (domain == null) {

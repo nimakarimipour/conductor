@@ -23,10 +23,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+import javax.annotation.Nullable;
 /**
  * Holders for internal event queues
  */
+
 @Component
 public class EventQueues {
 
@@ -50,7 +51,7 @@ public class EventQueues {
             .collect(Collectors.toList());
     }
 
-    public ObservableQueue getQueue(String eventType) {
+    public ObservableQueue getQueue(@Nullable String eventType) {
         String event = parametersUtils.replace(eventType).toString();
         int index = event.indexOf(':');
         if (index == -1) {

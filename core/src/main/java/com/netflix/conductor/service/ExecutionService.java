@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 @Trace
  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -84,11 +85,13 @@ public class ExecutionService {
         this.systemTaskRegistry = systemTaskRegistry;
     }
 
+    @Nullable
     public Task poll(String taskType, String workerId) {
         return poll(taskType, workerId, null);
     }
 
-    public Task poll(String taskType, String workerId, String domain) {
+    @Nullable
+    public Task poll(String taskType, String workerId, @Nullable String domain) {
 
         List<Task> tasks = poll(taskType, workerId, domain, 1, 100);
         if (tasks.isEmpty()) {
@@ -168,6 +171,7 @@ public class ExecutionService {
         return tasks;
     }
 
+    @Nullable
     public Task getLastPollTask(String taskType, String workerId, String domain) {
         List<Task> tasks = poll(taskType, workerId, domain, POLL_COUNT_ONE, POLLING_TIMEOUT_IN_MS);
         if (tasks.isEmpty()) {
@@ -224,6 +228,7 @@ public class ExecutionService {
         return workflowExecutor.getTask(taskId);
     }
 
+    @Nullable
     public Task getPendingTaskForWorkflow(String taskReferenceName, String workflowId) {
         return workflowExecutor.getPendingTaskByWorkflow(taskReferenceName, workflowId);
     }

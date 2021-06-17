@@ -35,12 +35,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
-
+import javax.annotation.Nullable;
 /**
  * Monitors and processes messages on the default event queues that Conductor listens on.
  * <p>
  * The default event queue type is controlled using the property: <code>conductor.default-event-queue.type</code>
  */
+
 @Component
 public class DefaultEventQueueProcessor {
 
@@ -136,6 +137,7 @@ public class DefaultEventQueueProcessor {
         LOGGER.info("QueueListener::STARTED...listening for " + queue.getName());
     }
 
+    @Nullable
     private String getValue(String fieldName, JsonNode json) {
         JsonNode node = json.findValue(fieldName);
         if (node == null) {

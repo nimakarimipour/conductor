@@ -16,13 +16,15 @@ import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage;
 
 import java.io.InputStream;
-
+import javax.annotation.Nullable;
 /**
  * A dummy implementation of {@link ExternalPayloadStorage} used when no external payload is configured
  */
+
 public class DummyPayloadStorage implements ExternalPayloadStorage {
 
     @Override
+    @Nullable
     public ExternalStorageLocation getLocation(Operation operation, PayloadType payloadType, String path) {
         return null;
     }
@@ -32,6 +34,7 @@ public class DummyPayloadStorage implements ExternalPayloadStorage {
     }
 
     @Override
+    @Nullable
     public InputStream download(String path) {
         return null;
     }

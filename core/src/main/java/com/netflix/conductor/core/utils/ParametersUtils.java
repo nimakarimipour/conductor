@@ -35,10 +35,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
+import javax.annotation.Nullable;
 /**
  * Used to parse and resolve the JSONPath bindings in the workflow and task definitions.
  */
+
 @Component
 public class ParametersUtils {
 
@@ -52,7 +53,7 @@ public class ParametersUtils {
     }
 
     public Map<String, Object> getTaskInput(Map<String, Object> inputParams, Workflow workflow,
-        TaskDef taskDefinition, String taskId) {
+        @Nullable TaskDef taskDefinition, @Nullable String taskId) {
         if (workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
             return getTaskInputV2(inputParams, workflow, taskId, taskDefinition);
         }
@@ -60,7 +61,7 @@ public class ParametersUtils {
     }
 
     public Map<String, Object> getTaskInputV2(Map<String, Object> input, Workflow workflow,
-        String taskId, TaskDef taskDefinition) {
+        @Nullable String taskId, @Nullable TaskDef taskDefinition) {
         Map<String, Object> inputParams;
 
         if (input != null) {
@@ -154,14 +155,14 @@ public class ParametersUtils {
         return replace(input, documentContext, null);
     }
 
-    public Object replace(String paramString) {
+    public Object replace(@Nullable String paramString) {
         Configuration option = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.parse(Collections.emptyMap(), option);
         return replaceVariables(paramString, documentContext, null);
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> replace(Map<String, Object> input, DocumentContext documentContext, String taskId) {
+    private Map<String, Object> replace(Map<String, Object> input, DocumentContext documentContext, @Nullable String taskId) {
         Map<String, Object> result = new HashMap<>();
         for (Entry<String, Object> e : input.entrySet()) {
             Object newValue;
@@ -182,7 +183,7 @@ public class ParametersUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private Object replaceList(List<?> values, String taskId, DocumentContext io) {
+    private Object replaceList(List<?> values, @Nullable String taskId, DocumentContext io) {
         List<Object> replacedList = new LinkedList<>();
         for (Object listVal : values) {
             if (listVal instanceof String) {
@@ -201,7 +202,7 @@ public class ParametersUtils {
         return replacedList;
     }
 
-    private Object replaceVariables(String paramString, DocumentContext documentContext, String taskId) {
+    private Object replaceVariables(@Nullable String paramString, DocumentContext documentContext, @Nullable String taskId) {
         String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=\\})");
         Object[] convertedValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {

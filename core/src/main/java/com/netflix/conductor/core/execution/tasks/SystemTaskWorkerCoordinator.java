@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import com.netflix.conductor.Initializer;
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Component
@@ -77,6 +78,7 @@ public class SystemTaskWorkerCoordinator extends LifecycleAwareComponent {
     }
 
     @EventListener(ApplicationReadyEvent.class)
+    @Initializer
     public void initSystemTaskExecutor() {
         int threadCount = properties.getSystemTaskWorkerThreadCount();
         if (threadCount <= 0) {

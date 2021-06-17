@@ -59,11 +59,12 @@ import static com.netflix.conductor.common.metadata.tasks.Task.Status.SKIPPED;
 import static com.netflix.conductor.common.metadata.tasks.Task.Status.TIMED_OUT;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.SUB_WORKFLOW;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TERMINATE;
-
+import javax.annotation.Nullable;
 /**
  * Decider evaluates the state of the workflow by inspecting the current state along with the blueprint. The result of
  * the evaluation is either to schedule further tasks, complete/fail the workflow or do nothing.
  */
+
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Service
 public class DeciderService {
@@ -313,7 +314,7 @@ public class DeciderService {
      *                 will be copied to workflow output of no output parameters are specified in the workflow
      *                 definition
      */
-    void updateWorkflowOutput(final Workflow workflow, Task task) {
+    void updateWorkflowOutput(final Workflow workflow, @Nullable Task task) {
         List<Task> allTasks = workflow.getTasks();
         if (allTasks.isEmpty()) {
             return;
@@ -419,6 +420,7 @@ public class DeciderService {
         return Collections.emptyList();
     }
 
+    @Nullable
     private String getNextTasksToBeScheduled(Workflow workflow, Task task) {
         final WorkflowDef def = workflow.getWorkflowDefinition();
 
@@ -431,7 +433,7 @@ public class DeciderService {
     }
 
     @VisibleForTesting
-    Optional<Task> retry(TaskDef taskDefinition, WorkflowTask workflowTask, Task task, Workflow workflow)
+    Optional<Task> retry(@Nullable TaskDef taskDefinition, WorkflowTask workflowTask, Task task, Workflow workflow)
             throws TerminateWorkflowException {
 
         int retryCount = task.getRetryCount();
@@ -728,7 +730,7 @@ public class DeciderService {
     }
 
     public List<Task> getTasksToBeScheduled(Workflow workflow,
-                                            WorkflowTask taskToSchedule, int retryCount, String retriedTaskId) {
+                                            WorkflowTask taskToSchedule, int retryCount, @Nullable String retriedTaskId) {
         workflow = populateWorkflowAndTaskData(workflow);
         Map<String, Object> input = parametersUtils.getTaskInput(taskToSchedule.getInputParameters(),
                 workflow, null, null);

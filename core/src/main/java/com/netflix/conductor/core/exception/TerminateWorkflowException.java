@@ -14,21 +14,22 @@ package com.netflix.conductor.core.exception;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.run.Workflow.WorkflowStatus;
+import javax.annotation.Nullable;
 
 public class TerminateWorkflowException extends RuntimeException {
 
     private final WorkflowStatus workflowStatus;
     private final Task task;
 
-    public TerminateWorkflowException(String reason) {
+    public TerminateWorkflowException(@Nullable String reason) {
         this(reason, WorkflowStatus.FAILED);
     }
 
-    public TerminateWorkflowException(String reason, WorkflowStatus workflowStatus) {
+    public TerminateWorkflowException(@Nullable String reason, WorkflowStatus workflowStatus) {
         this(reason, workflowStatus, null);
     }
 
-    public TerminateWorkflowException(String reason, WorkflowStatus workflowStatus, Task task) {
+    public TerminateWorkflowException(@Nullable String reason, WorkflowStatus workflowStatus, @Nullable Task task) {
         super(reason);
         this.workflowStatus = workflowStatus;
         this.task = task;

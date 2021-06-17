@@ -82,10 +82,11 @@ import static com.netflix.conductor.core.exception.ApplicationException.Code.BAC
 import static com.netflix.conductor.core.exception.ApplicationException.Code.CONFLICT;
 import static com.netflix.conductor.core.exception.ApplicationException.Code.INVALID_INPUT;
 import static com.netflix.conductor.core.exception.ApplicationException.Code.NOT_FOUND;
-
+import javax.annotation.Nullable;
 /**
  * Workflow services provider interface
  */
+
 @Trace
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @Component
@@ -152,7 +153,7 @@ public class WorkflowExecutor {
      * @throws ApplicationException
      */
     public String startWorkflow(String name, Integer version, String correlationId, Integer priority,
-                                Map<String, Object> input, String externalInputPayloadStoragePath) {
+                                Map<String, Object> input, @Nullable String externalInputPayloadStoragePath) {
         return startWorkflow(name, version, correlationId, priority, input, externalInputPayloadStoragePath, null);
     }
 
@@ -160,7 +161,7 @@ public class WorkflowExecutor {
      * @throws ApplicationException
      */
     public String startWorkflow(String name, Integer version, String correlationId, Map<String, Object> input,
-                                String externalInputPayloadStoragePath, String event) {
+                                String externalInputPayloadStoragePath, @Nullable String event) {
         return startWorkflow(
                 name,
                 version,
@@ -177,7 +178,7 @@ public class WorkflowExecutor {
      * @throws ApplicationException
      */
     public String startWorkflow(String name, Integer version, String correlationId, Integer priority,
-                                Map<String, Object> input, String externalInputPayloadStoragePath, String event) {
+                                Map<String, Object> input, @Nullable String externalInputPayloadStoragePath, @Nullable String event) {
         return startWorkflow(
                 name,
                 version,
@@ -200,7 +201,7 @@ public class WorkflowExecutor {
             Integer version,
             String correlationId,
             Map<String, Object> input,
-            String externalInputPayloadStoragePath,
+            @Nullable String externalInputPayloadStoragePath,
             String event,
             Map<String, String> taskToDomain
     ) {
@@ -217,8 +218,8 @@ public class WorkflowExecutor {
             String correlationId,
             Integer priority,
             Map<String, Object> input,
-            String externalInputPayloadStoragePath,
-            String event,
+            @Nullable String externalInputPayloadStoragePath,
+            @Nullable String event,
             Map<String, String> taskToDomain
     ) {
         return startWorkflow(
@@ -244,9 +245,9 @@ public class WorkflowExecutor {
             Map<String, Object> input,
             String externalInputPayloadStoragePath,
             String correlationId,
-            String parentWorkflowId,
-            String parentWorkflowTaskId,
-            String event
+            @Nullable String parentWorkflowId,
+            @Nullable String parentWorkflowTaskId,
+            @Nullable String event
     ) {
         return startWorkflow(
                 name,
@@ -292,7 +293,7 @@ public class WorkflowExecutor {
             String externalInputPayloadStoragePath,
             String correlationId,
             Integer priority,
-            String event,
+            @Nullable String event,
             Map<String, String> taskToDomain
     ) {
         return startWorkflow(
@@ -315,12 +316,12 @@ public class WorkflowExecutor {
             String name,
             Integer version,
             Map<String, Object> workflowInput,
-            String externalInputPayloadStoragePath,
+            @Nullable String externalInputPayloadStoragePath,
             String correlationId,
-            String parentWorkflowId,
-            String parentWorkflowTaskId,
-            String event,
-            Map<String, String> taskToDomain
+            @Nullable String parentWorkflowId,
+            @Nullable String parentWorkflowTaskId,
+            @Nullable String event,
+            @Nullable Map<String, String> taskToDomain
     ) {
         return startWorkflow(
                 name,
@@ -343,13 +344,13 @@ public class WorkflowExecutor {
             String name,
             Integer version,
             Map<String, Object> workflowInput,
-            String externalInputPayloadStoragePath,
+            @Nullable String externalInputPayloadStoragePath,
             String correlationId,
             Integer priority,
-            String parentWorkflowId,
-            String parentWorkflowTaskId,
-            String event,
-            Map<String, String> taskToDomain
+            @Nullable String parentWorkflowId,
+            @Nullable String parentWorkflowTaskId,
+            @Nullable String event,
+            @Nullable Map<String, String> taskToDomain
     ) {
         WorkflowDef workflowDefinition = metadataMapperService.lookupForWorkflowDefinition(name, version);
 
@@ -378,7 +379,7 @@ public class WorkflowExecutor {
             String parentWorkflowId,
             String parentWorkflowTaskId,
             String event,
-            Map<String, String> taskToDomain
+            @Nullable Map<String, String> taskToDomain
     ) {
 
         workflowDefinition = metadataMapperService.populateTaskDefinitions(workflowDefinition);
@@ -703,6 +704,7 @@ public class WorkflowExecutor {
         return taskToBeRetried;
     }
 
+    @Nullable
     public Task getPendingTaskByWorkflow(String taskReferenceName, String workflowId) {
         return executionDAOFacade.getTasksForWorkflow(workflowId).stream()
                 .filter(NON_TERMINAL_TASK)
@@ -797,7 +799,7 @@ public class WorkflowExecutor {
      * @param reason          the reason for termination
      * @param failureWorkflow the failure workflow (if any) to be triggered as a result of this termination
      */
-    public Workflow terminateWorkflow(Workflow workflow, String reason, String failureWorkflow) {
+    public Workflow terminateWorkflow(Workflow workflow, @Nullable String reason, @Nullable String failureWorkflow) {
         try {
             executionLockService.acquireLock(workflow.getWorkflowId(), 60000);
 
@@ -1034,6 +1036,7 @@ public class WorkflowExecutor {
         decide(workflowId);
     }
 
+    @Nullable
     public Task getTask(String taskId) {
         return Optional.ofNullable(executionDAOFacade.getTaskById(taskId))
                 .map(task -> {
@@ -1503,6 +1506,7 @@ public class WorkflowExecutor {
      * @return the active domain where the task will be queued
      */
     @VisibleForTesting
+    @Nullable
     String getActiveDomain(String taskType, String[] domains) {
         if (domains == null || domains.length == 0) {
             return null;
@@ -1675,7 +1679,7 @@ public class WorkflowExecutor {
     }
 
     private boolean rerunWF(String workflowId, String taskId, Map<String, Object> taskInput,
-                            Map<String, Object> workflowInput, String correlationId) {
+                            @Nullable Map<String, Object> workflowInput, @Nullable String correlationId) {
 
         // Get the workflow
         Workflow workflow = executionDAOFacade.getWorkflowById(workflowId, true);
