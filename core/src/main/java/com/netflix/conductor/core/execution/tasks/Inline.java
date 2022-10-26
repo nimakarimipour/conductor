@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -68,6 +69,7 @@ public class Inline extends WorkflowSystemTask {
     }
 
     @Override
+    @NullUnmarked
     public boolean execute(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> taskInput = task.getInputData();
         String evaluatorType = (String) taskInput.get(QUERY_EVALUATOR_TYPE);

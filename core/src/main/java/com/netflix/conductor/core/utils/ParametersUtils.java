@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.utils;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
@@ -191,6 +192,7 @@ public class ParametersUtils {
         return replacedList;
     }
 
+    @NullUnmarked
     private Object replaceVariables(@Nullable String paramString, DocumentContext documentContext, @Nullable String taskId) {
         String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=})");
         Object[] convertedValues = new Object[values.length];

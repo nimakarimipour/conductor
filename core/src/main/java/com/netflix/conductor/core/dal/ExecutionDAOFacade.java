@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.dal;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
@@ -360,6 +361,7 @@ public class ExecutionDAOFacade {
         return taskModel;
     }
 
+    @NullUnmarked
     public Task getTask(String taskId) {
         TaskModel taskModel = getTaskFromDatastore(taskId);
         if (taskModel != null) {

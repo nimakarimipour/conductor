@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.service;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,7 @@ public class MetadataServiceImpl implements MetadataService {
     /**
      * @param taskDefinitions Task Definitions to register
      */
+    @NullUnmarked
     public void registerTaskDef(List<TaskDef> taskDefinitions) {
         for (TaskDef taskDefinition : taskDefinitions) {
             taskDefinition.setCreatedBy(WorkflowContext.get().getClientApp());
@@ -118,6 +120,7 @@ public class MetadataServiceImpl implements MetadataService {
     /**
      * @param workflowDefList Workflow definitions to be updated.
      */
+    @NullUnmarked
     public BulkResponse updateWorkflowDef(List<WorkflowDef> workflowDefList) {
         BulkResponse bulkResponse = new BulkResponse();
         for (WorkflowDef workflowDef : workflowDefList) {

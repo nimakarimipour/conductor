@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.storage;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.io.InputStream;
 import com.netflix.conductor.common.run.ExternalStorageLocation;
@@ -25,6 +26,7 @@ public class DummyPayloadStorage implements ExternalPayloadStorage {
 
     @Override
     @Nullable
+    @NullUnmarked
     public ExternalStorageLocation getLocation(Operation operation, PayloadType payloadType, String path) {
         return null;
     }
@@ -35,6 +37,7 @@ public class DummyPayloadStorage implements ExternalPayloadStorage {
 
     @Override
     @Nullable
+    @NullUnmarked
     public InputStream download(String path) {
         return null;
     }

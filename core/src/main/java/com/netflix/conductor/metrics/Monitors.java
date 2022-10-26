@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.metrics;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -119,6 +120,7 @@ public class Monitors {
         });
     }
 
+    @NullUnmarked
     private static Map<String, String> toMap(String className, @Nullable String... additionalTags) {
         Map<String, String> tags = new HashMap<>();
         tags.put("class", className);

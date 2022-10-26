@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.model;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,6 +89,7 @@ public class WorkflowModel {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Set<String> failedTaskNames = new HashSet<>();
 
+    @SuppressWarnings("NullAway.Init")
     private WorkflowDef workflowDefinition;
 
     @Nullable
@@ -400,6 +402,7 @@ public class WorkflowModel {
         this.ownerApp = ownerApp;
     }
 
+    @NullUnmarked
     public Long getCreateTime() {
         return createTime;
     }
@@ -542,6 +545,7 @@ public class WorkflowModel {
         return Objects.hash(getStatus(), getEndTime(), getWorkflowId(), getParentWorkflowId(), getParentWorkflowTaskId(), getTasks(), getInput(), output, outputPayload, getCorrelationId(), getReRunFromWorkflowId(), getReasonForIncompletion(), getEvent(), getTaskToDomain(), getFailedReferenceTaskNames(), getFailedTaskNames(), getWorkflowDefinition(), getExternalInputPayloadStoragePath(), getExternalOutputPayloadStoragePath(), getPriority(), getVariables(), getLastRetriedTime(), getOwnerApp(), getCreateTime(), getUpdatedTime(), getCreatedBy(), getUpdatedBy());
     }
 
+    @NullUnmarked
     public Workflow toWorkflow() {
         Workflow workflow = new Workflow();
         BeanUtils.copyProperties(this, workflow);

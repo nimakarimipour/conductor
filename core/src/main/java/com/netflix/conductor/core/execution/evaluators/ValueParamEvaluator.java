@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution.evaluators;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ public class ValueParamEvaluator implements Evaluator {
     @SuppressWarnings("unchecked")
     @Override
     @Nullable
+    @NullUnmarked
     public Object evaluate(@Nullable String expression, @Nullable Object input) {
         LOGGER.debug("ValueParam evaluator -- evaluating: {}", expression);
         if (input instanceof Map) {

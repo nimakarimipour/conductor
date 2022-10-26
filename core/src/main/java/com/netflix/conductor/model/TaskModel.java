@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.model;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,8 +66,10 @@ public class TaskModel {
         }
     }
 
+    @SuppressWarnings("NullAway.Init")
     private String taskType;
 
+    @SuppressWarnings("NullAway.Init")
     private Status status;
 
     @Nullable
@@ -245,6 +248,7 @@ public class TaskModel {
         return inputData;
     }
 
+    @NullUnmarked
     public String getReferenceTaskName() {
         return referenceTaskName;
     }
@@ -396,6 +400,7 @@ public class TaskModel {
         this.workflowType = workflowType;
     }
 
+    @NullUnmarked
     public String getTaskId() {
         return taskId;
     }
@@ -469,6 +474,7 @@ public class TaskModel {
         return outputData;
     }
 
+    @NullUnmarked
     public WorkflowTask getWorkflowTask() {
         return workflowTask;
     }

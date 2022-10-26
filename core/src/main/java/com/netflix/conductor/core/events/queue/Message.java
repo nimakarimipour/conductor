@@ -20,6 +20,7 @@ public class Message {
     @Nullable
     private String payload;
 
+    @SuppressWarnings("NullAway.Init")
     private String id;
 
     @Nullable

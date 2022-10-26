@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,7 @@ public class Event extends WorkflowSystemTask {
 
     @VisibleForTesting
     @Nullable
+    @NullUnmarked
     String computeQueueName(WorkflowModel workflow, TaskModel task) {
         String sinkValueRaw = (String) task.getInputData().get("sink");
         Map<String, Object> input = new HashMap<>();

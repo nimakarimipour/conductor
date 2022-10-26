@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
@@ -1090,6 +1091,7 @@ public class WorkflowExecutor {
         return terminateWorkflow(workflow, terminateWorkflowException.getMessage(), failureWorkflow);
     }
 
+    @NullUnmarked
     private boolean rerunWF(String workflowId, String taskId, Map<String, Object> taskInput, @Nullable Map<String, Object> workflowInput, @Nullable String correlationId) {
         // Get the workflow
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);

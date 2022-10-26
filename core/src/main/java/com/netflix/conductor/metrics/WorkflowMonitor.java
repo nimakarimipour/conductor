@@ -47,8 +47,10 @@ public class WorkflowMonitor {
 
     private final Set<WorkflowSystemTask> asyncSystemTasks;
 
+    @SuppressWarnings("NullAway.Init")
     private List<TaskDef> taskDefs;
 
+    @SuppressWarnings("NullAway.Init")
     private List<WorkflowDef> workflowDefs;
 
     private int refreshCounter = 0;

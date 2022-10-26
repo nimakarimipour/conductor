@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.*;
 import org.slf4j.Logger;
@@ -50,6 +51,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
 
     @SuppressWarnings("rawtypes")
     @Override
+    @NullUnmarked
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
         LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
         WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();

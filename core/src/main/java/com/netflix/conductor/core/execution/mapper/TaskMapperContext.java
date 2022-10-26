@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
+import com.netflix.conductor.NullUnmarked;
 import javax.annotation.Nullable;
 import java.util.Map;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
@@ -44,6 +45,7 @@ public class TaskMapperContext {
 
     private final DeciderService deciderService;
 
+    @NullUnmarked
     private TaskMapperContext(Builder builder) {
         workflowModel = builder.workflowModel;
         taskDefinition = builder.taskDefinition;
@@ -178,13 +180,16 @@ public class TaskMapperContext {
      */
     public static final class Builder {
 
+        @SuppressWarnings("NullAway.Init")
         private WorkflowModel workflowModel;
 
         @Nullable
         private TaskDef taskDefinition;
 
+        @SuppressWarnings("NullAway.Init")
         private WorkflowTask workflowTask;
 
+        @SuppressWarnings("NullAway.Init")
         private Map<String, Object> taskInput;
 
         private int retryCount;
@@ -195,6 +200,7 @@ public class TaskMapperContext {
         @Nullable
         private String taskId;
 
+        @SuppressWarnings("NullAway.Init")
         private DeciderService deciderService;
 
         private Builder() {
