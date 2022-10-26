@@ -81,7 +81,7 @@ tasks.withType(JavaCompile) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
             check("TypeAnnotatorScanner", CheckSeverity.ERROR)
-            check("ExhaustiveFixSerializer", CheckSeverity.ERROR)
+            check("ExhaustiveFixSerializer", CheckSeverity.OFF)
             check("NullUnmarkedCollector", CheckSeverity.OFF)
             option("NullAway:AnnotatedPackages", "com.netflix.conductor")
             option("NullAway:SerializeFixMetadata", "true")
