@@ -12,18 +12,16 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import javax.script.ScriptException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.annotations.VisibleForTesting;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
@@ -78,10 +76,8 @@ public class DecisionTaskMapper implements TaskMapper {
         WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
         Map<String, Object> taskInput = taskMapperContext.getTaskInput();
         int retryCount = taskMapperContext.getRetryCount();
-
         // get the expression to be evaluated
         String caseValue = getEvaluatedCaseValue(workflowTask, taskInput);
-
         // QQ why is the case value and the caseValue passed and caseOutput passes as the same ??
         TaskModel decisionTask = taskMapperContext.createTaskModel();
         decisionTask.setTaskType(TaskType.TASK_TYPE_DECISION);
@@ -91,7 +87,6 @@ public class DecisionTaskMapper implements TaskMapper {
         decisionTask.setStartTime(System.currentTimeMillis());
         decisionTask.setStatus(TaskModel.Status.IN_PROGRESS);
         tasksToBeScheduled.add(decisionTask);
-
         // get the list of tasks based on the decision
         List<WorkflowTask> selectedTasks = workflowTask.getDecisionCases().get(caseValue);
         // if the tasks returned are empty based on evaluated case value, then get the default case
@@ -102,18 +97,12 @@ public class DecisionTaskMapper implements TaskMapper {
         // once there are selected tasks that need to proceeded as part of the decision, get the
         // next task to be scheduled by using the decider service
         if (selectedTasks != null && !selectedTasks.isEmpty()) {
-            WorkflowTask selectedTask =
-                    selectedTasks.get(0); // Schedule the first task to be executed...
+            // Schedule the first task to be executed...
+            WorkflowTask // Schedule the first task to be executed...
+            selectedTask = selectedTasks.get(0);
             // TODO break out this recursive call using function composition of what needs to be
             // done and then walk back the condition tree
-            List<TaskModel> caseTasks =
-                    taskMapperContext
-                            .getDeciderService()
-                            .getTasksToBeScheduled(
-                                    workflowModel,
-                                    selectedTask,
-                                    retryCount,
-                                    taskMapperContext.getRetryTaskId());
+            List<TaskModel> caseTasks = taskMapperContext.getDeciderService().getTasksToBeScheduled(workflowModel, selectedTask, retryCount, taskMapperContext.getRetryTaskId());
             tasksToBeScheduled.addAll(caseTasks);
             decisionTask.addInput("hasChildren", "true");
         }
@@ -144,11 +133,10 @@ public class DecisionTaskMapper implements TaskMapper {
                 LOGGER.error(errorMsg, e);
                 throw new TerminateWorkflowException(errorMsg);
             }
-
-        } else { // In case of no case expression, get the caseValueParam and treat it as a string
+        } else {
+            // In case of no case expression, get the caseValueParam and treat it as a string
             // representation of caseValue
-            LOGGER.debug(
-                    "No Expression available on the decision task, case value being assigned as param name");
+            LOGGER.debug("No Expression available on the decision task, case value being assigned as param name");
             String paramName = workflowTask.getCaseValueParam();
             caseValue = "" + taskInput.get(paramName);
         }

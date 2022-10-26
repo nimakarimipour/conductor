@@ -12,16 +12,15 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.annotations.VisibleForTesting;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
@@ -44,6 +43,7 @@ public class DynamicTaskMapper implements TaskMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(DynamicTaskMapper.class);
 
     private final ParametersUtils parametersUtils;
+
     private final MetadataDAO metadataDAO;
 
     @Autowired
@@ -66,28 +66,19 @@ public class DynamicTaskMapper implements TaskMapper {
      *     TaskModel.Status#SCHEDULED}
      */
     @Override
-    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
-            throws TerminateWorkflowException {
+    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) throws TerminateWorkflowException {
         LOGGER.debug("TaskMapperContext {} in DynamicTaskMapper", taskMapperContext);
         WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
         Map<String, Object> taskInput = taskMapperContext.getTaskInput();
         WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
         int retryCount = taskMapperContext.getRetryCount();
         String retriedTaskId = taskMapperContext.getRetryTaskId();
-
         String taskNameParam = workflowTask.getDynamicTaskNameParam();
         String taskName = getDynamicTaskName(taskInput, taskNameParam);
         workflowTask.setName(taskName);
         TaskDef taskDefinition = getDynamicTaskDefinition(workflowTask);
         workflowTask.setTaskDefinition(taskDefinition);
-
-        Map<String, Object> input =
-                parametersUtils.getTaskInput(
-                        workflowTask.getInputParameters(),
-                        workflowModel,
-                        taskDefinition,
-                        taskMapperContext.getTaskId());
-
+        Map<String, Object> input = parametersUtils.getTaskInput(workflowTask.getInputParameters(), workflowModel, taskDefinition, taskMapperContext.getTaskId());
         // IMPORTANT: The WorkflowTask that is inside TaskMapperContext is changed above
         // createTaskModel() must be called here so the changes are reflected in the created
         // TaskModel
@@ -116,19 +107,11 @@ public class DynamicTaskMapper implements TaskMapper {
      *     input parameters.
      */
     @VisibleForTesting
-    String getDynamicTaskName(Map<String, Object> taskInput, String taskNameParam)
-            throws TerminateWorkflowException {
-        return Optional.ofNullable(taskInput.get(taskNameParam))
-                .map(String::valueOf)
-                .orElseThrow(
-                        () -> {
-                            String reason =
-                                    String.format(
-                                            "Cannot map a dynamic task based on the parameter and input. "
-                                                    + "Parameter= %s, input= %s",
-                                            taskNameParam, taskInput);
-                            return new TerminateWorkflowException(reason);
-                        });
+    String getDynamicTaskName(Map<String, Object> taskInput, String taskNameParam) throws TerminateWorkflowException {
+        return Optional.ofNullable(taskInput.get(taskNameParam)).map(String::valueOf).orElseThrow(() -> {
+            String reason = String.format("Cannot map a dynamic task based on the parameter and input. " + "Parameter= %s, input= %s", taskNameParam, taskInput);
+            return new TerminateWorkflowException(reason);
+        });
     }
 
     /**
@@ -140,20 +123,12 @@ public class DynamicTaskMapper implements TaskMapper {
      * @throws TerminateWorkflowException : in case of no workflow definition available
      */
     @VisibleForTesting
-    TaskDef getDynamicTaskDefinition(WorkflowTask workflowTask)
-            throws TerminateWorkflowException { // TODO this is a common pattern in code base can
+    TaskDef getDynamicTaskDefinition(WorkflowTask workflowTask) throws TerminateWorkflowException {
+        // TODO this is a common pattern in code base can
         // be moved to DAO
-        return Optional.ofNullable(workflowTask.getTaskDefinition())
-                .orElseGet(
-                        () ->
-                                Optional.ofNullable(metadataDAO.getTaskDef(workflowTask.getName()))
-                                        .orElseThrow(
-                                                () -> {
-                                                    String reason =
-                                                            String.format(
-                                                                    "Invalid task specified.  Cannot find task by name %s in the task definitions",
-                                                                    workflowTask.getName());
-                                                    return new TerminateWorkflowException(reason);
-                                                }));
+        return Optional.ofNullable(workflowTask.getTaskDefinition()).orElseGet(() -> Optional.ofNullable(metadataDAO.getTaskDef(workflowTask.getName())).orElseThrow(() -> {
+            String reason = String.format("Invalid task specified.  Cannot find task by name %s in the task definitions", workflowTask.getName());
+            return new TerminateWorkflowException(reason);
+        }));
     }
 }

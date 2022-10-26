@@ -12,14 +12,16 @@
  */
 package com.netflix.conductor.dao;
 
+import javax.annotation.Nullable;
 import java.util.List;
-
 import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
-/** Data access layer for storing workflow executions */
+/**
+ * Data access layer for storing workflow executions
+ */
 public interface ExecutionDAO {
 
     /**
@@ -64,8 +66,7 @@ public interface ExecutionDAO {
      */
     @Deprecated
     default boolean exceedsInProgressLimit(TaskModel task) {
-        throw new UnsupportedOperationException(
-                getClass() + "does not support exceedsInProgressLimit");
+        throw new UnsupportedOperationException(getClass() + "does not support exceedsInProgressLimit");
     }
 
     /**
@@ -78,7 +79,7 @@ public interface ExecutionDAO {
      * @param taskId Task instance id
      * @return Task
      */
-    TaskModel getTask(String taskId);
+    TaskModel getTask(@Nullable String taskId);
 
     /**
      * @param taskIds Task instance ids
@@ -129,7 +130,7 @@ public interface ExecutionDAO {
      * @param workflowType Workflow Type
      * @param workflowId workflow instance id
      */
-    void removeFromPendingWorkflow(String workflowType, String workflowId);
+    void removeFromPendingWorkflow(String workflowType, @Nullable String workflowId);
 
     /**
      * @param workflowId workflow instance id
@@ -143,7 +144,7 @@ public interface ExecutionDAO {
      *     Sequence number in Workflow.
      * @return Workflow instance details
      */
-    WorkflowModel getWorkflow(String workflowId, boolean includeTasks);
+    WorkflowModel getWorkflow(@Nullable String workflowId, boolean includeTasks);
 
     /**
      * @param workflowName name of the workflow
@@ -185,8 +186,7 @@ public interface ExecutionDAO {
      * @param includeTasks Option to includeTasks in results
      * @return List of workflows by correlation id
      */
-    List<WorkflowModel> getWorkflowsByCorrelationId(
-            String workflowName, String correlationId, boolean includeTasks);
+    List<WorkflowModel> getWorkflowsByCorrelationId(String workflowName, String correlationId, boolean includeTasks);
 
     /**
      * @return true, if the DAO implementation is capable of searching across workflows false, if
@@ -196,7 +196,6 @@ public interface ExecutionDAO {
     boolean canSearchAcrossWorkflows();
 
     // Events
-
     /**
      * @param eventExecution Event Execution to be stored
      * @return true if the event was added. false otherwise when the event by id is already already

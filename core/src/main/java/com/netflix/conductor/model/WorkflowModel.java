@@ -12,16 +12,14 @@
  */
 package com.netflix.conductor.model;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.core.utils.Utils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class WorkflowModel {
 
     public enum Status {
+
         RUNNING(false, false),
         COMPLETED(true, true),
         FAILED(true, false),
@@ -37,6 +36,7 @@ public class WorkflowModel {
         PAUSED(false, true);
 
         private final boolean terminal;
+
         private final boolean successful;
 
         Status(boolean terminal, boolean successful) {
@@ -57,20 +57,27 @@ public class WorkflowModel {
 
     private long endTime;
 
+    @Nullable
     private String workflowId;
 
+    @Nullable
     private String parentWorkflowId;
 
+    @Nullable
     private String parentWorkflowTaskId;
 
     private List<TaskModel> tasks = new LinkedList<>();
 
+    @Nullable
     private String correlationId;
 
+    @Nullable
     private String reRunFromWorkflowId;
 
+    @Nullable
     private String reasonForIncompletion;
 
+    @Nullable
     private String event;
 
     private Map<String, String> taskToDomain = new HashMap<>();
@@ -83,8 +90,10 @@ public class WorkflowModel {
 
     private WorkflowDef workflowDefinition;
 
+    @Nullable
     private String externalInputPayloadStoragePath;
 
+    @Nullable
     private String externalOutputPayloadStoragePath;
 
     private int priority;
@@ -93,29 +102,41 @@ public class WorkflowModel {
 
     private long lastRetriedTime;
 
+    @Nullable
     private String ownerApp;
 
+    @Nullable
     private Long createTime;
 
+    @Nullable
     private Long updatedTime;
 
+    @Nullable
     private String createdBy;
 
+    @Nullable
     private String updatedBy;
 
     // Capture the failed taskId if the workflow execution failed because of task failure
+    @Nullable
     private String failedTaskId;
 
+    @Nullable
     private Status previousStatus;
 
-    @JsonIgnore private Map<String, Object> input = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> input = new HashMap<>();
 
-    @JsonIgnore private Map<String, Object> output = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> output = new HashMap<>();
 
-    @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> inputPayload = new HashMap<>();
 
-    @JsonIgnore private Map<String, Object> outputPayload = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> outputPayload = new HashMap<>();
 
+    @Nullable
     public Status getPreviousStatus() {
         return previousStatus;
     }
@@ -144,6 +165,7 @@ public class WorkflowModel {
         this.endTime = endTime;
     }
 
+    @Nullable
     public String getWorkflowId() {
         return workflowId;
     }
@@ -152,19 +174,21 @@ public class WorkflowModel {
         this.workflowId = workflowId;
     }
 
+    @Nullable
     public String getParentWorkflowId() {
         return parentWorkflowId;
     }
 
-    public void setParentWorkflowId(String parentWorkflowId) {
+    public void setParentWorkflowId(@Nullable String parentWorkflowId) {
         this.parentWorkflowId = parentWorkflowId;
     }
 
+    @Nullable
     public String getParentWorkflowTaskId() {
         return parentWorkflowTaskId;
     }
 
-    public void setParentWorkflowTaskId(String parentWorkflowTaskId) {
+    public void setParentWorkflowTaskId(@Nullable String parentWorkflowTaskId) {
         this.parentWorkflowTaskId = parentWorkflowTaskId;
     }
 
@@ -211,7 +235,7 @@ public class WorkflowModel {
     }
 
     @JsonIgnore
-    public void setOutput(Map<String, Object> output) {
+    public void setOutput(@Nullable Map<String, Object> output) {
         if (output == null) {
             output = new HashMap<>();
         }
@@ -254,14 +278,16 @@ public class WorkflowModel {
         setOutput(output);
     }
 
+    @Nullable
     public String getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(String correlationId) {
+    public void setCorrelationId(@Nullable String correlationId) {
         this.correlationId = correlationId;
     }
 
+    @Nullable
     public String getReRunFromWorkflowId() {
         return reRunFromWorkflowId;
     }
@@ -270,19 +296,21 @@ public class WorkflowModel {
         this.reRunFromWorkflowId = reRunFromWorkflowId;
     }
 
+    @Nullable
     public String getReasonForIncompletion() {
         return reasonForIncompletion;
     }
 
-    public void setReasonForIncompletion(String reasonForIncompletion) {
+    public void setReasonForIncompletion(@Nullable String reasonForIncompletion) {
         this.reasonForIncompletion = reasonForIncompletion;
     }
 
+    @Nullable
     public String getEvent() {
         return event;
     }
 
-    public void setEvent(String event) {
+    public void setEvent(@Nullable String event) {
         this.event = event;
     }
 
@@ -318,19 +346,21 @@ public class WorkflowModel {
         this.workflowDefinition = workflowDefinition;
     }
 
+    @Nullable
     public String getExternalInputPayloadStoragePath() {
         return externalInputPayloadStoragePath;
     }
 
-    public void setExternalInputPayloadStoragePath(String externalInputPayloadStoragePath) {
+    public void setExternalInputPayloadStoragePath(@Nullable String externalInputPayloadStoragePath) {
         this.externalInputPayloadStoragePath = externalInputPayloadStoragePath;
     }
 
+    @Nullable
     public String getExternalOutputPayloadStoragePath() {
         return externalOutputPayloadStoragePath;
     }
 
-    public void setExternalOutputPayloadStoragePath(String externalOutputPayloadStoragePath) {
+    public void setExternalOutputPayloadStoragePath(@Nullable String externalOutputPayloadStoragePath) {
         this.externalOutputPayloadStoragePath = externalOutputPayloadStoragePath;
     }
 
@@ -361,6 +391,7 @@ public class WorkflowModel {
         this.lastRetriedTime = lastRetriedTime;
     }
 
+    @Nullable
     public String getOwnerApp() {
         return ownerApp;
     }
@@ -377,14 +408,16 @@ public class WorkflowModel {
         this.createTime = createTime;
     }
 
+    @Nullable
     public Long getUpdatedTime() {
         return updatedTime;
     }
 
-    public void setUpdatedTime(Long updatedTime) {
+    public void setUpdatedTime(@Nullable Long updatedTime) {
         this.updatedTime = updatedTime;
     }
 
+    @Nullable
     public String getCreatedBy() {
         return createdBy;
     }
@@ -393,19 +426,21 @@ public class WorkflowModel {
         this.createdBy = createdBy;
     }
 
+    @Nullable
     public String getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(String updatedBy) {
+    public void setUpdatedBy(@Nullable String updatedBy) {
         this.updatedBy = updatedBy;
     }
 
+    @Nullable
     public String getFailedTaskId() {
         return failedTaskId;
     }
 
-    public void setFailedTaskId(String failedTaskId) {
+    public void setFailedTaskId(@Nullable String failedTaskId) {
         this.failedTaskId = failedTaskId;
     }
 
@@ -443,20 +478,15 @@ public class WorkflowModel {
         return String.format("%s.%s/%s", name, version, workflowId);
     }
 
+    @Nullable
     public TaskModel getTaskByRefName(String refName) {
         if (refName == null) {
-            throw new RuntimeException(
-                    "refName passed is null.  Check the workflow execution.  For dynamic tasks, make sure referenceTaskName is set to a not null value");
+            throw new RuntimeException("refName passed is null.  Check the workflow execution.  For dynamic tasks, make sure referenceTaskName is set to a not null value");
         }
         LinkedList<TaskModel> found = new LinkedList<>();
         for (TaskModel task : tasks) {
             if (task.getReferenceTaskName() == null) {
-                throw new RuntimeException(
-                        "Task "
-                                + task.getTaskDefName()
-                                + ", seq="
-                                + task.getSeq()
-                                + " does not have reference name specified.");
+                throw new RuntimeException("Task " + task.getTaskDefName() + ", seq=" + task.getSeq() + " does not have reference name specified.");
             }
             if (task.getReferenceTaskName().equals(refName)) {
                 found.add(task);
@@ -499,72 +529,17 @@ public class WorkflowModel {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         WorkflowModel that = (WorkflowModel) o;
-        return getEndTime() == that.getEndTime()
-                && getPriority() == that.getPriority()
-                && getLastRetriedTime() == that.getLastRetriedTime()
-                && getStatus() == that.getStatus()
-                && Objects.equals(getWorkflowId(), that.getWorkflowId())
-                && Objects.equals(getParentWorkflowId(), that.getParentWorkflowId())
-                && Objects.equals(getParentWorkflowTaskId(), that.getParentWorkflowTaskId())
-                && Objects.equals(getTasks(), that.getTasks())
-                && Objects.equals(getInput(), that.getInput())
-                && Objects.equals(output, that.output)
-                && Objects.equals(outputPayload, that.outputPayload)
-                && Objects.equals(getCorrelationId(), that.getCorrelationId())
-                && Objects.equals(getReRunFromWorkflowId(), that.getReRunFromWorkflowId())
-                && Objects.equals(getReasonForIncompletion(), that.getReasonForIncompletion())
-                && Objects.equals(getEvent(), that.getEvent())
-                && Objects.equals(getTaskToDomain(), that.getTaskToDomain())
-                && Objects.equals(getFailedReferenceTaskNames(), that.getFailedReferenceTaskNames())
-                && Objects.equals(getFailedTaskNames(), that.getFailedTaskNames())
-                && Objects.equals(getWorkflowDefinition(), that.getWorkflowDefinition())
-                && Objects.equals(
-                        getExternalInputPayloadStoragePath(),
-                        that.getExternalInputPayloadStoragePath())
-                && Objects.equals(
-                        getExternalOutputPayloadStoragePath(),
-                        that.getExternalOutputPayloadStoragePath())
-                && Objects.equals(getVariables(), that.getVariables())
-                && Objects.equals(getOwnerApp(), that.getOwnerApp())
-                && Objects.equals(getCreateTime(), that.getCreateTime())
-                && Objects.equals(getUpdatedTime(), that.getUpdatedTime())
-                && Objects.equals(getCreatedBy(), that.getCreatedBy())
-                && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
+        return getEndTime() == that.getEndTime() && getPriority() == that.getPriority() && getLastRetriedTime() == that.getLastRetriedTime() && getStatus() == that.getStatus() && Objects.equals(getWorkflowId(), that.getWorkflowId()) && Objects.equals(getParentWorkflowId(), that.getParentWorkflowId()) && Objects.equals(getParentWorkflowTaskId(), that.getParentWorkflowTaskId()) && Objects.equals(getTasks(), that.getTasks()) && Objects.equals(getInput(), that.getInput()) && Objects.equals(output, that.output) && Objects.equals(outputPayload, that.outputPayload) && Objects.equals(getCorrelationId(), that.getCorrelationId()) && Objects.equals(getReRunFromWorkflowId(), that.getReRunFromWorkflowId()) && Objects.equals(getReasonForIncompletion(), that.getReasonForIncompletion()) && Objects.equals(getEvent(), that.getEvent()) && Objects.equals(getTaskToDomain(), that.getTaskToDomain()) && Objects.equals(getFailedReferenceTaskNames(), that.getFailedReferenceTaskNames()) && Objects.equals(getFailedTaskNames(), that.getFailedTaskNames()) && Objects.equals(getWorkflowDefinition(), that.getWorkflowDefinition()) && Objects.equals(getExternalInputPayloadStoragePath(), that.getExternalInputPayloadStoragePath()) && Objects.equals(getExternalOutputPayloadStoragePath(), that.getExternalOutputPayloadStoragePath()) && Objects.equals(getVariables(), that.getVariables()) && Objects.equals(getOwnerApp(), that.getOwnerApp()) && Objects.equals(getCreateTime(), that.getCreateTime()) && Objects.equals(getUpdatedTime(), that.getUpdatedTime()) && Objects.equals(getCreatedBy(), that.getCreatedBy()) && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                getStatus(),
-                getEndTime(),
-                getWorkflowId(),
-                getParentWorkflowId(),
-                getParentWorkflowTaskId(),
-                getTasks(),
-                getInput(),
-                output,
-                outputPayload,
-                getCorrelationId(),
-                getReRunFromWorkflowId(),
-                getReasonForIncompletion(),
-                getEvent(),
-                getTaskToDomain(),
-                getFailedReferenceTaskNames(),
-                getFailedTaskNames(),
-                getWorkflowDefinition(),
-                getExternalInputPayloadStoragePath(),
-                getExternalOutputPayloadStoragePath(),
-                getPriority(),
-                getVariables(),
-                getLastRetriedTime(),
-                getOwnerApp(),
-                getCreateTime(),
-                getUpdatedTime(),
-                getCreatedBy(),
-                getUpdatedBy());
+        return Objects.hash(getStatus(), getEndTime(), getWorkflowId(), getParentWorkflowId(), getParentWorkflowTaskId(), getTasks(), getInput(), output, outputPayload, getCorrelationId(), getReRunFromWorkflowId(), getReasonForIncompletion(), getEvent(), getTaskToDomain(), getFailedReferenceTaskNames(), getFailedTaskNames(), getWorkflowDefinition(), getExternalInputPayloadStoragePath(), getExternalOutputPayloadStoragePath(), getPriority(), getVariables(), getLastRetriedTime(), getOwnerApp(), getCreateTime(), getUpdatedTime(), getCreatedBy(), getUpdatedBy());
     }
 
     public Workflow toWorkflow() {
@@ -573,7 +548,6 @@ public class WorkflowModel {
         workflow.setStatus(Workflow.WorkflowStatus.valueOf(this.status.name()));
         workflow.setTasks(tasks.stream().map(TaskModel::toTask).collect(Collectors.toList()));
         workflow.setUpdateTime(this.updatedTime);
-
         // ensure that input/output is properly represented
         if (externalInputPayloadStoragePath != null) {
             workflow.setInput(new HashMap<>());

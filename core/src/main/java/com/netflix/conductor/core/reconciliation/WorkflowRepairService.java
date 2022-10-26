@@ -12,15 +12,14 @@
  */
 package com.netflix.conductor.core.reconciliation;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
 import com.netflix.conductor.annotations.VisibleForTesting;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.core.config.ConductorProperties;
@@ -47,9 +46,13 @@ import com.netflix.conductor.model.WorkflowModel;
 public class WorkflowRepairService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowRepairService.class);
+
     private final ExecutionDAO executionDAO;
+
     private final QueueDAO queueDAO;
+
     private final ConductorProperties properties;
+
     private SystemTaskRegistry systemTaskRegistry;
 
     /*
@@ -57,27 +60,18 @@ public class WorkflowRepairService {
     and in SCHEDULED or IN_PROGRESS state. (Example: SUB_WORKFLOW tasks in SCHEDULED state)
     For simple task -> Verify the task is in SCHEDULED state.
     */
-    private final Predicate<TaskModel> isTaskRepairable =
-            task -> {
-                if (systemTaskRegistry.isSystemTask(task.getTaskType())) { // If system task
-                    WorkflowSystemTask workflowSystemTask =
-                            systemTaskRegistry.get(task.getTaskType());
-                    return workflowSystemTask.isAsync()
-                            && (!workflowSystemTask.isAsyncComplete(task)
-                                    || (workflowSystemTask.isAsyncComplete(task)
-                                            && task.getStatus() == TaskModel.Status.SCHEDULED))
-                            && (task.getStatus() == TaskModel.Status.IN_PROGRESS
-                                    || task.getStatus() == TaskModel.Status.SCHEDULED);
-                } else { // Else if simple task
-                    return task.getStatus() == TaskModel.Status.SCHEDULED;
-                }
-            };
+    private final Predicate<TaskModel> isTaskRepairable = task -> {
+        if (systemTaskRegistry.isSystemTask(task.getTaskType())) {
+            // If system task
+            WorkflowSystemTask workflowSystemTask = systemTaskRegistry.get(task.getTaskType());
+            return workflowSystemTask.isAsync() && (!workflowSystemTask.isAsyncComplete(task) || (workflowSystemTask.isAsyncComplete(task) && task.getStatus() == TaskModel.Status.SCHEDULED)) && (task.getStatus() == TaskModel.Status.IN_PROGRESS || task.getStatus() == TaskModel.Status.SCHEDULED);
+        } else {
+            // Else if simple task
+            return task.getStatus() == TaskModel.Status.SCHEDULED;
+        }
+    };
 
-    public WorkflowRepairService(
-            ExecutionDAO executionDAO,
-            QueueDAO queueDAO,
-            ConductorProperties properties,
-            SystemTaskRegistry systemTaskRegistry) {
+    public WorkflowRepairService(ExecutionDAO executionDAO, QueueDAO queueDAO, ConductorProperties properties, SystemTaskRegistry systemTaskRegistry) {
         this.executionDAO = executionDAO;
         this.queueDAO = queueDAO;
         this.properties = properties;
@@ -99,7 +93,9 @@ public class WorkflowRepairService {
         return repaired.get();
     }
 
-    /** Verify and repair tasks in a workflow. */
+    /**
+     * Verify and repair tasks in a workflow.
+     */
     public void verifyAndRepairWorkflowTasks(String workflowId) {
         WorkflowModel workflow = executionDAO.getWorkflow(workflowId, true);
         workflow.getTasks().forEach(this::verifyAndRepairTask);
@@ -132,22 +128,14 @@ public class WorkflowRepairService {
             String taskQueueName = QueueUtils.getQueueName(task);
             if (!queueDAO.containsMessage(taskQueueName, task.getTaskId())) {
                 queueDAO.push(taskQueueName, task.getTaskId(), task.getCallbackAfterSeconds());
-                LOGGER.info(
-                        "Task {} in workflow {} re-queued for repairs",
-                        task.getTaskId(),
-                        task.getWorkflowInstanceId());
+                LOGGER.info("Task {} in workflow {} re-queued for repairs", task.getTaskId(), task.getWorkflowInstanceId());
                 Monitors.recordQueueMessageRepushFromRepairService(task.getTaskDefName());
                 return true;
             }
-        } else if (task.getTaskType().equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
-                && task.getStatus() == TaskModel.Status.IN_PROGRESS) {
+        } else if (task.getTaskType().equals(TaskType.TASK_TYPE_SUB_WORKFLOW) && task.getStatus() == TaskModel.Status.IN_PROGRESS) {
             WorkflowModel subWorkflow = executionDAO.getWorkflow(task.getSubWorkflowId(), false);
             if (subWorkflow.getStatus().isTerminal()) {
-                LOGGER.info(
-                        "Repairing sub workflow task {} for sub workflow {} in workflow {}",
-                        task.getTaskId(),
-                        task.getSubWorkflowId(),
-                        task.getWorkflowInstanceId());
+                LOGGER.info("Repairing sub workflow task {} for sub workflow {} in workflow {}", task.getTaskId(), task.getSubWorkflowId(), task.getWorkflowInstanceId());
                 repairSubWorkflowTask(task, subWorkflow);
                 return true;
             }
@@ -155,12 +143,11 @@ public class WorkflowRepairService {
         return false;
     }
 
-    private boolean verifyAndRepairWorkflow(String workflowId) {
+    private boolean verifyAndRepairWorkflow(@Nullable String workflowId) {
         if (StringUtils.isNotEmpty(workflowId)) {
             String queueName = Utils.DECIDER_QUEUE;
             if (!queueDAO.containsMessage(queueName, workflowId)) {
-                queueDAO.push(
-                        queueName, workflowId, properties.getWorkflowOffsetTimeout().getSeconds());
+                queueDAO.push(queueName, workflowId, properties.getWorkflowOffsetTimeout().getSeconds());
                 LOGGER.info("Workflow {} re-queued for repairs", workflowId);
                 Monitors.recordQueueMessageRepushFromRepairService(queueName);
                 return true;
@@ -171,7 +158,7 @@ public class WorkflowRepairService {
     }
 
     private void repairSubWorkflowTask(TaskModel task, WorkflowModel subWorkflow) {
-        switch (subWorkflow.getStatus()) {
+        switch(subWorkflow.getStatus()) {
             case COMPLETED:
                 task.setStatus(TaskModel.Status.COMPLETED);
                 break;

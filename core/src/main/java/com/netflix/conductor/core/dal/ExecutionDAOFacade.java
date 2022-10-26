@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.dal;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -20,14 +21,11 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.annotation.PreDestroy;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.tasks.PollData;
 import com.netflix.conductor.common.metadata.tasks.Task;
@@ -48,10 +46,8 @@ import com.netflix.conductor.dao.*;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 
 /**
@@ -65,30 +61,30 @@ public class ExecutionDAOFacade {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionDAOFacade.class);
 
     private static final String ARCHIVED_FIELD = "archived";
+
     private static final String RAW_JSON_FIELD = "rawJSON";
 
     private final ExecutionDAO executionDAO;
+
     private final QueueDAO queueDAO;
+
     private final IndexDAO indexDAO;
+
     private final RateLimitingDAO rateLimitingDao;
+
     private final ConcurrentExecutionLimitDAO concurrentExecutionLimitDAO;
+
     private final PollDataDAO pollDataDAO;
+
     private final ObjectMapper objectMapper;
+
     private final ConductorProperties properties;
+
     private final ExternalPayloadStorageUtils externalPayloadStorageUtils;
 
     private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
-    public ExecutionDAOFacade(
-            ExecutionDAO executionDAO,
-            QueueDAO queueDAO,
-            IndexDAO indexDAO,
-            RateLimitingDAO rateLimitingDao,
-            ConcurrentExecutionLimitDAO concurrentExecutionLimitDAO,
-            PollDataDAO pollDataDAO,
-            ObjectMapper objectMapper,
-            ConductorProperties properties,
-            ExternalPayloadStorageUtils externalPayloadStorageUtils) {
+    public ExecutionDAOFacade(ExecutionDAO executionDAO, QueueDAO queueDAO, IndexDAO indexDAO, RateLimitingDAO rateLimitingDao, ConcurrentExecutionLimitDAO concurrentExecutionLimitDAO, PollDataDAO pollDataDAO, ObjectMapper objectMapper, ConductorProperties properties, ExternalPayloadStorageUtils externalPayloadStorageUtils) {
         this.executionDAO = executionDAO;
         this.queueDAO = queueDAO;
         this.indexDAO = indexDAO;
@@ -98,16 +94,10 @@ public class ExecutionDAOFacade {
         this.objectMapper = objectMapper;
         this.properties = properties;
         this.externalPayloadStorageUtils = externalPayloadStorageUtils;
-        this.scheduledThreadPoolExecutor =
-                new ScheduledThreadPoolExecutor(
-                        4,
-                        (runnable, executor) -> {
-                            LOGGER.warn(
-                                    "Request {} to delay updating index dropped in executor {}",
-                                    runnable,
-                                    executor);
-                            Monitors.recordDiscardedIndexingCount("delayQueue");
-                        });
+        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(4, (runnable, executor) -> {
+            LOGGER.warn("Request {} to delay updating index dropped in executor {}", runnable, executor);
+            Monitors.recordDiscardedIndexingCount("delayQueue");
+        });
         this.scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
     }
 
@@ -116,24 +106,20 @@ public class ExecutionDAOFacade {
         try {
             LOGGER.info("Gracefully shutdown executor service");
             scheduledThreadPoolExecutor.shutdown();
-            if (scheduledThreadPoolExecutor.awaitTermination(
-                    properties.getAsyncUpdateDelay().getSeconds(), TimeUnit.SECONDS)) {
+            if (scheduledThreadPoolExecutor.awaitTermination(properties.getAsyncUpdateDelay().getSeconds(), TimeUnit.SECONDS)) {
                 LOGGER.debug("tasks completed, shutting down");
             } else {
-                LOGGER.warn(
-                        "Forcing shutdown after waiting for {} seconds",
-                        properties.getAsyncUpdateDelay());
+                LOGGER.warn("Forcing shutdown after waiting for {} seconds", properties.getAsyncUpdateDelay());
                 scheduledThreadPoolExecutor.shutdownNow();
             }
         } catch (InterruptedException ie) {
-            LOGGER.warn(
-                    "Shutdown interrupted, invoking shutdownNow on scheduledThreadPoolExecutor for delay queue");
+            LOGGER.warn("Shutdown interrupted, invoking shutdownNow on scheduledThreadPoolExecutor for delay queue");
             scheduledThreadPoolExecutor.shutdownNow();
             Thread.currentThread().interrupt();
         }
     }
 
-    public WorkflowModel getWorkflowModel(String workflowId, boolean includeTasks) {
+    public WorkflowModel getWorkflowModel(@Nullable String workflowId, boolean includeTasks) {
         WorkflowModel workflowModel = getWorkflowModelFromDataStore(workflowId, includeTasks);
         populateWorkflowAndTaskPayloadData(workflowModel);
         return workflowModel;
@@ -153,7 +139,7 @@ public class ExecutionDAOFacade {
         return getWorkflowModelFromDataStore(workflowId, includeTasks).toWorkflow();
     }
 
-    private WorkflowModel getWorkflowModelFromDataStore(String workflowId, boolean includeTasks) {
+    private WorkflowModel getWorkflowModelFromDataStore(@Nullable String workflowId, boolean includeTasks) {
         WorkflowModel workflow = executionDAO.getWorkflow(workflowId, includeTasks);
         if (workflow == null) {
             LOGGER.debug("Workflow {} not found in executionDAO, checking indexDAO", workflowId);
@@ -163,7 +149,6 @@ public class ExecutionDAOFacade {
                 LOGGER.error(errorMsg);
                 throw new NotFoundException(errorMsg);
             }
-
             try {
                 workflow = objectMapper.readValue(json, WorkflowModel.class);
                 if (!includeTasks) {
@@ -188,49 +173,30 @@ public class ExecutionDAOFacade {
      * @param includeTasks if true, fetches the {@link Task} data within the workflows
      * @return the list of {@link Workflow} executions matching the correlationId
      */
-    public List<Workflow> getWorkflowsByCorrelationId(
-            String workflowName, String correlationId, boolean includeTasks) {
+    public List<Workflow> getWorkflowsByCorrelationId(String workflowName, String correlationId, boolean includeTasks) {
         if (!executionDAO.canSearchAcrossWorkflows()) {
-            String query =
-                    "correlationId='" + correlationId + "' AND workflowType='" + workflowName + "'";
+            String query = "correlationId='" + correlationId + "' AND workflowType='" + workflowName + "'";
             SearchResult<String> result = indexDAO.searchWorkflows(query, "*", 0, 1000, null);
-            return result.getResults().stream()
-                    .parallel()
-                    .map(
-                            workflowId -> {
-                                try {
-                                    return getWorkflow(workflowId, includeTasks);
-                                } catch (NotFoundException e) {
-                                    // This might happen when the workflow archival failed and the
-                                    // workflow was removed from primary datastore
-                                    LOGGER.error(
-                                            "Error getting the workflow: {}  for correlationId: {} from datastore/index",
-                                            workflowId,
-                                            correlationId,
-                                            e);
-                                    return null;
-                                }
-                            })
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+            return result.getResults().stream().parallel().map(workflowId -> {
+                try {
+                    return getWorkflow(workflowId, includeTasks);
+                } catch (NotFoundException e) {
+                    // This might happen when the workflow archival failed and the
+                    // workflow was removed from primary datastore
+                    LOGGER.error("Error getting the workflow: {}  for correlationId: {} from datastore/index", workflowId, correlationId, e);
+                    return null;
+                }
+            }).filter(Objects::nonNull).collect(Collectors.toList());
         }
-        return executionDAO
-                .getWorkflowsByCorrelationId(workflowName, correlationId, includeTasks)
-                .stream()
-                .map(WorkflowModel::toWorkflow)
-                .collect(Collectors.toList());
+        return executionDAO.getWorkflowsByCorrelationId(workflowName, correlationId, includeTasks).stream().map(WorkflowModel::toWorkflow).collect(Collectors.toList());
     }
 
     public List<Workflow> getWorkflowsByName(String workflowName, Long startTime, Long endTime) {
-        return executionDAO.getWorkflowsByType(workflowName, startTime, endTime).stream()
-                .map(WorkflowModel::toWorkflow)
-                .collect(Collectors.toList());
+        return executionDAO.getWorkflowsByType(workflowName, startTime, endTime).stream().map(WorkflowModel::toWorkflow).collect(Collectors.toList());
     }
 
     public List<Workflow> getPendingWorkflowsByName(String workflowName, int version) {
-        return executionDAO.getPendingWorkflowsByType(workflowName, version).stream()
-                .map(WorkflowModel::toWorkflow)
-                .collect(Collectors.toList());
+        return executionDAO.getPendingWorkflowsByType(workflowName, version).stream().map(WorkflowModel::toWorkflow).collect(Collectors.toList());
     }
 
     public List<String> getRunningWorkflowIds(String workflowName, int version) {
@@ -247,15 +213,12 @@ public class ExecutionDAOFacade {
      * @param workflowModel the workflow to be created
      * @return the id of the created workflow
      */
+    @Nullable
     public String createWorkflow(WorkflowModel workflowModel) {
         externalizeWorkflowData(workflowModel);
         executionDAO.createWorkflow(workflowModel);
         // Add to decider queue
-        queueDAO.push(
-                DECIDER_QUEUE,
-                workflowModel.getWorkflowId(),
-                workflowModel.getPriority(),
-                properties.getWorkflowOffsetTimeout().getSeconds());
+        queueDAO.push(DECIDER_QUEUE, workflowModel.getWorkflowId(), workflowModel.getPriority(), properties.getWorkflowOffsetTimeout().getSeconds());
         if (properties.isAsyncIndexingEnabled()) {
             indexDAO.asyncIndexWorkflow(new WorkflowSummary(workflowModel.toWorkflow()));
         } else {
@@ -265,17 +228,13 @@ public class ExecutionDAOFacade {
     }
 
     private void externalizeTaskData(TaskModel taskModel) {
-        externalPayloadStorageUtils.verifyAndUpload(
-                taskModel, ExternalPayloadStorage.PayloadType.TASK_INPUT);
-        externalPayloadStorageUtils.verifyAndUpload(
-                taskModel, ExternalPayloadStorage.PayloadType.TASK_OUTPUT);
+        externalPayloadStorageUtils.verifyAndUpload(taskModel, ExternalPayloadStorage.PayloadType.TASK_INPUT);
+        externalPayloadStorageUtils.verifyAndUpload(taskModel, ExternalPayloadStorage.PayloadType.TASK_OUTPUT);
     }
 
     private void externalizeWorkflowData(WorkflowModel workflowModel) {
-        externalPayloadStorageUtils.verifyAndUpload(
-                workflowModel, ExternalPayloadStorage.PayloadType.WORKFLOW_INPUT);
-        externalPayloadStorageUtils.verifyAndUpload(
-                workflowModel, ExternalPayloadStorage.PayloadType.WORKFLOW_OUTPUT);
+        externalPayloadStorageUtils.verifyAndUpload(workflowModel, ExternalPayloadStorage.PayloadType.WORKFLOW_INPUT);
+        externalPayloadStorageUtils.verifyAndUpload(workflowModel, ExternalPayloadStorage.PayloadType.WORKFLOW_OUTPUT);
     }
 
     /**
@@ -284,6 +243,7 @@ public class ExecutionDAOFacade {
      * @param workflowModel the workflow tp be updated
      * @return the id of the updated workflow
      */
+    @Nullable
     public String updateWorkflow(WorkflowModel workflowModel) {
         workflowModel.setUpdatedTime(System.currentTimeMillis());
         if (workflowModel.getStatus().isTerminal()) {
@@ -292,31 +252,17 @@ public class ExecutionDAOFacade {
         externalizeWorkflowData(workflowModel);
         executionDAO.updateWorkflow(workflowModel);
         if (properties.isAsyncIndexingEnabled()) {
-            if (workflowModel.getStatus().isTerminal()
-                    && workflowModel.getEndTime() - workflowModel.getCreateTime()
-                            < properties.getAsyncUpdateShortRunningWorkflowDuration().toMillis()) {
+            if (workflowModel.getStatus().isTerminal() && workflowModel.getEndTime() - workflowModel.getCreateTime() < properties.getAsyncUpdateShortRunningWorkflowDuration().toMillis()) {
                 final String workflowId = workflowModel.getWorkflowId();
                 DelayWorkflowUpdate delayWorkflowUpdate = new DelayWorkflowUpdate(workflowId);
-                LOGGER.debug(
-                        "Delayed updating workflow: {} in the index by {} seconds",
-                        workflowId,
-                        properties.getAsyncUpdateDelay());
-                scheduledThreadPoolExecutor.schedule(
-                        delayWorkflowUpdate,
-                        properties.getAsyncUpdateDelay().getSeconds(),
-                        TimeUnit.SECONDS);
-                Monitors.recordWorkerQueueSize(
-                        "delayQueue", scheduledThreadPoolExecutor.getQueue().size());
+                LOGGER.debug("Delayed updating workflow: {} in the index by {} seconds", workflowId, properties.getAsyncUpdateDelay());
+                scheduledThreadPoolExecutor.schedule(delayWorkflowUpdate, properties.getAsyncUpdateDelay().getSeconds(), TimeUnit.SECONDS);
+                Monitors.recordWorkerQueueSize("delayQueue", scheduledThreadPoolExecutor.getQueue().size());
             } else {
                 indexDAO.asyncIndexWorkflow(new WorkflowSummary(workflowModel.toWorkflow()));
             }
             if (workflowModel.getStatus().isTerminal()) {
-                workflowModel
-                        .getTasks()
-                        .forEach(
-                                taskModel ->
-                                        indexDAO.asyncIndexTask(
-                                                new TaskSummary(taskModel.toTask())));
+                workflowModel.getTasks().forEach(taskModel -> indexDAO.asyncIndexTask(new TaskSummary(taskModel.toTask())));
             }
         } else {
             indexDAO.indexWorkflow(new WorkflowSummary(workflowModel.toWorkflow()));
@@ -324,7 +270,7 @@ public class ExecutionDAOFacade {
         return workflowModel.getWorkflowId();
     }
 
-    public void removeFromPendingWorkflow(String workflowType, String workflowId) {
+    public void removeFromPendingWorkflow(String workflowType, @Nullable String workflowId) {
         executionDAO.removeFromPendingWorkflow(workflowType, workflowId);
     }
 
@@ -337,15 +283,12 @@ public class ExecutionDAOFacade {
      */
     public void removeWorkflow(String workflowId, boolean archiveWorkflow) {
         WorkflowModel workflow = getWorkflowModelFromDataStore(workflowId, true);
-
         try {
             removeWorkflowIndex(workflow, archiveWorkflow);
         } catch (JsonProcessingException e) {
             throw new TransientException("Workflow can not be serialized to json", e);
         }
-
         executionDAO.removeWorkflow(workflowId);
-
         try {
             queueDAO.remove(DECIDER_QUEUE, workflowId);
         } catch (Exception e) {
@@ -353,21 +296,14 @@ public class ExecutionDAOFacade {
         }
     }
 
-    private void removeWorkflowIndex(WorkflowModel workflow, boolean archiveWorkflow)
-            throws JsonProcessingException {
+    private void removeWorkflowIndex(WorkflowModel workflow, boolean archiveWorkflow) throws JsonProcessingException {
         if (archiveWorkflow) {
             if (workflow.getStatus().isTerminal()) {
                 // Only allow archival if workflow is in terminal state
                 // DO NOT archive async, since if archival errors out, workflow data will be lost
-                indexDAO.updateWorkflow(
-                        workflow.getWorkflowId(),
-                        new String[] {RAW_JSON_FIELD, ARCHIVED_FIELD},
-                        new Object[] {objectMapper.writeValueAsString(workflow), true});
+                indexDAO.updateWorkflow(workflow.getWorkflowId(), new String[] { RAW_JSON_FIELD, ARCHIVED_FIELD }, new Object[] { objectMapper.writeValueAsString(workflow), true });
             } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "Cannot archive workflow: %s with status: %s",
-                                workflow.getWorkflowId(), workflow.getStatus()));
+                throw new IllegalArgumentException(String.format("Cannot archive workflow: %s with status: %s", workflow.getWorkflowId(), workflow.getStatus()));
             }
         } else {
             // Not archiving, also remove workflow from index
@@ -375,11 +311,9 @@ public class ExecutionDAOFacade {
         }
     }
 
-    public void removeWorkflowWithExpiry(
-            String workflowId, boolean archiveWorkflow, int ttlSeconds) {
+    public void removeWorkflowWithExpiry(String workflowId, boolean archiveWorkflow, int ttlSeconds) {
         try {
             WorkflowModel workflow = getWorkflowModelFromDataStore(workflowId, true);
-
             removeWorkflowIndex(workflow, archiveWorkflow);
             // remove workflow from DAO with TTL
             executionDAO.removeWorkflowWithExpiry(workflowId, ttlSeconds);
@@ -415,12 +349,10 @@ public class ExecutionDAOFacade {
     }
 
     public List<Task> getTasksForWorkflow(String workflowId) {
-        return executionDAO.getTasksForWorkflow(workflowId).stream()
-                .map(TaskModel::toTask)
-                .collect(Collectors.toList());
+        return executionDAO.getTasksForWorkflow(workflowId).stream().map(TaskModel::toTask).collect(Collectors.toList());
     }
 
-    public TaskModel getTaskModel(String taskId) {
+    public TaskModel getTaskModel(@Nullable String taskId) {
         TaskModel taskModel = getTaskFromDatastore(taskId);
         if (taskModel != null) {
             populateTaskData(taskModel);
@@ -436,20 +368,16 @@ public class ExecutionDAOFacade {
         return null;
     }
 
-    private TaskModel getTaskFromDatastore(String taskId) {
+    private TaskModel getTaskFromDatastore(@Nullable String taskId) {
         return executionDAO.getTask(taskId);
     }
 
     public List<Task> getTasksByName(String taskName, String startKey, int count) {
-        return executionDAO.getTasks(taskName, startKey, count).stream()
-                .map(TaskModel::toTask)
-                .collect(Collectors.toList());
+        return executionDAO.getTasks(taskName, startKey, count).stream().map(TaskModel::toTask).collect(Collectors.toList());
     }
 
     public List<Task> getPendingTasksForTaskType(String taskType) {
-        return executionDAO.getPendingTasksForTaskType(taskType).stream()
-                .map(TaskModel::toTask)
-                .collect(Collectors.toList());
+        return executionDAO.getPendingTasksForTaskType(taskType).stream().map(TaskModel::toTask).collect(Collectors.toList());
     }
 
     public long getInProgressTaskCount(String taskDefName) {
@@ -468,8 +396,7 @@ public class ExecutionDAOFacade {
      */
     public void updateTask(TaskModel taskModel) {
         if (taskModel.getStatus() != null) {
-            if (!taskModel.getStatus().isTerminal()
-                    || (taskModel.getStatus().isTerminal() && taskModel.getUpdateTime() == 0)) {
+            if (!taskModel.getStatus().isTerminal() || (taskModel.getStatus().isTerminal() && taskModel.getUpdateTime() == 0)) {
                 taskModel.setUpdateTime(System.currentTimeMillis());
             }
             if (taskModel.getStatus().isTerminal() && taskModel.getEndTime() == 0) {
@@ -492,10 +419,7 @@ public class ExecutionDAOFacade {
             // re-throw it so we can terminate the workflow
             throw e;
         } catch (Exception e) {
-            String errorMsg =
-                    String.format(
-                            "Error updating task: %s in workflow: %s",
-                            taskModel.getTaskId(), taskModel.getWorkflowInstanceId());
+            String errorMsg = String.format("Error updating task: %s in workflow: %s", taskModel.getTaskId(), taskModel.getWorkflowInstanceId());
             LOGGER.error(errorMsg, e);
             throw new TransientException(errorMsg, e);
         }
@@ -522,26 +446,21 @@ public class ExecutionDAOFacade {
         return pollDataDAO.getAllPollData();
     }
 
+    @Nullable
     public PollData getTaskPollDataByDomain(String taskName, String domain) {
         try {
             return pollDataDAO.getPollData(taskName, domain);
         } catch (Exception e) {
-            LOGGER.error(
-                    "Error fetching pollData for task: '{}', domain: '{}'", taskName, domain, e);
+            LOGGER.error("Error fetching pollData for task: '{}', domain: '{}'", taskName, domain, e);
             return null;
         }
     }
 
-    public void updateTaskLastPoll(String taskName, String domain, String workerId) {
+    public void updateTaskLastPoll(String taskName, @Nullable String domain, String workerId) {
         try {
             pollDataDAO.updateLastPollData(taskName, domain, workerId);
         } catch (Exception e) {
-            LOGGER.error(
-                    "Error updating PollData for task: {} in domain: {} from worker: {}",
-                    taskName,
-                    domain,
-                    workerId,
-                    e);
+            LOGGER.error("Error updating PollData for task: {} in domain: {} from worker: {}", taskName, domain, workerId, e);
             Monitors.error(this.getClass().getCanonicalName(), "updateTaskLastPoll");
         }
     }
@@ -555,11 +474,9 @@ public class ExecutionDAOFacade {
      */
     public boolean addEventExecution(EventExecution eventExecution) {
         boolean added = executionDAO.addEventExecution(eventExecution);
-
         if (added) {
             indexEventExecution(eventExecution);
         }
-
         return added;
     }
 
@@ -586,7 +503,7 @@ public class ExecutionDAOFacade {
         return concurrentExecutionLimitDAO.exceedsLimit(task);
     }
 
-    public boolean exceedsRateLimitPerFrequency(TaskModel task, TaskDef taskDef) {
+    public boolean exceedsRateLimitPerFrequency(TaskModel task, @Nullable TaskDef taskDef) {
         return rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef);
     }
 
@@ -595,11 +512,7 @@ public class ExecutionDAOFacade {
             Monitors.recordTaskExecLogSize(logs.size());
             int taskExecLogSizeLimit = properties.getTaskExecLogSizeLimit();
             if (logs.size() > taskExecLogSizeLimit) {
-                LOGGER.warn(
-                        "Task Execution log size: {} for taskId: {} exceeds the limit: {}",
-                        logs.size(),
-                        logs.get(0).getTaskId(),
-                        taskExecLogSizeLimit);
+                LOGGER.warn("Task Execution log size: {} for taskId: {} exceeds the limit: {}", logs.size(), logs.get(0).getTaskId(), taskExecLogSizeLimit);
                 logs = logs.stream().limit(taskExecLogSizeLimit).collect(Collectors.toList());
             }
             if (properties.isAsyncIndexingEnabled()) {
@@ -618,30 +531,24 @@ public class ExecutionDAOFacade {
         }
     }
 
-    public SearchResult<String> searchWorkflows(
-            String query, String freeText, int start, int count, List<String> sort) {
+    public SearchResult<String> searchWorkflows(String query, String freeText, int start, int count, List<String> sort) {
         return indexDAO.searchWorkflows(query, freeText, start, count, sort);
     }
 
-    public SearchResult<WorkflowSummary> searchWorkflowSummary(
-            String query, String freeText, int start, int count, List<String> sort) {
+    public SearchResult<WorkflowSummary> searchWorkflowSummary(String query, String freeText, int start, int count, List<String> sort) {
         return indexDAO.searchWorkflowSummary(query, freeText, start, count, sort);
     }
 
-    public SearchResult<String> searchTasks(
-            String query, String freeText, int start, int count, List<String> sort) {
+    public SearchResult<String> searchTasks(String query, String freeText, int start, int count, List<String> sort) {
         return indexDAO.searchTasks(query, freeText, start, count, sort);
     }
 
-    public SearchResult<TaskSummary> searchTaskSummary(
-            String query, String freeText, int start, int count, List<String> sort) {
+    public SearchResult<TaskSummary> searchTaskSummary(String query, String freeText, int start, int count, List<String> sort) {
         return indexDAO.searchTaskSummary(query, freeText, start, count, sort);
     }
 
     public List<TaskExecLog> getTaskExecutionLogs(String taskId) {
-        return properties.isTaskExecLogIndexingEnabled()
-                ? indexDAO.getTaskExecutionLogs(taskId)
-                : Collections.emptyList();
+        return properties.isTaskExecLogIndexingEnabled() ? indexDAO.getTaskExecutionLogs(taskId) : Collections.emptyList();
     }
 
     /**
@@ -653,59 +560,37 @@ public class ExecutionDAOFacade {
      */
     public void populateWorkflowAndTaskPayloadData(WorkflowModel workflowModel) {
         if (StringUtils.isNotBlank(workflowModel.getExternalInputPayloadStoragePath())) {
-            Map<String, Object> workflowInputParams =
-                    externalPayloadStorageUtils.downloadPayload(
-                            workflowModel.getExternalInputPayloadStoragePath());
-            Monitors.recordExternalPayloadStorageUsage(
-                    workflowModel.getWorkflowName(),
-                    ExternalPayloadStorage.Operation.READ.toString(),
-                    ExternalPayloadStorage.PayloadType.WORKFLOW_INPUT.toString());
+            Map<String, Object> workflowInputParams = externalPayloadStorageUtils.downloadPayload(workflowModel.getExternalInputPayloadStoragePath());
+            Monitors.recordExternalPayloadStorageUsage(workflowModel.getWorkflowName(), ExternalPayloadStorage.Operation.READ.toString(), ExternalPayloadStorage.PayloadType.WORKFLOW_INPUT.toString());
             workflowModel.internalizeInput(workflowInputParams);
         }
-
         if (StringUtils.isNotBlank(workflowModel.getExternalOutputPayloadStoragePath())) {
-            Map<String, Object> workflowOutputParams =
-                    externalPayloadStorageUtils.downloadPayload(
-                            workflowModel.getExternalOutputPayloadStoragePath());
-            Monitors.recordExternalPayloadStorageUsage(
-                    workflowModel.getWorkflowName(),
-                    ExternalPayloadStorage.Operation.READ.toString(),
-                    ExternalPayloadStorage.PayloadType.WORKFLOW_OUTPUT.toString());
+            Map<String, Object> workflowOutputParams = externalPayloadStorageUtils.downloadPayload(workflowModel.getExternalOutputPayloadStoragePath());
+            Monitors.recordExternalPayloadStorageUsage(workflowModel.getWorkflowName(), ExternalPayloadStorage.Operation.READ.toString(), ExternalPayloadStorage.PayloadType.WORKFLOW_OUTPUT.toString());
             workflowModel.internalizeOutput(workflowOutputParams);
         }
-
         workflowModel.getTasks().forEach(this::populateTaskData);
     }
 
     public void populateTaskData(TaskModel taskModel) {
         if (StringUtils.isNotBlank(taskModel.getExternalOutputPayloadStoragePath())) {
-            Map<String, Object> outputData =
-                    externalPayloadStorageUtils.downloadPayload(
-                            taskModel.getExternalOutputPayloadStoragePath());
+            Map<String, Object> outputData = externalPayloadStorageUtils.downloadPayload(taskModel.getExternalOutputPayloadStoragePath());
             taskModel.internalizeOutput(outputData);
-            Monitors.recordExternalPayloadStorageUsage(
-                    taskModel.getTaskDefName(),
-                    ExternalPayloadStorage.Operation.READ.toString(),
-                    ExternalPayloadStorage.PayloadType.TASK_OUTPUT.toString());
+            Monitors.recordExternalPayloadStorageUsage(taskModel.getTaskDefName(), ExternalPayloadStorage.Operation.READ.toString(), ExternalPayloadStorage.PayloadType.TASK_OUTPUT.toString());
         }
-
         if (StringUtils.isNotBlank(taskModel.getExternalInputPayloadStoragePath())) {
-            Map<String, Object> inputData =
-                    externalPayloadStorageUtils.downloadPayload(
-                            taskModel.getExternalInputPayloadStoragePath());
+            Map<String, Object> inputData = externalPayloadStorageUtils.downloadPayload(taskModel.getExternalInputPayloadStoragePath());
             taskModel.internalizeInput(inputData);
-            Monitors.recordExternalPayloadStorageUsage(
-                    taskModel.getTaskDefName(),
-                    ExternalPayloadStorage.Operation.READ.toString(),
-                    ExternalPayloadStorage.PayloadType.TASK_INPUT.toString());
+            Monitors.recordExternalPayloadStorageUsage(taskModel.getTaskDefName(), ExternalPayloadStorage.Operation.READ.toString(), ExternalPayloadStorage.PayloadType.TASK_INPUT.toString());
         }
     }
 
     class DelayWorkflowUpdate implements Runnable {
 
+        @Nullable
         private final String workflowId;
 
-        DelayWorkflowUpdate(String workflowId) {
+        DelayWorkflowUpdate(@Nullable String workflowId) {
             this.workflowId = workflowId;
         }
 

@@ -12,21 +12,22 @@
  */
 package com.netflix.conductor.core.events;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.core.events.queue.ObservableQueue;
 import com.netflix.conductor.core.utils.ParametersUtils;
 
-/** Holders for internal event queues */
+/**
+ * Holders for internal event queues
+ */
 @Component
 public class EventQueues {
 
@@ -35,30 +36,26 @@ public class EventQueues {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventQueues.class);
 
     private final ParametersUtils parametersUtils;
+
     private final Map<String, EventQueueProvider> providers;
 
     @Autowired
-    public EventQueues(
-            @Qualifier(EVENT_QUEUE_PROVIDERS_QUALIFIER) Map<String, EventQueueProvider> providers,
-            ParametersUtils parametersUtils) {
+    public EventQueues(@Qualifier(EVENT_QUEUE_PROVIDERS_QUALIFIER) Map<String, EventQueueProvider> providers, ParametersUtils parametersUtils) {
         this.providers = providers;
         this.parametersUtils = parametersUtils;
     }
 
     public List<String> getProviders() {
-        return providers.values().stream()
-                .map(p -> p.getClass().getName())
-                .collect(Collectors.toList());
+        return providers.values().stream().map(p -> p.getClass().getName()).collect(Collectors.toList());
     }
 
     @NonNull
-    public ObservableQueue getQueue(String eventType) {
+    public ObservableQueue getQueue(@Nullable String eventType) {
         String event = parametersUtils.replace(eventType).toString();
         int index = event.indexOf(':');
         if (index == -1) {
             throw new IllegalArgumentException("Illegal event " + event);
         }
-
         String type = event.substring(0, index);
         String queueURI = event.substring(index + 1);
         EventQueueProvider provider = providers.get(type);

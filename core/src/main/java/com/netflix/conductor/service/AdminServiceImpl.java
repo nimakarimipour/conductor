@@ -12,15 +12,14 @@
  */
 package com.netflix.conductor.service;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Service;
-
 import com.netflix.conductor.annotations.Audit;
 import com.netflix.conductor.annotations.Trace;
 import com.netflix.conductor.common.metadata.tasks.Task;
@@ -36,19 +35,21 @@ import com.netflix.conductor.dao.QueueDAO;
 public class AdminServiceImpl implements AdminService {
 
     private final ConductorProperties properties;
+
     private final ExecutionService executionService;
+
     private final QueueDAO queueDAO;
+
+    @Nullable
     private final WorkflowRepairService workflowRepairService;
+
+    @Nullable
     private final EventQueueManager eventQueueManager;
+
+    @Nullable
     private final BuildProperties buildProperties;
 
-    public AdminServiceImpl(
-            ConductorProperties properties,
-            ExecutionService executionService,
-            QueueDAO queueDAO,
-            Optional<WorkflowRepairService> workflowRepairService,
-            Optional<EventQueueManager> eventQueueManager,
-            Optional<BuildProperties> buildProperties) {
+    public AdminServiceImpl(ConductorProperties properties, ExecutionService executionService, QueueDAO queueDAO, Optional<WorkflowRepairService> workflowRepairService, Optional<EventQueueManager> eventQueueManager, Optional<BuildProperties> buildProperties) {
         this.properties = properties;
         this.executionService = executionService;
         this.queueDAO = queueDAO;
@@ -74,7 +75,8 @@ public class AdminServiceImpl implements AdminService {
      * @return all the build properties.
      */
     private Map<String, Object> getBuildProperties() {
-        if (buildProperties == null) return Collections.emptyMap();
+        if (buildProperties == null)
+            return Collections.emptyMap();
         Map<String, Object> buildProps = new HashMap<>();
         buildProps.put("version", buildProperties.getVersion());
         buildProps.put("buildDate", buildProperties.getTime());
@@ -102,8 +104,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public boolean verifyAndRepairWorkflowConsistency(String workflowId) {
         if (workflowRepairService == null) {
-            throw new IllegalStateException(
-                    WorkflowRepairService.class.getSimpleName() + " is disabled.");
+            throw new IllegalStateException(WorkflowRepairService.class.getSimpleName() + " is disabled.");
         }
         return workflowRepairService.verifyAndRepairWorkflow(workflowId, true);
     }
@@ -115,11 +116,7 @@ public class AdminServiceImpl implements AdminService {
      * @return the id of the workflow instance that can be use for tracking.
      */
     public String requeueSweep(String workflowId) {
-        boolean pushed =
-                queueDAO.pushIfNotExists(
-                        Utils.DECIDER_QUEUE,
-                        workflowId,
-                        properties.getWorkflowOffsetTimeout().getSeconds());
+        boolean pushed = queueDAO.pushIfNotExists(Utils.DECIDER_QUEUE, workflowId, properties.getWorkflowOffsetTimeout().getSeconds());
         return pushed + "." + workflowId;
     }
 

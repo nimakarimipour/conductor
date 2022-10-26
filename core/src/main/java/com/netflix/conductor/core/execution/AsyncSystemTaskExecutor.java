@@ -12,10 +12,10 @@
  */
 package com.netflix.conductor.core.execution;
 
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.core.config.ConductorProperties;
 import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.execution.tasks.WorkflowSystemTask;
@@ -30,28 +30,26 @@ import com.netflix.conductor.model.WorkflowModel;
 public class AsyncSystemTaskExecutor {
 
     private final ExecutionDAOFacade executionDAOFacade;
+
     private final QueueDAO queueDAO;
+
     private final MetadataDAO metadataDAO;
+
     private final long queueTaskMessagePostponeSecs;
+
     private final long systemTaskCallbackTime;
+
     private final WorkflowExecutor workflowExecutor;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncSystemTaskExecutor.class);
 
-    public AsyncSystemTaskExecutor(
-            ExecutionDAOFacade executionDAOFacade,
-            QueueDAO queueDAO,
-            MetadataDAO metadataDAO,
-            ConductorProperties conductorProperties,
-            WorkflowExecutor workflowExecutor) {
+    public AsyncSystemTaskExecutor(ExecutionDAOFacade executionDAOFacade, QueueDAO queueDAO, MetadataDAO metadataDAO, ConductorProperties conductorProperties, WorkflowExecutor workflowExecutor) {
         this.executionDAOFacade = executionDAOFacade;
         this.queueDAO = queueDAO;
         this.metadataDAO = metadataDAO;
         this.workflowExecutor = workflowExecutor;
-        this.systemTaskCallbackTime =
-                conductorProperties.getSystemTaskWorkerCallbackDuration().getSeconds();
-        this.queueTaskMessagePostponeSecs =
-                conductorProperties.getTaskExecutionPostponeDuration().getSeconds();
+        this.systemTaskCallbackTime = conductorProperties.getSystemTaskWorkerCallbackDuration().getSeconds();
+        this.queueTaskMessagePostponeSecs = conductorProperties.getTaskExecutionPostponeDuration().getSeconds();
     }
 
     /**
@@ -66,7 +64,6 @@ public class AsyncSystemTaskExecutor {
             LOGGER.error("TaskId: {} could not be found while executing {}", taskId, systemTask);
             return;
         }
-
         LOGGER.debug("Task: {} fetched from execution DAO for taskId: {}", task, taskId);
         String queueName = QueueUtils.getQueueName(task);
         if (task.getStatus().isTerminal()) {
@@ -76,63 +73,38 @@ public class AsyncSystemTaskExecutor {
             queueDAO.remove(queueName, task.getTaskId());
             return;
         }
-
         if (task.getStatus().equals(TaskModel.Status.SCHEDULED)) {
             if (executionDAOFacade.exceedsInProgressLimit(task)) {
-                LOGGER.warn(
-                        "Concurrent Execution limited for {}:{}", taskId, task.getTaskDefName());
+                LOGGER.warn("Concurrent Execution limited for {}:{}", taskId, task.getTaskDefName());
                 postponeQuietly(queueName, task);
                 return;
             }
-            if (task.getRateLimitPerFrequency() > 0
-                    && executionDAOFacade.exceedsRateLimitPerFrequency(
-                            task, metadataDAO.getTaskDef(task.getTaskDefName()))) {
-                LOGGER.warn(
-                        "RateLimit Execution limited for {}:{}, limit:{}",
-                        taskId,
-                        task.getTaskDefName(),
-                        task.getRateLimitPerFrequency());
+            if (task.getRateLimitPerFrequency() > 0 && executionDAOFacade.exceedsRateLimitPerFrequency(task, metadataDAO.getTaskDef(task.getTaskDefName()))) {
+                LOGGER.warn("RateLimit Execution limited for {}:{}, limit:{}", taskId, task.getTaskDefName(), task.getRateLimitPerFrequency());
                 postponeQuietly(queueName, task);
                 return;
             }
         }
-
         boolean hasTaskExecutionCompleted = false;
         String workflowId = task.getWorkflowInstanceId();
         // if we are here the Task object is updated and needs to be persisted regardless of an
         // exception
         try {
-            WorkflowModel workflow =
-                    executionDAOFacade.getWorkflowModel(
-                            workflowId, systemTask.isTaskRetrievalRequired());
-
+            WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, systemTask.isTaskRetrievalRequired());
             if (workflow.getStatus().isTerminal()) {
-                LOGGER.info(
-                        "Workflow {} has been completed for {}/{}",
-                        workflow.toShortString(),
-                        systemTask,
-                        task.getTaskId());
+                LOGGER.info("Workflow {} has been completed for {}/{}", workflow.toShortString(), systemTask, task.getTaskId());
                 if (!task.getStatus().isTerminal()) {
                     task.setStatus(TaskModel.Status.CANCELED);
-                    task.setReasonForIncompletion(
-                            String.format(
-                                    "Workflow is in %s state", workflow.getStatus().toString()));
+                    task.setReasonForIncompletion(String.format("Workflow is in %s state", workflow.getStatus().toString()));
                 }
                 queueDAO.remove(queueName, task.getTaskId());
                 return;
             }
-
-            LOGGER.debug(
-                    "Executing {}/{} in {} state",
-                    task.getTaskType(),
-                    task.getTaskId(),
-                    task.getStatus());
-
+            LOGGER.debug("Executing {}/{} in {} state", task.getTaskType(), task.getTaskId(), task.getStatus());
             boolean isTaskAsyncComplete = systemTask.isAsyncComplete(task);
             if (task.getStatus() == TaskModel.Status.SCHEDULED || !isTaskAsyncComplete) {
                 task.incrementPollCount();
             }
-
             if (task.getStatus() == TaskModel.Status.SCHEDULED) {
                 task.setStartTime(System.currentTimeMillis());
                 Monitors.recordQueueWaitTime(task.getTaskType(), task.getQueueWaitTime());
@@ -140,7 +112,6 @@ public class AsyncSystemTaskExecutor {
             } else if (task.getStatus() == TaskModel.Status.IN_PROGRESS) {
                 systemTask.execute(workflow, task, workflowExecutor);
             }
-
             // Update message in Task queue based on Task status
             // Remove asyncComplete system tasks from the queue that are not in SCHEDULED state
             if (isTaskAsyncComplete && task.getStatus() != TaskModel.Status.SCHEDULED) {
@@ -153,19 +124,10 @@ public class AsyncSystemTaskExecutor {
                 LOGGER.debug("{} removed from queue: {}", task, queueName);
             } else {
                 task.setCallbackAfterSeconds(systemTaskCallbackTime);
-                queueDAO.postpone(
-                        queueName,
-                        task.getTaskId(),
-                        task.getWorkflowPriority(),
-                        systemTaskCallbackTime);
+                queueDAO.postpone(queueName, task.getTaskId(), task.getWorkflowPriority(), systemTaskCallbackTime);
                 LOGGER.debug("{} postponed in queue: {}", task, queueName);
             }
-
-            LOGGER.debug(
-                    "Finished execution of {}/{}-{}",
-                    systemTask,
-                    task.getTaskId(),
-                    task.getStatus());
+            LOGGER.debug("Finished execution of {}/{}-{}", systemTask, task.getTaskId(), task.getStatus());
         } catch (Exception e) {
             Monitors.error(AsyncSystemTaskExecutor.class.getSimpleName(), "executeSystemTask");
             LOGGER.error("Error executing system task - {}, with id: {}", systemTask, taskId, e);
@@ -180,16 +142,13 @@ public class AsyncSystemTaskExecutor {
 
     private void postponeQuietly(String queueName, TaskModel task) {
         try {
-            queueDAO.postpone(
-                    queueName,
-                    task.getTaskId(),
-                    task.getWorkflowPriority(),
-                    queueTaskMessagePostponeSecs);
+            queueDAO.postpone(queueName, task.getTaskId(), task.getWorkflowPriority(), queueTaskMessagePostponeSecs);
         } catch (Exception e) {
             LOGGER.error("Error postponing task: {} in queue: {}", task.getTaskId(), queueName);
         }
     }
 
+    @Nullable
     private TaskModel loadTaskQuietly(String taskId) {
         try {
             return executionDAOFacade.getTaskModel(taskId);

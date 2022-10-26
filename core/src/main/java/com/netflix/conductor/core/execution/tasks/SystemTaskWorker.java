@@ -12,19 +12,18 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.annotations.VisibleForTesting;
 import com.netflix.conductor.core.LifecycleAwareComponent;
 import com.netflix.conductor.core.config.ConductorProperties;
@@ -35,31 +34,30 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.service.ExecutionService;
 
-/** The worker that polls and executes an async system task. */
+/**
+ * The worker that polls and executes an async system task.
+ */
 @Component
-@ConditionalOnProperty(
-        name = "conductor.system-task-workers.enabled",
-        havingValue = "true",
-        matchIfMissing = true)
+@ConditionalOnProperty(name = "conductor.system-task-workers.enabled", havingValue = "true", matchIfMissing = true)
 public class SystemTaskWorker extends LifecycleAwareComponent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTaskWorker.class);
 
     private final long pollInterval;
+
     private final QueueDAO queueDAO;
 
     ExecutionConfig defaultExecutionConfig;
+
     private final AsyncSystemTaskExecutor asyncSystemTaskExecutor;
+
     private final ConductorProperties properties;
+
     private final ExecutionService executionService;
 
     ConcurrentHashMap<String, ExecutionConfig> queueExecutionConfigMap = new ConcurrentHashMap<>();
 
-    public SystemTaskWorker(
-            QueueDAO queueDAO,
-            AsyncSystemTaskExecutor asyncSystemTaskExecutor,
-            ConductorProperties properties,
-            ExecutionService executionService) {
+    public SystemTaskWorker(QueueDAO queueDAO, AsyncSystemTaskExecutor asyncSystemTaskExecutor, ConductorProperties properties, ExecutionService executionService) {
         this.properties = properties;
         int threadCount = properties.getSystemTaskWorkerThreadCount();
         this.defaultExecutionConfig = new ExecutionConfig(threadCount, "system-task-worker-%d");
@@ -67,7 +65,6 @@ public class SystemTaskWorker extends LifecycleAwareComponent {
         this.queueDAO = queueDAO;
         this.pollInterval = properties.getSystemTaskWorkerPollInterval().toMillis();
         this.executionService = executionService;
-
         LOGGER.info("SystemTaskWorker initialized with {} threads", threadCount);
     }
 
@@ -76,68 +73,44 @@ public class SystemTaskWorker extends LifecycleAwareComponent {
     }
 
     public void startPolling(WorkflowSystemTask systemTask, String queueName) {
-        Executors.newSingleThreadScheduledExecutor()
-                .scheduleWithFixedDelay(
-                        () -> this.pollAndExecute(systemTask, queueName),
-                        1000,
-                        pollInterval,
-                        TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(() -> this.pollAndExecute(systemTask, queueName), 1000, pollInterval, TimeUnit.MILLISECONDS);
         LOGGER.info("Started listening for task: {} in queue: {}", systemTask, queueName);
     }
 
     void pollAndExecute(WorkflowSystemTask systemTask, String queueName) {
         if (!isRunning()) {
-            LOGGER.debug(
-                    "{} stopped. Not polling for task: {}", getClass().getSimpleName(), systemTask);
+            LOGGER.debug("{} stopped. Not polling for task: {}", getClass().getSimpleName(), systemTask);
             return;
         }
-
         ExecutionConfig executionConfig = getExecutionConfig(queueName);
         SemaphoreUtil semaphoreUtil = executionConfig.getSemaphoreUtil();
         ExecutorService executorService = executionConfig.getExecutorService();
         String taskName = QueueUtils.getTaskType(queueName);
-
         int messagesToAcquire = semaphoreUtil.availableSlots();
-
         try {
             if (messagesToAcquire <= 0 || !semaphoreUtil.acquireSlots(messagesToAcquire)) {
                 // no available slots, do not poll
                 Monitors.recordSystemTaskWorkerPollingLimited(queueName);
                 return;
             }
-
             LOGGER.debug("Polling queue: {} with {} slots acquired", queueName, messagesToAcquire);
-
             List<String> polledTaskIds = queueDAO.pop(queueName, messagesToAcquire, 200);
-
             Monitors.recordTaskPoll(queueName);
             LOGGER.debug("Polling queue:{}, got {} tasks", queueName, polledTaskIds.size());
-
             if (polledTaskIds.size() > 0) {
                 // Immediately release unused slots when number of messages acquired is less than
                 // acquired slots
                 if (polledTaskIds.size() < messagesToAcquire) {
                     semaphoreUtil.completeProcessing(messagesToAcquire - polledTaskIds.size());
                 }
-
                 for (String taskId : polledTaskIds) {
                     if (StringUtils.isNotBlank(taskId)) {
-                        LOGGER.debug(
-                                "Task: {} from queue: {} being sent to the workflow executor",
-                                taskId,
-                                queueName);
+                        LOGGER.debug("Task: {} from queue: {} being sent to the workflow executor", taskId, queueName);
                         Monitors.recordTaskPollCount(queueName, 1);
-
                         executionService.ackTaskReceived(taskId);
-
-                        CompletableFuture<Void> taskCompletableFuture =
-                                CompletableFuture.runAsync(
-                                        () -> asyncSystemTaskExecutor.execute(systemTask, taskId),
-                                        executorService);
-
+                        CompletableFuture<Void> taskCompletableFuture = CompletableFuture.runAsync(() -> asyncSystemTaskExecutor.execute(systemTask, taskId), executorService);
                         // release permit after processing is complete
-                        taskCompletableFuture.whenComplete(
-                                (r, e) -> semaphoreUtil.completeProcessing(1));
+                        taskCompletableFuture.whenComplete((r, e) -> semaphoreUtil.completeProcessing(1));
                     } else {
                         semaphoreUtil.completeProcessing(1);
                     }
@@ -160,8 +133,7 @@ public class SystemTaskWorker extends LifecycleAwareComponent {
         if (!QueueUtils.isIsolatedQueue(taskQueue)) {
             return this.defaultExecutionConfig;
         }
-        return queueExecutionConfigMap.computeIfAbsent(
-                taskQueue, __ -> this.createExecutionConfig());
+        return queueExecutionConfigMap.computeIfAbsent(taskQueue, __ -> this.createExecutionConfig());
     }
 
     private ExecutionConfig createExecutionConfig() {

@@ -12,15 +12,14 @@
  */
 package com.netflix.conductor.core.metadata;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.annotations.VisibleForTesting;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
@@ -50,63 +49,43 @@ import com.netflix.conductor.model.WorkflowModel;
 public class MetadataMapperService {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MetadataMapperService.class);
+
     private final MetadataDAO metadataDAO;
 
     public MetadataMapperService(MetadataDAO metadataDAO) {
         this.metadataDAO = metadataDAO;
     }
 
-    public WorkflowDef lookupForWorkflowDefinition(String name, Integer version) {
-        Optional<WorkflowDef> potentialDef =
-                version == null
-                        ? lookupLatestWorkflowDefinition(name)
-                        : lookupWorkflowDefinition(name, version);
-
+    public WorkflowDef lookupForWorkflowDefinition(@Nullable String name, @Nullable Integer version) {
+        Optional<WorkflowDef> potentialDef = version == null ? lookupLatestWorkflowDefinition(name) : lookupWorkflowDefinition(name, version);
         // Check if the workflow definition is valid
-        return potentialDef.orElseThrow(
-                () -> {
-                    LOGGER.error(
-                            "There is no workflow defined with name {} and version {}",
-                            name,
-                            version);
-                    return new NotFoundException(
-                            "No such workflow defined. name=%s, version=%s", name, version);
-                });
+        return potentialDef.orElseThrow(() -> {
+            LOGGER.error("There is no workflow defined with name {} and version {}", name, version);
+            return new NotFoundException("No such workflow defined. name=%s, version=%s", name, version);
+        });
     }
 
     @VisibleForTesting
-    Optional<WorkflowDef> lookupWorkflowDefinition(String workflowName, int workflowVersion) {
-        Utils.checkArgument(
-                StringUtils.isNotBlank(workflowName),
-                "Workflow name must be specified when searching for a definition");
+    Optional<WorkflowDef> lookupWorkflowDefinition(@Nullable String workflowName, int workflowVersion) {
+        Utils.checkArgument(StringUtils.isNotBlank(workflowName), "Workflow name must be specified when searching for a definition");
         return metadataDAO.getWorkflowDef(workflowName, workflowVersion);
     }
 
     @VisibleForTesting
-    Optional<WorkflowDef> lookupLatestWorkflowDefinition(String workflowName) {
-        Utils.checkArgument(
-                StringUtils.isNotBlank(workflowName),
-                "Workflow name must be specified when searching for a definition");
+    Optional<WorkflowDef> lookupLatestWorkflowDefinition(@Nullable String workflowName) {
+        Utils.checkArgument(StringUtils.isNotBlank(workflowName), "Workflow name must be specified when searching for a definition");
         return metadataDAO.getLatestWorkflowDef(workflowName);
     }
 
     public WorkflowModel populateWorkflowWithDefinitions(WorkflowModel workflow) {
         Utils.checkNotNull(workflow, "workflow cannot be null");
-        WorkflowDef workflowDefinition =
-                Optional.ofNullable(workflow.getWorkflowDefinition())
-                        .orElseGet(
-                                () -> {
-                                    WorkflowDef wd =
-                                            lookupForWorkflowDefinition(
-                                                    workflow.getWorkflowName(),
-                                                    workflow.getWorkflowVersion());
-                                    workflow.setWorkflowDefinition(wd);
-                                    return wd;
-                                });
-
+        WorkflowDef workflowDefinition = Optional.ofNullable(workflow.getWorkflowDefinition()).orElseGet(() -> {
+            WorkflowDef wd = lookupForWorkflowDefinition(workflow.getWorkflowName(), workflow.getWorkflowVersion());
+            workflow.setWorkflowDefinition(wd);
+            return wd;
+        });
         workflowDefinition.collectTasks().forEach(this::populateWorkflowTaskWithDefinition);
         checkNotEmptyDefinitions(workflowDefinition);
-
         return workflow;
     }
 
@@ -121,8 +100,7 @@ public class MetadataMapperService {
         Utils.checkNotNull(workflowTask, "WorkflowTask cannot be null");
         if (shouldPopulateTaskDefinition(workflowTask)) {
             workflowTask.setTaskDefinition(metadataDAO.getTaskDef(workflowTask.getName()));
-            if (workflowTask.getTaskDefinition() == null
-                    && workflowTask.getType().equals(TaskType.SIMPLE.name())) {
+            if (workflowTask.getTaskDefinition() == null && workflowTask.getType().equals(TaskType.SIMPLE.name())) {
                 // ad-hoc task def
                 workflowTask.setTaskDefinition(new TaskDef(workflowTask.getName()));
             }
@@ -137,45 +115,23 @@ public class MetadataMapperService {
         SubWorkflowParams subworkflowParams = workflowTask.getSubWorkflowParam();
         if (subworkflowParams.getVersion() == null) {
             String subWorkflowName = subworkflowParams.getName();
-            Integer subWorkflowVersion =
-                    metadataDAO
-                            .getLatestWorkflowDef(subWorkflowName)
-                            .map(WorkflowDef::getVersion)
-                            .orElseThrow(
-                                    () -> {
-                                        String reason =
-                                                String.format(
-                                                        "The Task %s defined as a sub-workflow has no workflow definition available ",
-                                                        subWorkflowName);
-                                        LOGGER.error(reason);
-                                        return new TerminateWorkflowException(reason);
-                                    });
+            Integer subWorkflowVersion = metadataDAO.getLatestWorkflowDef(subWorkflowName).map(WorkflowDef::getVersion).orElseThrow(() -> {
+                String reason = String.format("The Task %s defined as a sub-workflow has no workflow definition available ", subWorkflowName);
+                LOGGER.error(reason);
+                return new TerminateWorkflowException(reason);
+            });
             subworkflowParams.setVersion(subWorkflowVersion);
         }
     }
 
     private void checkNotEmptyDefinitions(WorkflowDef workflowDefinition) {
         Utils.checkNotNull(workflowDefinition, "WorkflowDefinition cannot be null");
-
         // Obtain the names of the tasks with missing definitions
-        Set<String> missingTaskDefinitionNames =
-                workflowDefinition.collectTasks().stream()
-                        .filter(
-                                workflowTask ->
-                                        workflowTask.getType().equals(TaskType.SIMPLE.name()))
-                        .filter(this::shouldPopulateTaskDefinition)
-                        .map(WorkflowTask::getName)
-                        .collect(Collectors.toSet());
-
+        Set<String> missingTaskDefinitionNames = workflowDefinition.collectTasks().stream().filter(workflowTask -> workflowTask.getType().equals(TaskType.SIMPLE.name())).filter(this::shouldPopulateTaskDefinition).map(WorkflowTask::getName).collect(Collectors.toSet());
         if (!missingTaskDefinitionNames.isEmpty()) {
-            LOGGER.error(
-                    "Cannot find the task definitions for the following tasks used in workflow: {}",
-                    missingTaskDefinitionNames);
-            Monitors.recordWorkflowStartError(
-                    workflowDefinition.getName(), WorkflowContext.get().getClientApp());
-            throw new IllegalArgumentException(
-                    "Cannot find the task definitions for the following tasks used in workflow: "
-                            + missingTaskDefinitionNames);
+            LOGGER.error("Cannot find the task definitions for the following tasks used in workflow: {}", missingTaskDefinitionNames);
+            Monitors.recordWorkflowStartError(workflowDefinition.getName(), WorkflowContext.get().getClientApp());
+            throw new IllegalArgumentException("Cannot find the task definitions for the following tasks used in workflow: " + missingTaskDefinitionNames);
         }
     }
 
@@ -189,7 +145,6 @@ public class MetadataMapperService {
     boolean shouldPopulateTaskDefinition(WorkflowTask workflowTask) {
         Utils.checkNotNull(workflowTask, "WorkflowTask cannot be null");
         Utils.checkNotNull(workflowTask.getType(), "WorkflowTask type cannot be null");
-        return workflowTask.getTaskDefinition() == null
-                && StringUtils.isNotBlank(workflowTask.getName());
+        return workflowTask.getTaskDefinition() == null && StringUtils.isNotBlank(workflowTask.getName());
     }
 }

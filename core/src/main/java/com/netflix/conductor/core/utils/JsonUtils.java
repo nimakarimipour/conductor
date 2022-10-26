@@ -12,14 +12,15 @@
  */
 package com.netflix.conductor.core.utils;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/** This class contains utility functions for parsing/expanding JSON. */
+/**
+ * This class contains utility functions for parsing/expanding JSON.
+ */
 @SuppressWarnings("unchecked")
 @Component
 public class JsonUtils {
@@ -36,7 +37,8 @@ public class JsonUtils {
      * @param input the object to be expanded
      * @return the expanded object containing java types like {@link Map} and {@link List}
      */
-    public Object expand(Object input) {
+    @Nullable
+    public Object expand(@Nullable Object input) {
         if (input instanceof List) {
             expandList((List<Object>) input);
             return input;

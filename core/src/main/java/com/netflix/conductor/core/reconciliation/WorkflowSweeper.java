@@ -12,17 +12,16 @@
  */
 package com.netflix.conductor.core.reconciliation;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.annotations.VisibleForTesting;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
@@ -35,7 +34,6 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.TaskModel.Status;
 import com.netflix.conductor.model.WorkflowModel;
-
 import static com.netflix.conductor.core.config.SchedulerConfiguration.SWEEPER_EXECUTOR_NAME;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 
@@ -45,18 +43,18 @@ public class WorkflowSweeper {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowSweeper.class);
 
     private final ConductorProperties properties;
+
     private final WorkflowExecutor workflowExecutor;
+
+    @Nullable
     private final WorkflowRepairService workflowRepairService;
+
     private final QueueDAO queueDAO;
 
     private static final String CLASS_NAME = WorkflowSweeper.class.getSimpleName();
 
     @Autowired
-    public WorkflowSweeper(
-            WorkflowExecutor workflowExecutor,
-            Optional<WorkflowRepairService> workflowRepairService,
-            ConductorProperties properties,
-            QueueDAO queueDAO) {
+    public WorkflowSweeper(WorkflowExecutor workflowExecutor, Optional<WorkflowRepairService> workflowRepairService, ConductorProperties properties, QueueDAO queueDAO) {
         this.properties = properties;
         this.queueDAO = queueDAO;
         this.workflowExecutor = workflowExecutor;
@@ -76,38 +74,31 @@ public class WorkflowSweeper {
             WorkflowContext workflowContext = new WorkflowContext(properties.getAppId());
             WorkflowContext.set(workflowContext);
             LOGGER.debug("Running sweeper for workflow {}", workflowId);
-
             if (workflowRepairService != null) {
                 // Verify and repair tasks in the workflow.
                 workflowRepairService.verifyAndRepairWorkflowTasks(workflowId);
             }
-
             workflow = workflowExecutor.decide(workflowId);
             if (workflow != null && workflow.getStatus().isTerminal()) {
                 queueDAO.remove(DECIDER_QUEUE, workflowId);
                 return;
             }
-
         } catch (NotFoundException nfe) {
             queueDAO.remove(DECIDER_QUEUE, workflowId);
-            LOGGER.info(
-                    "Workflow NOT found for id:{}. Removed it from decider queue", workflowId, nfe);
+            LOGGER.info("Workflow NOT found for id:{}. Removed it from decider queue", workflowId, nfe);
             return;
         } catch (Exception e) {
             Monitors.error(CLASS_NAME, "sweep");
             LOGGER.error("Error running sweep for " + workflowId, e);
         }
-        long workflowOffsetTimeout =
-                workflowOffsetWithJitter(properties.getWorkflowOffsetTimeout().getSeconds());
+        long workflowOffsetTimeout = workflowOffsetWithJitter(properties.getWorkflowOffsetTimeout().getSeconds());
         if (workflow != null) {
             long startTime = Instant.now().toEpochMilli();
             unack(workflow, workflowOffsetTimeout);
             long endTime = Instant.now().toEpochMilli();
             Monitors.recordUnackTime(workflow.getWorkflowName(), endTime - startTime);
         } else {
-            LOGGER.warn(
-                    "Workflow with {} id can not be found. Attempting to unack using the id",
-                    workflowId);
+            LOGGER.warn("Workflow with {} id can not be found. Attempting to unack using the id", workflowId);
             queueDAO.setUnackTimeout(DECIDER_QUEUE, workflowId, workflowOffsetTimeout * 1000);
         }
     }
@@ -117,44 +108,28 @@ public class WorkflowSweeper {
         long postponeDurationSeconds = 0;
         for (TaskModel taskModel : workflowModel.getTasks()) {
             if (taskModel.getStatus() == Status.IN_PROGRESS) {
-                if (taskModel.getTaskType().equals(TaskType.TASK_TYPE_WAIT)
-                        || taskModel.getTaskType().equals(TaskType.TASK_TYPE_HUMAN)) {
-                    postponeDurationSeconds =
-                            (taskModel.getWaitTimeout() != 0)
-                                    ? taskModel.getWaitTimeout() + 1
-                                    : workflowOffsetTimeout;
+                if (taskModel.getTaskType().equals(TaskType.TASK_TYPE_WAIT) || taskModel.getTaskType().equals(TaskType.TASK_TYPE_HUMAN)) {
+                    postponeDurationSeconds = (taskModel.getWaitTimeout() != 0) ? taskModel.getWaitTimeout() + 1 : workflowOffsetTimeout;
                 } else {
-                    postponeDurationSeconds =
-                            (taskModel.getResponseTimeoutSeconds() != 0)
-                                    ? taskModel.getResponseTimeoutSeconds() + 1
-                                    : workflowOffsetTimeout;
+                    postponeDurationSeconds = (taskModel.getResponseTimeoutSeconds() != 0) ? taskModel.getResponseTimeoutSeconds() + 1 : workflowOffsetTimeout;
                 }
                 break;
             } else if (taskModel.getStatus() == Status.SCHEDULED) {
                 Optional<TaskDef> taskDefinition = taskModel.getTaskDefinition();
                 if (taskDefinition.isPresent()) {
                     TaskDef taskDef = taskDefinition.get();
-                    if (taskDef.getPollTimeoutSeconds() != null
-                            && taskDef.getPollTimeoutSeconds() != 0) {
+                    if (taskDef.getPollTimeoutSeconds() != null && taskDef.getPollTimeoutSeconds() != 0) {
                         postponeDurationSeconds = taskDef.getPollTimeoutSeconds() + 1;
                     } else {
-                        postponeDurationSeconds =
-                                (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                                        ? workflowModel.getWorkflowDefinition().getTimeoutSeconds()
-                                                + 1
-                                        : workflowOffsetTimeout;
+                        postponeDurationSeconds = (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0) ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1 : workflowOffsetTimeout;
                     }
                 } else {
-                    postponeDurationSeconds =
-                            (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                                    ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1
-                                    : workflowOffsetTimeout;
+                    postponeDurationSeconds = (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0) ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1 : workflowOffsetTimeout;
                 }
                 break;
             }
         }
-        queueDAO.setUnackTimeout(
-                DECIDER_QUEUE, workflowModel.getWorkflowId(), postponeDurationSeconds * 1000);
+        queueDAO.setUnackTimeout(DECIDER_QUEUE, workflowModel.getWorkflowId(), postponeDurationSeconds * 1000);
     }
 
     /**

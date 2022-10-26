@@ -12,18 +12,25 @@
  */
 package com.netflix.conductor.core.events.queue;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class Message {
 
+    @Nullable
     private String payload;
+
     private String id;
+
+    @Nullable
     private String receipt;
+
     private int priority;
 
-    public Message() {}
+    public Message() {
+    }
 
-    public Message(String id, String payload, String receipt) {
+    public Message(String id, @Nullable String payload, @Nullable String receipt) {
         this.payload = payload;
         this.id = id;
         this.receipt = receipt;
@@ -39,6 +46,7 @@ public class Message {
     /**
      * @return the payload
      */
+    @Nullable
     public String getPayload() {
         return payload;
     }
@@ -67,6 +75,7 @@ public class Message {
     /**
      * @return Receipt attached to the message
      */
+    @Nullable
     public String getReceipt() {
         return receipt;
     }
@@ -111,10 +120,7 @@ public class Message {
             return false;
         }
         Message message = (Message) o;
-        return Objects.equals(payload, message.payload)
-                && Objects.equals(id, message.id)
-                && Objects.equals(priority, message.priority)
-                && Objects.equals(receipt, message.receipt);
+        return Objects.equals(payload, message.payload) && Objects.equals(id, message.id) && Objects.equals(priority, message.priority) && Objects.equals(receipt, message.receipt);
     }
 
     @Override

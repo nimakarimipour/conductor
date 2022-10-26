@@ -12,13 +12,12 @@
  */
 package com.netflix.conductor.service;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.netflix.conductor.annotations.Trace;
 import com.netflix.conductor.core.config.ConductorProperties;
 import com.netflix.conductor.core.sync.Lock;
@@ -29,9 +28,13 @@ import com.netflix.conductor.metrics.Monitors;
 public class ExecutionLockService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionLockService.class);
+
     private final ConductorProperties properties;
+
     private final Lock lock;
+
     private final long lockLeaseTime;
+
     private final long lockTimeToTry;
 
     @Autowired
@@ -51,28 +54,22 @@ public class ExecutionLockService {
      * @param lockId
      * @return
      */
-    public boolean acquireLock(String lockId) {
+    public boolean acquireLock(@Nullable String lockId) {
         return acquireLock(lockId, lockTimeToTry, lockLeaseTime);
     }
 
-    public boolean acquireLock(String lockId, long timeToTryMs) {
+    public boolean acquireLock(@Nullable String lockId, long timeToTryMs) {
         return acquireLock(lockId, timeToTryMs, lockLeaseTime);
     }
 
-    public boolean acquireLock(String lockId, long timeToTryMs, long leaseTimeMs) {
+    public boolean acquireLock(@Nullable String lockId, long timeToTryMs, long leaseTimeMs) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             if (!lock.acquireLock(lockId, timeToTryMs, leaseTimeMs, TimeUnit.MILLISECONDS)) {
-                LOGGER.debug(
-                        "Thread {} failed to acquire lock to lockId {}.",
-                        Thread.currentThread().getId(),
-                        lockId);
+                LOGGER.debug("Thread {} failed to acquire lock to lockId {}.", Thread.currentThread().getId(), lockId);
                 Monitors.recordAcquireLockUnsuccessful();
                 return false;
             }
-            LOGGER.debug(
-                    "Thread {} acquired lock to lockId {}.",
-                    Thread.currentThread().getId(),
-                    lockId);
+            LOGGER.debug("Thread {} acquired lock to lockId {}.", Thread.currentThread().getId(), lockId);
         }
         return true;
     }
@@ -85,24 +82,18 @@ public class ExecutionLockService {
     public void waitForLock(String lockId) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             lock.acquireLock(lockId);
-            LOGGER.debug(
-                    "Thread {} acquired lock to lockId {}.",
-                    Thread.currentThread().getId(),
-                    lockId);
+            LOGGER.debug("Thread {} acquired lock to lockId {}.", Thread.currentThread().getId(), lockId);
         }
     }
 
-    public void releaseLock(String lockId) {
+    public void releaseLock(@Nullable String lockId) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             lock.releaseLock(lockId);
-            LOGGER.debug(
-                    "Thread {} released lock to lockId {}.",
-                    Thread.currentThread().getId(),
-                    lockId);
+            LOGGER.debug("Thread {} released lock to lockId {}.", Thread.currentThread().getId(), lockId);
         }
     }
 
-    public void deleteLock(String lockId) {
+    public void deleteLock(@Nullable String lockId) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             lock.deleteLock(lockId);
             LOGGER.debug("Thread {} deleted lockId {}.", Thread.currentThread().getId(), lockId);

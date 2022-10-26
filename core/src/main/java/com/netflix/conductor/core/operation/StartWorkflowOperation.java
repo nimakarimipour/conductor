@@ -12,16 +12,15 @@
  */
 package com.netflix.conductor.core.operation;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.core.WorkflowContext;
 import com.netflix.conductor.core.dal.ExecutionDAOFacade;
@@ -42,19 +41,18 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
     private static final Logger LOGGER = LoggerFactory.getLogger(StartWorkflowOperation.class);
 
     private final MetadataMapperService metadataMapperService;
+
     private final IDGenerator idGenerator;
+
     private final ParametersUtils parametersUtils;
+
     private final ExecutionDAOFacade executionDAOFacade;
+
     private final ExecutionLockService executionLockService;
+
     private final ApplicationEventPublisher eventPublisher;
 
-    public StartWorkflowOperation(
-            MetadataMapperService metadataMapperService,
-            IDGenerator idGenerator,
-            ParametersUtils parametersUtils,
-            ExecutionDAOFacade executionDAOFacade,
-            ExecutionLockService executionLockService,
-            ApplicationEventPublisher eventPublisher) {
+    public StartWorkflowOperation(MetadataMapperService metadataMapperService, IDGenerator idGenerator, ParametersUtils parametersUtils, ExecutionDAOFacade executionDAOFacade, ExecutionLockService executionLockService, ApplicationEventPublisher eventPublisher) {
         this.metadataMapperService = metadataMapperService;
         this.idGenerator = idGenerator;
         this.parametersUtils = parametersUtils;
@@ -75,26 +73,18 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
 
     private String startWorkflow(StartWorkflowInput input) {
         WorkflowDef workflowDefinition;
-
         if (input.getWorkflowDefinition() == null) {
-            workflowDefinition =
-                    metadataMapperService.lookupForWorkflowDefinition(
-                            input.getName(), input.getVersion());
+            workflowDefinition = metadataMapperService.lookupForWorkflowDefinition(input.getName(), input.getVersion());
         } else {
             workflowDefinition = input.getWorkflowDefinition();
         }
-
         workflowDefinition = metadataMapperService.populateTaskDefinitions(workflowDefinition);
-
         // perform validations
         Map<String, Object> workflowInput = input.getWorkflowInput();
         String externalInputPayloadStoragePath = input.getExternalInputPayloadStoragePath();
         validateWorkflow(workflowDefinition, workflowInput, externalInputPayloadStoragePath);
-
         // Generate ID if it's not present
-        String workflowId =
-                Optional.ofNullable(input.getWorkflowId()).orElseGet(idGenerator::generate);
-
+        String workflowId = Optional.ofNullable(input.getWorkflowId()).orElseGet(idGenerator::generate);
         // Persist the Workflow
         WorkflowModel workflow = new WorkflowModel();
         workflow.setWorkflowId(workflowId);
@@ -111,27 +101,19 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
         workflow.setEvent(input.getEvent());
         workflow.setTaskToDomain(input.getTaskToDomain());
         workflow.setVariables(workflowDefinition.getVariables());
-
         if (workflowInput != null && !workflowInput.isEmpty()) {
-            Map<String, Object> parsedInput =
-                    parametersUtils.getWorkflowInput(workflowDefinition, workflowInput);
+            Map<String, Object> parsedInput = parametersUtils.getWorkflowInput(workflowDefinition, workflowInput);
             workflow.setInput(parsedInput);
         } else {
             workflow.setExternalInputPayloadStoragePath(externalInputPayloadStoragePath);
         }
-
         try {
             createAndEvaluate(workflow);
-            Monitors.recordWorkflowStartSuccess(
-                    workflow.getWorkflowName(),
-                    String.valueOf(workflow.getWorkflowVersion()),
-                    workflow.getOwnerApp());
+            Monitors.recordWorkflowStartSuccess(workflow.getWorkflowName(), String.valueOf(workflow.getWorkflowVersion()), workflow.getOwnerApp());
             return workflowId;
         } catch (Exception e) {
-            Monitors.recordWorkflowStartError(
-                    workflowDefinition.getName(), WorkflowContext.get().getClientApp());
+            Monitors.recordWorkflowStartError(workflowDefinition.getName(), WorkflowContext.get().getClientApp());
             LOGGER.error("Unable to start workflow: {}", workflowDefinition.getName(), e);
-
             // It's possible the remove workflow call hits an exception as well, in that case we
             // want to log both errors to help diagnosis.
             try {
@@ -153,10 +135,7 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
         }
         try {
             executionDAOFacade.createWorkflow(workflow);
-            LOGGER.debug(
-                    "A new instance of workflow: {} created with id: {}",
-                    workflow.getWorkflowName(),
-                    workflow.getWorkflowId());
+            LOGGER.debug("A new instance of workflow: {} created with id: {}", workflow.getWorkflowName(), workflow.getWorkflowId());
             executionDAOFacade.populateWorkflowAndTaskPayloadData(workflow);
             eventPublisher.publishEvent(new WorkflowEvaluationEvent(workflow));
         } finally {
@@ -169,16 +148,11 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
      *
      * @throws IllegalArgumentException if the validation fails.
      */
-    private void validateWorkflow(
-            WorkflowDef workflowDef,
-            Map<String, Object> workflowInput,
-            String externalStoragePath) {
+    private void validateWorkflow(WorkflowDef workflowDef, @Nullable Map<String, Object> workflowInput, @Nullable String externalStoragePath) {
         // Check if the input to the workflow is not null
         if (workflowInput == null && StringUtils.isBlank(externalStoragePath)) {
             LOGGER.error("The input for the workflow '{}' cannot be NULL", workflowDef.getName());
-            Monitors.recordWorkflowStartError(
-                    workflowDef.getName(), WorkflowContext.get().getClientApp());
-
+            Monitors.recordWorkflowStartError(workflowDef.getName(), WorkflowContext.get().getClientApp());
             throw new IllegalArgumentException("NULL input passed when starting workflow");
         }
     }

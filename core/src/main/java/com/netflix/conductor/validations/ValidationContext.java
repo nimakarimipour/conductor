@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.validations;
 
+import javax.annotation.Nullable;
 import com.netflix.conductor.dao.MetadataDAO;
 
 /**
@@ -21,6 +22,7 @@ import com.netflix.conductor.dao.MetadataDAO;
  */
 public class ValidationContext {
 
+    @Nullable
     private static MetadataDAO metadataDAO;
 
     public static void initialize(MetadataDAO metadataDAO) {

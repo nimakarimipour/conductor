@@ -12,10 +12,13 @@
  */
 package com.netflix.conductor.dao;
 
+import javax.annotation.Nullable;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.model.TaskModel;
 
-/** An abstraction to enable different Rate Limiting implementations */
+/**
+ * An abstraction to enable different Rate Limiting implementations
+ */
 public interface RateLimitingDAO {
 
     /**
@@ -26,5 +29,5 @@ public interface RateLimitingDAO {
      * @return true: If the {@link TaskModel} is rateLimited false: If the {@link TaskModel} is not
      *     rateLimited
      */
-    boolean exceedsRateLimitPerFrequency(TaskModel task, TaskDef taskDef);
+    boolean exceedsRateLimitPerFrequency(TaskModel task, @Nullable TaskDef taskDef);
 }

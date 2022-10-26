@@ -12,14 +12,18 @@
  */
 package com.netflix.conductor.core;
 
-/** Store the authentication context, app or username or both */
+import javax.annotation.Nullable;
+
+/**
+ * Store the authentication context, app or username or both
+ */
 public class WorkflowContext {
 
-    public static final ThreadLocal<WorkflowContext> THREAD_LOCAL =
-            InheritableThreadLocal.withInitial(() -> new WorkflowContext("", ""));
+    public static final ThreadLocal<WorkflowContext> THREAD_LOCAL = InheritableThreadLocal.withInitial(() -> new WorkflowContext("", ""));
 
     private final String clientApp;
 
+    @Nullable
     private final String userName;
 
     public WorkflowContext(String clientApp) {
@@ -54,6 +58,7 @@ public class WorkflowContext {
     /**
      * @return the username
      */
+    @Nullable
     public String getUserName() {
         return userName;
     }

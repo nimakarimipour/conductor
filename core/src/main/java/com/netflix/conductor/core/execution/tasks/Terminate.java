@@ -12,15 +12,13 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_TERMINATE;
 import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.COMPLETED;
 import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.FAILED;
@@ -59,7 +57,9 @@ import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.FAILED;
 public class Terminate extends WorkflowSystemTask {
 
     private static final String TERMINATION_STATUS_PARAMETER = "terminationStatus";
+
     private static final String TERMINATION_REASON_PARAMETER = "terminationReason";
+
     private static final String TERMINATION_WORKFLOW_OUTPUT = "workflowOutput";
 
     public Terminate() {
@@ -67,10 +67,8 @@ public class Terminate extends WorkflowSystemTask {
     }
 
     @Override
-    public boolean execute(
-            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+    public boolean execute(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         String returnStatus = (String) task.getInputData().get(TERMINATION_STATUS_PARAMETER);
-
         if (validateInputStatus(returnStatus)) {
             task.setOutputData(getInputFromParam(task.getInputData()));
             task.setStatus(TaskModel.Status.COMPLETED);
@@ -93,7 +91,7 @@ public class Terminate extends WorkflowSystemTask {
         return TERMINATION_WORKFLOW_OUTPUT;
     }
 
-    public static Boolean validateInputStatus(String status) {
+    public static Boolean validateInputStatus(@Nullable String status) {
         return COMPLETED.name().equals(status) || FAILED.name().equals(status);
     }
 

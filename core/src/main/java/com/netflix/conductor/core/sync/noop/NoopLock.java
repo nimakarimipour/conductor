@@ -12,14 +12,15 @@
  */
 package com.netflix.conductor.core.sync.noop;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
-
 import com.netflix.conductor.core.sync.Lock;
 
 public class NoopLock implements Lock {
 
     @Override
-    public void acquireLock(String lockId) {}
+    public void acquireLock(String lockId) {
+    }
 
     @Override
     public boolean acquireLock(String lockId, long timeToTry, TimeUnit unit) {
@@ -27,13 +28,15 @@ public class NoopLock implements Lock {
     }
 
     @Override
-    public boolean acquireLock(String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
+    public boolean acquireLock(@Nullable String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
         return true;
     }
 
     @Override
-    public void releaseLock(String lockId) {}
+    public void releaseLock(@Nullable String lockId) {
+    }
 
     @Override
-    public void deleteLock(String lockId) {}
+    public void deleteLock(@Nullable String lockId) {
+    }
 }

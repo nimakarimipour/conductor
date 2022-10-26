@@ -12,8 +12,8 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
+import javax.annotation.Nullable;
 import java.util.Map;
-
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
@@ -21,16 +21,27 @@ import com.netflix.conductor.core.execution.DeciderService;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
-/** Business Object class used for interaction between the DeciderService and Different Mappers */
+/**
+ * Business Object class used for interaction between the DeciderService and Different Mappers
+ */
 public class TaskMapperContext {
 
     private final WorkflowModel workflowModel;
+
+    @Nullable
     private final TaskDef taskDefinition;
+
     private final WorkflowTask workflowTask;
+
     private final Map<String, Object> taskInput;
+
     private final int retryCount;
+
+    @Nullable
     private final String retryTaskId;
+
     private final String taskId;
+
     private final DeciderService deciderService;
 
     private TaskMapperContext(Builder builder) {
@@ -69,6 +80,7 @@ public class TaskMapperContext {
         return workflowModel;
     }
 
+    @Nullable
     public TaskDef getTaskDefinition() {
         return taskDefinition;
     }
@@ -81,6 +93,7 @@ public class TaskMapperContext {
         return retryCount;
     }
 
+    @Nullable
     public String getRetryTaskId() {
         return retryTaskId;
     }
@@ -104,11 +117,9 @@ public class TaskMapperContext {
         taskModel.setWorkflowType(workflowModel.getWorkflowName());
         taskModel.setCorrelationId(workflowModel.getCorrelationId());
         taskModel.setScheduledTime(System.currentTimeMillis());
-
         taskModel.setTaskId(taskId);
         taskModel.setWorkflowTask(workflowTask);
         taskModel.setWorkflowPriority(workflowModel.getPriority());
-
         // the following properties are overridden by some TaskMapper implementations
         taskModel.setTaskType(workflowTask.getType());
         taskModel.setTaskDefName(workflowTask.getName());
@@ -117,24 +128,7 @@ public class TaskMapperContext {
 
     @Override
     public String toString() {
-        return "TaskMapperContext{"
-                + "workflowDefinition="
-                + getWorkflowDefinition()
-                + ", workflowModel="
-                + workflowModel
-                + ", workflowTask="
-                + workflowTask
-                + ", taskInput="
-                + taskInput
-                + ", retryCount="
-                + retryCount
-                + ", retryTaskId='"
-                + retryTaskId
-                + '\''
-                + ", taskId='"
-                + taskId
-                + '\''
-                + '}';
+        return "TaskMapperContext{" + "workflowDefinition=" + getWorkflowDefinition() + ", workflowModel=" + workflowModel + ", workflowTask=" + workflowTask + ", taskInput=" + taskInput + ", retryCount=" + retryCount + ", retryTaskId='" + retryTaskId + '\'' + ", taskId='" + taskId + '\'' + '}';
     }
 
     @Override
@@ -145,9 +139,7 @@ public class TaskMapperContext {
         if (!(o instanceof TaskMapperContext)) {
             return false;
         }
-
         TaskMapperContext that = (TaskMapperContext) o;
-
         if (getRetryCount() != that.getRetryCount()) {
             return false;
         }
@@ -163,9 +155,7 @@ public class TaskMapperContext {
         if (!getTaskInput().equals(that.getTaskInput())) {
             return false;
         }
-        if (getRetryTaskId() != null
-                ? !getRetryTaskId().equals(that.getRetryTaskId())
-                : that.getRetryTaskId() != null) {
+        if (getRetryTaskId() != null ? !getRetryTaskId().equals(that.getRetryTaskId()) : that.getRetryTaskId() != null) {
             return false;
         }
         return getTaskId().equals(that.getTaskId());
@@ -183,19 +173,32 @@ public class TaskMapperContext {
         return result;
     }
 
-    /** {@code TaskMapperContext} builder static inner class. */
+    /**
+     * {@code TaskMapperContext} builder static inner class.
+     */
     public static final class Builder {
 
         private WorkflowModel workflowModel;
+
+        @Nullable
         private TaskDef taskDefinition;
+
         private WorkflowTask workflowTask;
+
         private Map<String, Object> taskInput;
+
         private int retryCount;
+
+        @Nullable
         private String retryTaskId;
+
+        @Nullable
         private String taskId;
+
         private DeciderService deciderService;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * Sets the {@code workflowModel} and returns a reference to this Builder so that the
@@ -264,7 +267,7 @@ public class TaskMapperContext {
          * @param val the {@code retryTaskId} to set
          * @return a reference to this Builder
          */
-        public Builder withRetryTaskId(String val) {
+        public Builder withRetryTaskId(@Nullable String val) {
             retryTaskId = val;
             return this;
         }

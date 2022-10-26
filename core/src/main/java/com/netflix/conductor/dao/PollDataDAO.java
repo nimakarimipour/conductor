@@ -12,11 +12,13 @@
  */
 package com.netflix.conductor.dao;
 
+import javax.annotation.Nullable;
 import java.util.List;
-
 import com.netflix.conductor.common.metadata.tasks.PollData;
 
-/** An abstraction to enable different PollData store implementations */
+/**
+ * An abstraction to enable different PollData store implementations
+ */
 public interface PollDataDAO {
 
     /**
@@ -26,7 +28,7 @@ public interface PollDataDAO {
      * @param domain domain in which this task is being polled from
      * @param workerId the identifier of the worker polling for this task
      */
-    void updateLastPollData(String taskDefName, String domain, String workerId);
+    void updateLastPollData(String taskDefName, @Nullable String domain, String workerId);
 
     /**
      * Retrieve the {@link PollData} for the given task in the given domain.
@@ -51,9 +53,6 @@ public interface PollDataDAO {
      * @return the {@link PollData} for all task types
      */
     default List<PollData> getAllPollData() {
-        throw new UnsupportedOperationException(
-                "The selected PollDataDAO ("
-                        + this.getClass().getSimpleName()
-                        + ") does not implement the getAllPollData() method");
+        throw new UnsupportedOperationException("The selected PollDataDAO (" + this.getClass().getSimpleName() + ") does not implement the getAllPollData() method");
     }
 }

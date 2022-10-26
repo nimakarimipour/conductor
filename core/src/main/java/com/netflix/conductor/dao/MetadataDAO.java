@@ -12,13 +12,15 @@
  */
 package com.netflix.conductor.dao;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 
-/** Data access layer for the workflow metadata - task definitions and workflow definitions */
+/**
+ * Data access layer for the workflow metadata - task definitions and workflow definitions
+ */
 public interface MetadataDAO {
 
     /**
@@ -62,14 +64,14 @@ public interface MetadataDAO {
      * @param name Name of the workflow
      * @return Workflow Definition
      */
-    Optional<WorkflowDef> getLatestWorkflowDef(String name);
+    Optional<WorkflowDef> getLatestWorkflowDef(@Nullable String name);
 
     /**
      * @param name Name of the workflow
      * @param version version
      * @return workflow definition
      */
-    Optional<WorkflowDef> getWorkflowDef(String name, int version);
+    Optional<WorkflowDef> getWorkflowDef(@Nullable String name, int version);
 
     /**
      * @param name Name of the workflow definition to be removed

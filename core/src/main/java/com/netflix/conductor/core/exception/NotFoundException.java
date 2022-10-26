@@ -12,13 +12,15 @@
  */
 package com.netflix.conductor.core.exception;
 
+import javax.annotation.Nullable;
+
 public class NotFoundException extends RuntimeException {
 
     public NotFoundException(String message) {
         super(message);
     }
 
-    public NotFoundException(String message, Object... args) {
+    public NotFoundException(String message, @Nullable Object... args) {
         super(String.format(message, args));
     }
 

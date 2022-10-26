@@ -12,12 +12,12 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,19 +32,11 @@ public class SystemTaskRegistry {
     private final Map<String, WorkflowSystemTask> registry;
 
     public SystemTaskRegistry(Set<WorkflowSystemTask> tasks) {
-        this.registry =
-                tasks.stream()
-                        .collect(
-                                Collectors.toMap(
-                                        WorkflowSystemTask::getTaskType, Function.identity()));
+        this.registry = tasks.stream().collect(Collectors.toMap(WorkflowSystemTask::getTaskType, Function.identity()));
     }
 
     public WorkflowSystemTask get(String taskType) {
-        return Optional.ofNullable(registry.get(taskType))
-                .orElseThrow(
-                        () ->
-                                new IllegalStateException(
-                                        taskType + "not found in " + getClass().getSimpleName()));
+        return Optional.ofNullable(registry.get(taskType)).orElseThrow(() -> new IllegalStateException(taskType + "not found in " + getClass().getSimpleName()));
     }
 
     public boolean isSystemTask(String taskType) {
