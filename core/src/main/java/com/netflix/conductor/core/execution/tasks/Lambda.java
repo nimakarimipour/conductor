@@ -12,18 +12,16 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.core.events.ScriptEvaluator;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_LAMBDA;
 
 /**
@@ -55,7 +53,9 @@ import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_LAM
 public class Lambda extends WorkflowSystemTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Lambda.class);
+
     private static final String QUERY_EXPRESSION_PARAMETER = "scriptExpression";
+
     public static final String NAME = "LAMBDA";
 
     public Lambda() {
@@ -63,41 +63,28 @@ public class Lambda extends WorkflowSystemTask {
     }
 
     @Override
-    public boolean execute(
-            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+    @NullUnmarked
+    public boolean execute(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> taskInput = task.getInputData();
         String scriptExpression;
         try {
             scriptExpression = (String) taskInput.get(QUERY_EXPRESSION_PARAMETER);
             if (StringUtils.isNotBlank(scriptExpression)) {
-                String scriptExpressionBuilder =
-                        "function scriptFun(){" + scriptExpression + "} scriptFun();";
-
-                LOGGER.debug(
-                        "scriptExpressionBuilder: {}, task: {}",
-                        scriptExpressionBuilder,
-                        task.getTaskId());
+                String scriptExpressionBuilder = "function scriptFun(){" + scriptExpression + "} scriptFun();";
+                LOGGER.debug("scriptExpressionBuilder: {}, task: {}", scriptExpressionBuilder, task.getTaskId());
                 Object returnValue = ScriptEvaluator.eval(scriptExpressionBuilder, taskInput);
                 task.addOutput("result", returnValue);
                 task.setStatus(TaskModel.Status.COMPLETED);
             } else {
                 LOGGER.error("Empty {} in Lambda task. ", QUERY_EXPRESSION_PARAMETER);
-                task.setReasonForIncompletion(
-                        "Empty '"
-                                + QUERY_EXPRESSION_PARAMETER
-                                + "' in Lambda task's input parameters. A non-empty String value must be provided.");
+                task.setReasonForIncompletion("Empty '" + QUERY_EXPRESSION_PARAMETER + "' in Lambda task's input parameters. A non-empty String value must be provided.");
                 task.setStatus(TaskModel.Status.FAILED);
             }
         } catch (Exception e) {
-            LOGGER.error(
-                    "Failed to execute Lambda Task: {} in workflow: {}",
-                    task.getTaskId(),
-                    workflow.getWorkflowId(),
-                    e);
+            LOGGER.error("Failed to execute Lambda Task: {} in workflow: {}", task.getTaskId(), workflow.getWorkflowId(), e);
             task.setStatus(TaskModel.Status.FAILED);
             task.setReasonForIncompletion(e.getMessage());
-            task.addOutput(
-                    "error", e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+            task.addOutput("error", e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
         return true;
     }

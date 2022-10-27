@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.events;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -30,7 +30,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-
 import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.events.EventExecution.Status;
 import com.netflix.conductor.common.metadata.events.EventHandler;
@@ -43,10 +42,8 @@ import com.netflix.conductor.core.utils.JsonUtils;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.service.ExecutionService;
 import com.netflix.conductor.service.MetadataService;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spotify.futures.CompletableFutures;
-
 import static com.netflix.conductor.core.utils.Utils.isTransientException;
 
 /**
@@ -56,34 +53,30 @@ import static com.netflix.conductor.core.utils.Utils.isTransientException;
  * <p><code>Set conductor.default-event-processor.enabled=false</code> to disable event processing.
  */
 @Component
-@ConditionalOnProperty(
-        name = "conductor.default-event-processor.enabled",
-        havingValue = "true",
-        matchIfMissing = true)
+@ConditionalOnProperty(name = "conductor.default-event-processor.enabled", havingValue = "true", matchIfMissing = true)
 public class DefaultEventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventProcessor.class);
 
     private final MetadataService metadataService;
+
     private final ExecutionService executionService;
+
     private final ActionProcessor actionProcessor;
 
     private final ExecutorService eventActionExecutorService;
+
     private final ObjectMapper objectMapper;
+
     private final JsonUtils jsonUtils;
+
     private final boolean isEventMessageIndexingEnabled;
+
     private final Map<String, Evaluator> evaluators;
+
     private final RetryTemplate retryTemplate;
 
-    public DefaultEventProcessor(
-            ExecutionService executionService,
-            MetadataService metadataService,
-            ActionProcessor actionProcessor,
-            JsonUtils jsonUtils,
-            ConductorProperties properties,
-            ObjectMapper objectMapper,
-            Map<String, Evaluator> evaluators,
-            @Qualifier("onTransientErrorRetryTemplate") RetryTemplate retryTemplate) {
+    public DefaultEventProcessor(ExecutionService executionService, MetadataService metadataService, ActionProcessor actionProcessor, JsonUtils jsonUtils, ConductorProperties properties, ObjectMapper objectMapper, Map<String, Evaluator> evaluators, @Qualifier("onTransientErrorRetryTemplate") RetryTemplate retryTemplate) {
         this.executionService = executionService;
         this.metadataService = metadataService;
         this.actionProcessor = actionProcessor;
@@ -91,20 +84,11 @@ public class DefaultEventProcessor {
         this.jsonUtils = jsonUtils;
         this.evaluators = evaluators;
         this.retryTemplate = retryTemplate;
-
         if (properties.getEventProcessorThreadCount() <= 0) {
-            throw new IllegalStateException(
-                    "Cannot set event processor thread count to <=0. To disable event "
-                            + "processing, set conductor.default-event-processor.enabled=false.");
+            throw new IllegalStateException("Cannot set event processor thread count to <=0. To disable event " + "processing, set conductor.default-event-processor.enabled=false.");
         }
-        ThreadFactory threadFactory =
-                new BasicThreadFactory.Builder()
-                        .namingPattern("event-action-executor-thread-%d")
-                        .build();
-        eventActionExecutorService =
-                Executors.newFixedThreadPool(
-                        properties.getEventProcessorThreadCount(), threadFactory);
-
+        ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("event-action-executor-thread-%d").build();
+        eventActionExecutorService = Executors.newFixedThreadPool(properties.getEventProcessorThreadCount(), threadFactory);
         this.isEventMessageIndexingEnabled = properties.isEventMessageIndexingEnabled();
         LOGGER.info("Event Processing is ENABLED");
     }
@@ -148,7 +132,6 @@ public class DefaultEventProcessor {
     protected List<EventExecution> executeEvent(String event, Message msg) throws Exception {
         List<EventHandler> eventHandlerList = metadataService.getEventHandlersForEvent(event, true);
         Object payloadObject = getPayloadObject(msg.getPayload());
-
         List<EventExecution> transientFailures = new ArrayList<>();
         for (EventHandler eventHandler : eventHandlerList) {
             String condition = eventHandler.getCondition();
@@ -157,16 +140,12 @@ public class DefaultEventProcessor {
             // to process the event.
             boolean success = true;
             if (StringUtils.isNotEmpty(condition) && evaluators.get(evaluatorType) != null) {
-                Object result =
-                        evaluators
-                                .get(evaluatorType)
-                                .evaluate(condition, jsonUtils.expand(payloadObject));
+                Object result = evaluators.get(evaluatorType).evaluate(condition, jsonUtils.expand(payloadObject));
                 success = ScriptEvaluator.toBoolean(result);
             } else if (StringUtils.isNotEmpty(condition)) {
                 LOGGER.debug("Checking condition: {} for event: {}", condition, event);
                 success = ScriptEvaluator.evalBool(condition, jsonUtils.expand(payloadObject));
             }
-
             if (!success) {
                 String id = msg.getId() + "_" + 0;
                 EventExecution eventExecution = new EventExecution(id, msg.getId());
@@ -177,30 +156,17 @@ public class DefaultEventProcessor {
                 eventExecution.getOutput().put("msg", msg.getPayload());
                 eventExecution.getOutput().put("condition", condition);
                 executionService.addEventExecution(eventExecution);
-                LOGGER.debug(
-                        "Condition: {} not successful for event: {} with payload: {}",
-                        condition,
-                        eventHandler.getEvent(),
-                        msg.getPayload());
+                LOGGER.debug("Condition: {} not successful for event: {} with payload: {}", condition, eventHandler.getEvent(), msg.getPayload());
                 continue;
             }
-
-            CompletableFuture<List<EventExecution>> future =
-                    executeActionsForEventHandler(eventHandler, msg);
-            future.whenComplete(
-                            (result, error) ->
-                                    result.forEach(
-                                            eventExecution -> {
-                                                if (error != null
-                                                        || eventExecution.getStatus()
-                                                                == Status.IN_PROGRESS) {
-                                                    transientFailures.add(eventExecution);
-                                                } else {
-                                                    executionService.updateEventExecution(
-                                                            eventExecution);
-                                                }
-                                            }))
-                    .get();
+            CompletableFuture<List<EventExecution>> future = executeActionsForEventHandler(eventHandler, msg);
+            future.whenComplete((result, error) -> result.forEach(eventExecution -> {
+                if (error != null || eventExecution.getStatus() == Status.IN_PROGRESS) {
+                    transientFailures.add(eventExecution);
+                } else {
+                    executionService.updateEventExecution(eventExecution);
+                }
+            })).get();
         }
         return processTransientFailures(transientFailures);
     }
@@ -222,8 +188,7 @@ public class DefaultEventProcessor {
      * @return a {@link CompletableFuture} holding a list of {@link EventExecution}s for the {@link
      *     Action}s executed in the event handler
      */
-    protected CompletableFuture<List<EventExecution>> executeActionsForEventHandler(
-            EventHandler eventHandler, Message msg) {
+    protected CompletableFuture<List<EventExecution>> executeActionsForEventHandler(EventHandler eventHandler, Message msg) {
         List<CompletableFuture<EventExecution>> futuresList = new ArrayList<>();
         int i = 0;
         for (Action action : eventHandler.getActions()) {
@@ -235,14 +200,7 @@ public class DefaultEventProcessor {
             eventExecution.setAction(action.getAction());
             eventExecution.setStatus(Status.IN_PROGRESS);
             if (executionService.addEventExecution(eventExecution)) {
-                futuresList.add(
-                        CompletableFuture.supplyAsync(
-                                () ->
-                                        execute(
-                                                eventExecution,
-                                                action,
-                                                getPayloadObject(msg.getPayload())),
-                                eventActionExecutorService));
+                futuresList.add(CompletableFuture.supplyAsync(() -> execute(eventExecution, action, getPayloadObject(msg.getPayload())), eventActionExecutorService));
             } else {
                 LOGGER.warn("Duplicate delivery/execution of message: {}", msg.getId());
             }
@@ -260,51 +218,27 @@ public class DefaultEventProcessor {
      */
     protected EventExecution execute(EventExecution eventExecution, Action action, Object payload) {
         try {
-            LOGGER.debug(
-                    "Executing action: {} for event: {} with messageId: {} with payload: {}",
-                    action.getAction(),
-                    eventExecution.getId(),
-                    eventExecution.getMessageId(),
-                    payload);
-
+            LOGGER.debug("Executing action: {} for event: {} with messageId: {} with payload: {}", action.getAction(), eventExecution.getId(), eventExecution.getMessageId(), payload);
             // TODO: Switch to @Retryable annotation on SimpleActionProcessor.execute()
-            Map<String, Object> output =
-                    retryTemplate.execute(
-                            context ->
-                                    actionProcessor.execute(
-                                            action,
-                                            payload,
-                                            eventExecution.getEvent(),
-                                            eventExecution.getMessageId()));
+            Map<String, Object> output = retryTemplate.execute(context -> actionProcessor.execute(action, payload, eventExecution.getEvent(), eventExecution.getMessageId()));
             if (output != null) {
                 eventExecution.getOutput().putAll(output);
             }
             eventExecution.setStatus(Status.COMPLETED);
-            Monitors.recordEventExecutionSuccess(
-                    eventExecution.getEvent(),
-                    eventExecution.getName(),
-                    eventExecution.getAction().name());
+            Monitors.recordEventExecutionSuccess(eventExecution.getEvent(), eventExecution.getName(), eventExecution.getAction().name());
         } catch (RuntimeException e) {
-            LOGGER.error(
-                    "Error executing action: {} for event: {} with messageId: {}",
-                    action.getAction(),
-                    eventExecution.getEvent(),
-                    eventExecution.getMessageId(),
-                    e);
+            LOGGER.error("Error executing action: {} for event: {} with messageId: {}", action.getAction(), eventExecution.getEvent(), eventExecution.getMessageId(), e);
             if (!isTransientException(e)) {
                 // not a transient error, fail the event execution
                 eventExecution.setStatus(Status.FAILED);
                 eventExecution.getOutput().put("exception", e.getMessage());
-                Monitors.recordEventExecutionError(
-                        eventExecution.getEvent(),
-                        eventExecution.getName(),
-                        eventExecution.getAction().name(),
-                        e.getClass().getSimpleName());
+                Monitors.recordEventExecutionError(eventExecution.getEvent(), eventExecution.getName(), eventExecution.getAction().name(), e.getClass().getSimpleName());
             }
         }
         return eventExecution;
     }
 
+    @NullUnmarked
     private Object getPayloadObject(String payload) {
         Object payloadObject = null;
         if (payload != null) {

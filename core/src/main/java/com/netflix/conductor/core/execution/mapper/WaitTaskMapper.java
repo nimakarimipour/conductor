@@ -12,20 +12,18 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.execution.tasks.Wait;
 import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
 
 /**
@@ -50,20 +48,12 @@ public class WaitTaskMapper implements TaskMapper {
     }
 
     @Override
+    @NullUnmarked
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
-
         LOGGER.debug("TaskMapperContext {} in WaitTaskMapper", taskMapperContext);
-
         WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
         String taskId = taskMapperContext.getTaskId();
-
-        Map<String, Object> waitTaskInput =
-                parametersUtils.getTaskInputV2(
-                        taskMapperContext.getWorkflowTask().getInputParameters(),
-                        workflowModel,
-                        taskId,
-                        null);
-
+        Map<String, Object> waitTaskInput = parametersUtils.getTaskInputV2(taskMapperContext.getWorkflowTask().getInputParameters(), workflowModel, taskId, null);
         TaskModel waitTask = taskMapperContext.createTaskModel();
         waitTask.setTaskType(TASK_TYPE_WAIT);
         waitTask.setInputData(waitTaskInput);

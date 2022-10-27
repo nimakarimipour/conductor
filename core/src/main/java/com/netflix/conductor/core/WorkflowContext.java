@@ -12,16 +12,20 @@
  */
 package com.netflix.conductor.core;
 
-/** Store the authentication context, app or username or both */
+import com.netflix.conductor.NullUnmarked;
+
+/**
+ * Store the authentication context, app or username or both
+ */
 public class WorkflowContext {
 
-    public static final ThreadLocal<WorkflowContext> THREAD_LOCAL =
-            InheritableThreadLocal.withInitial(() -> new WorkflowContext("", ""));
+    public static final ThreadLocal<WorkflowContext> THREAD_LOCAL = InheritableThreadLocal.withInitial(() -> new WorkflowContext("", ""));
 
     private final String clientApp;
 
     private final String userName;
 
+    @NullUnmarked
     public WorkflowContext(String clientApp) {
         this.clientApp = clientApp;
         this.userName = null;

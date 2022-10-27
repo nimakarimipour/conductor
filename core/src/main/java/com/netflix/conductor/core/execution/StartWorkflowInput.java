@@ -14,27 +14,52 @@ package com.netflix.conductor.core.execution;
 
 import java.util.Map;
 import java.util.Objects;
-
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 
 public class StartWorkflowInput {
 
+    @SuppressWarnings("NullAway.Init")
     private String name;
+
+    @SuppressWarnings("NullAway.Init")
     private Integer version;
+
+    @SuppressWarnings("NullAway.Init")
     private WorkflowDef workflowDefinition;
+
+    @SuppressWarnings("NullAway.Init")
     private Map<String, Object> workflowInput;
+
+    @SuppressWarnings("NullAway.Init")
     private String externalInputPayloadStoragePath;
+
+    @SuppressWarnings("NullAway.Init")
     private String correlationId;
+
+    @SuppressWarnings("NullAway.Init")
     private Integer priority;
+
+    @SuppressWarnings("NullAway.Init")
     private String parentWorkflowId;
+
+    @SuppressWarnings("NullAway.Init")
     private String parentWorkflowTaskId;
+
+    @SuppressWarnings("NullAway.Init")
     private String event;
+
+    @SuppressWarnings("NullAway.Init")
     private Map<String, String> taskToDomain;
+
+    @SuppressWarnings("NullAway.Init")
     private String workflowId;
+
+    @SuppressWarnings("NullAway.Init")
     private String triggeringWorkflowId;
 
-    public StartWorkflowInput() {}
+    public StartWorkflowInput() {
+    }
 
     public StartWorkflowInput(StartWorkflowRequest startWorkflowRequest) {
         this.name = startWorkflowRequest.getName();
@@ -43,8 +68,7 @@ public class StartWorkflowInput {
         this.correlationId = startWorkflowRequest.getCorrelationId();
         this.priority = startWorkflowRequest.getPriority();
         this.workflowInput = startWorkflowRequest.getInput();
-        this.externalInputPayloadStoragePath =
-                startWorkflowRequest.getExternalInputPayloadStoragePath();
+        this.externalInputPayloadStoragePath = startWorkflowRequest.getExternalInputPayloadStoragePath();
         this.taskToDomain = startWorkflowRequest.getTaskToDomain();
     }
 
@@ -154,40 +178,16 @@ public class StartWorkflowInput {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         StartWorkflowInput that = (StartWorkflowInput) o;
-        return Objects.equals(name, that.name)
-                && Objects.equals(version, that.version)
-                && Objects.equals(workflowDefinition, that.workflowDefinition)
-                && Objects.equals(workflowInput, that.workflowInput)
-                && Objects.equals(
-                        externalInputPayloadStoragePath, that.externalInputPayloadStoragePath)
-                && Objects.equals(correlationId, that.correlationId)
-                && Objects.equals(priority, that.priority)
-                && Objects.equals(parentWorkflowId, that.parentWorkflowId)
-                && Objects.equals(parentWorkflowTaskId, that.parentWorkflowTaskId)
-                && Objects.equals(event, that.event)
-                && Objects.equals(taskToDomain, that.taskToDomain)
-                && Objects.equals(triggeringWorkflowId, that.triggeringWorkflowId)
-                && Objects.equals(workflowId, that.workflowId);
+        return Objects.equals(name, that.name) && Objects.equals(version, that.version) && Objects.equals(workflowDefinition, that.workflowDefinition) && Objects.equals(workflowInput, that.workflowInput) && Objects.equals(externalInputPayloadStoragePath, that.externalInputPayloadStoragePath) && Objects.equals(correlationId, that.correlationId) && Objects.equals(priority, that.priority) && Objects.equals(parentWorkflowId, that.parentWorkflowId) && Objects.equals(parentWorkflowTaskId, that.parentWorkflowTaskId) && Objects.equals(event, that.event) && Objects.equals(taskToDomain, that.taskToDomain) && Objects.equals(triggeringWorkflowId, that.triggeringWorkflowId) && Objects.equals(workflowId, that.workflowId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                name,
-                version,
-                workflowDefinition,
-                workflowInput,
-                externalInputPayloadStoragePath,
-                correlationId,
-                priority,
-                parentWorkflowId,
-                parentWorkflowTaskId,
-                event,
-                taskToDomain,
-                triggeringWorkflowId,
-                workflowId);
+        return Objects.hash(name, version, workflowDefinition, workflowInput, externalInputPayloadStoragePath, correlationId, priority, parentWorkflowId, parentWorkflowTaskId, event, taskToDomain, triggeringWorkflowId, workflowId);
     }
 }

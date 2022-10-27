@@ -16,12 +16,19 @@ import java.util.Objects;
 
 public class Message {
 
+    @SuppressWarnings("NullAway.Init")
     private String payload;
+
+    @SuppressWarnings("NullAway.Init")
     private String id;
+
+    @SuppressWarnings("NullAway.Init")
     private String receipt;
+
     private int priority;
 
-    public Message() {}
+    public Message() {
+    }
 
     public Message(String id, String payload, String receipt) {
         this.payload = payload;
@@ -111,10 +118,7 @@ public class Message {
             return false;
         }
         Message message = (Message) o;
-        return Objects.equals(payload, message.payload)
-                && Objects.equals(id, message.id)
-                && Objects.equals(priority, message.priority)
-                && Objects.equals(receipt, message.receipt);
+        return Objects.equals(payload, message.payload) && Objects.equals(id, message.id) && Objects.equals(priority, message.priority) && Objects.equals(receipt, message.receipt);
     }
 
     @Override

@@ -12,18 +12,16 @@
  */
 package com.netflix.conductor.model;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
@@ -31,6 +29,7 @@ import com.google.protobuf.Any;
 public class TaskModel {
 
     public enum Status {
+
         IN_PROGRESS(false, true, true),
         CANCELED(true, false, false),
         FAILED(true, false, true),
@@ -66,36 +65,50 @@ public class TaskModel {
         }
     }
 
+    @SuppressWarnings("NullAway.Init")
     private String taskType;
 
+    @SuppressWarnings("NullAway.Init")
     private Status status;
 
+    @SuppressWarnings("NullAway.Init")
     private String referenceTaskName;
 
     private int retryCount;
 
     private int seq;
 
+    @SuppressWarnings("NullAway.Init")
     private String correlationId;
 
     private int pollCount;
 
+    @SuppressWarnings("NullAway.Init")
     private String taskDefName;
 
-    /** Time when the task was scheduled */
+    /**
+     * Time when the task was scheduled
+     */
     private long scheduledTime;
 
-    /** Time when the task was first polled */
+    /**
+     * Time when the task was first polled
+     */
     private long startTime;
 
-    /** Time when the task completed executing */
+    /**
+     * Time when the task completed executing
+     */
     private long endTime;
 
-    /** Time when the task was last updated */
+    /**
+     * Time when the task was last updated
+     */
     private long updateTime;
 
     private int startDelayInSeconds;
 
+    @SuppressWarnings("NullAway.Init")
     private String retriedTaskId;
 
     private boolean retried;
@@ -106,42 +119,56 @@ public class TaskModel {
 
     private long responseTimeoutSeconds;
 
+    @SuppressWarnings("NullAway.Init")
     private String workflowInstanceId;
 
+    @SuppressWarnings("NullAway.Init")
     private String workflowType;
 
+    @SuppressWarnings("NullAway.Init")
     private String taskId;
 
+    @SuppressWarnings("NullAway.Init")
     private String reasonForIncompletion;
 
     private long callbackAfterSeconds;
 
+    @SuppressWarnings("NullAway.Init")
     private String workerId;
 
+    @SuppressWarnings("NullAway.Init")
     private WorkflowTask workflowTask;
 
+    @SuppressWarnings("NullAway.Init")
     private String domain;
 
+    @SuppressWarnings("NullAway.Init")
     private Any inputMessage;
 
+    @SuppressWarnings("NullAway.Init")
     private Any outputMessage;
 
     private int rateLimitPerFrequency;
 
     private int rateLimitFrequencyInSeconds;
 
+    @SuppressWarnings("NullAway.Init")
     private String externalInputPayloadStoragePath;
 
+    @SuppressWarnings("NullAway.Init")
     private String externalOutputPayloadStoragePath;
 
     private int workflowPriority;
 
+    @SuppressWarnings("NullAway.Init")
     private String executionNameSpace;
 
+    @SuppressWarnings("NullAway.Init")
     private String isolationGroupId;
 
     private int iteration;
 
+    @SuppressWarnings("NullAway.Init")
     private String subWorkflowId;
 
     // Timeout after which the wait task should be marked as completed
@@ -153,13 +180,17 @@ public class TaskModel {
      */
     private boolean subworkflowChanged;
 
-    @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> inputPayload = new HashMap<>();
 
-    @JsonIgnore private Map<String, Object> outputPayload = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> outputPayload = new HashMap<>();
 
-    @JsonIgnore private Map<String, Object> inputData = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> inputData = new HashMap<>();
 
-    @JsonIgnore private Map<String, Object> outputData = new HashMap<>();
+    @JsonIgnore
+    private Map<String, Object> outputData = new HashMap<>();
 
     public String getTaskType() {
         return taskType;
@@ -530,16 +561,13 @@ public class TaskModel {
         this.iteration = iteration;
     }
 
+    @NullUnmarked
     public String getSubWorkflowId() {
         // For backwards compatibility
         if (StringUtils.isNotBlank(subWorkflowId)) {
             return subWorkflowId;
         } else {
-            return this.getOutputData() != null && this.getOutputData().get("subWorkflowId") != null
-                    ? (String) this.getOutputData().get("subWorkflowId")
-                    : this.getInputData() != null
-                            ? (String) this.getInputData().get("subWorkflowId")
-                            : null;
+            return this.getOutputData() != null && this.getOutputData().get("subWorkflowId") != null ? (String) this.getOutputData().get("subWorkflowId") : this.getInputData() != null ? (String) this.getInputData().get("subWorkflowId") : null;
         }
     }
 
@@ -588,9 +616,7 @@ public class TaskModel {
     public long getQueueWaitTime() {
         if (this.startTime > 0 && this.scheduledTime > 0) {
             if (this.updateTime > 0 && getCallbackAfterSeconds() > 0) {
-                long waitTime =
-                        System.currentTimeMillis()
-                                - (this.updateTime + (getCallbackAfterSeconds() * 1000));
+                long waitTime = System.currentTimeMillis() - (this.updateTime + (getCallbackAfterSeconds() * 1000));
                 return waitTime > 0 ? waitTime : 0;
             } else {
                 return this.startTime - this.scheduledTime;
@@ -632,214 +658,28 @@ public class TaskModel {
 
     @Override
     public String toString() {
-        return "TaskModel{"
-                + "taskType='"
-                + taskType
-                + '\''
-                + ", status="
-                + status
-                + ", inputData="
-                + inputData
-                + ", referenceTaskName='"
-                + referenceTaskName
-                + '\''
-                + ", retryCount="
-                + retryCount
-                + ", seq="
-                + seq
-                + ", correlationId='"
-                + correlationId
-                + '\''
-                + ", pollCount="
-                + pollCount
-                + ", taskDefName='"
-                + taskDefName
-                + '\''
-                + ", scheduledTime="
-                + scheduledTime
-                + ", startTime="
-                + startTime
-                + ", endTime="
-                + endTime
-                + ", updateTime="
-                + updateTime
-                + ", startDelayInSeconds="
-                + startDelayInSeconds
-                + ", retriedTaskId='"
-                + retriedTaskId
-                + '\''
-                + ", retried="
-                + retried
-                + ", executed="
-                + executed
-                + ", callbackFromWorker="
-                + callbackFromWorker
-                + ", responseTimeoutSeconds="
-                + responseTimeoutSeconds
-                + ", workflowInstanceId='"
-                + workflowInstanceId
-                + '\''
-                + ", workflowType='"
-                + workflowType
-                + '\''
-                + ", taskId='"
-                + taskId
-                + '\''
-                + ", reasonForIncompletion='"
-                + reasonForIncompletion
-                + '\''
-                + ", callbackAfterSeconds="
-                + callbackAfterSeconds
-                + ", workerId='"
-                + workerId
-                + '\''
-                + ", outputData="
-                + outputData
-                + ", workflowTask="
-                + workflowTask
-                + ", domain='"
-                + domain
-                + '\''
-                + ", waitTimeout='"
-                + waitTimeout
-                + '\''
-                + ", inputMessage="
-                + inputMessage
-                + ", outputMessage="
-                + outputMessage
-                + ", rateLimitPerFrequency="
-                + rateLimitPerFrequency
-                + ", rateLimitFrequencyInSeconds="
-                + rateLimitFrequencyInSeconds
-                + ", externalInputPayloadStoragePath='"
-                + externalInputPayloadStoragePath
-                + '\''
-                + ", externalOutputPayloadStoragePath='"
-                + externalOutputPayloadStoragePath
-                + '\''
-                + ", workflowPriority="
-                + workflowPriority
-                + ", executionNameSpace='"
-                + executionNameSpace
-                + '\''
-                + ", isolationGroupId='"
-                + isolationGroupId
-                + '\''
-                + ", iteration="
-                + iteration
-                + ", subWorkflowId='"
-                + subWorkflowId
-                + '\''
-                + ", subworkflowChanged="
-                + subworkflowChanged
-                + '}';
+        return "TaskModel{" + "taskType='" + taskType + '\'' + ", status=" + status + ", inputData=" + inputData + ", referenceTaskName='" + referenceTaskName + '\'' + ", retryCount=" + retryCount + ", seq=" + seq + ", correlationId='" + correlationId + '\'' + ", pollCount=" + pollCount + ", taskDefName='" + taskDefName + '\'' + ", scheduledTime=" + scheduledTime + ", startTime=" + startTime + ", endTime=" + endTime + ", updateTime=" + updateTime + ", startDelayInSeconds=" + startDelayInSeconds + ", retriedTaskId='" + retriedTaskId + '\'' + ", retried=" + retried + ", executed=" + executed + ", callbackFromWorker=" + callbackFromWorker + ", responseTimeoutSeconds=" + responseTimeoutSeconds + ", workflowInstanceId='" + workflowInstanceId + '\'' + ", workflowType='" + workflowType + '\'' + ", taskId='" + taskId + '\'' + ", reasonForIncompletion='" + reasonForIncompletion + '\'' + ", callbackAfterSeconds=" + callbackAfterSeconds + ", workerId='" + workerId + '\'' + ", outputData=" + outputData + ", workflowTask=" + workflowTask + ", domain='" + domain + '\'' + ", waitTimeout='" + waitTimeout + '\'' + ", inputMessage=" + inputMessage + ", outputMessage=" + outputMessage + ", rateLimitPerFrequency=" + rateLimitPerFrequency + ", rateLimitFrequencyInSeconds=" + rateLimitFrequencyInSeconds + ", externalInputPayloadStoragePath='" + externalInputPayloadStoragePath + '\'' + ", externalOutputPayloadStoragePath='" + externalOutputPayloadStoragePath + '\'' + ", workflowPriority=" + workflowPriority + ", executionNameSpace='" + executionNameSpace + '\'' + ", isolationGroupId='" + isolationGroupId + '\'' + ", iteration=" + iteration + ", subWorkflowId='" + subWorkflowId + '\'' + ", subworkflowChanged=" + subworkflowChanged + '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         TaskModel taskModel = (TaskModel) o;
-        return getRetryCount() == taskModel.getRetryCount()
-                && getSeq() == taskModel.getSeq()
-                && getPollCount() == taskModel.getPollCount()
-                && getScheduledTime() == taskModel.getScheduledTime()
-                && getStartTime() == taskModel.getStartTime()
-                && getEndTime() == taskModel.getEndTime()
-                && getUpdateTime() == taskModel.getUpdateTime()
-                && getStartDelayInSeconds() == taskModel.getStartDelayInSeconds()
-                && isRetried() == taskModel.isRetried()
-                && isExecuted() == taskModel.isExecuted()
-                && isCallbackFromWorker() == taskModel.isCallbackFromWorker()
-                && getResponseTimeoutSeconds() == taskModel.getResponseTimeoutSeconds()
-                && getCallbackAfterSeconds() == taskModel.getCallbackAfterSeconds()
-                && getRateLimitPerFrequency() == taskModel.getRateLimitPerFrequency()
-                && getRateLimitFrequencyInSeconds() == taskModel.getRateLimitFrequencyInSeconds()
-                && getWorkflowPriority() == taskModel.getWorkflowPriority()
-                && getIteration() == taskModel.getIteration()
-                && isSubworkflowChanged() == taskModel.isSubworkflowChanged()
-                && Objects.equals(getTaskType(), taskModel.getTaskType())
-                && getStatus() == taskModel.getStatus()
-                && Objects.equals(getInputData(), taskModel.getInputData())
-                && Objects.equals(getReferenceTaskName(), taskModel.getReferenceTaskName())
-                && Objects.equals(getCorrelationId(), taskModel.getCorrelationId())
-                && Objects.equals(getTaskDefName(), taskModel.getTaskDefName())
-                && Objects.equals(getRetriedTaskId(), taskModel.getRetriedTaskId())
-                && Objects.equals(getWorkflowInstanceId(), taskModel.getWorkflowInstanceId())
-                && Objects.equals(getWorkflowType(), taskModel.getWorkflowType())
-                && Objects.equals(getTaskId(), taskModel.getTaskId())
-                && Objects.equals(getReasonForIncompletion(), taskModel.getReasonForIncompletion())
-                && Objects.equals(getWorkerId(), taskModel.getWorkerId())
-                && Objects.equals(getWaitTimeout(), taskModel.getWaitTimeout())
-                && Objects.equals(outputData, taskModel.outputData)
-                && Objects.equals(outputPayload, taskModel.outputPayload)
-                && Objects.equals(getWorkflowTask(), taskModel.getWorkflowTask())
-                && Objects.equals(getDomain(), taskModel.getDomain())
-                && Objects.equals(getInputMessage(), taskModel.getInputMessage())
-                && Objects.equals(getOutputMessage(), taskModel.getOutputMessage())
-                && Objects.equals(
-                        getExternalInputPayloadStoragePath(),
-                        taskModel.getExternalInputPayloadStoragePath())
-                && Objects.equals(
-                        getExternalOutputPayloadStoragePath(),
-                        taskModel.getExternalOutputPayloadStoragePath())
-                && Objects.equals(getExecutionNameSpace(), taskModel.getExecutionNameSpace())
-                && Objects.equals(getIsolationGroupId(), taskModel.getIsolationGroupId())
-                && Objects.equals(getSubWorkflowId(), taskModel.getSubWorkflowId());
+        return getRetryCount() == taskModel.getRetryCount() && getSeq() == taskModel.getSeq() && getPollCount() == taskModel.getPollCount() && getScheduledTime() == taskModel.getScheduledTime() && getStartTime() == taskModel.getStartTime() && getEndTime() == taskModel.getEndTime() && getUpdateTime() == taskModel.getUpdateTime() && getStartDelayInSeconds() == taskModel.getStartDelayInSeconds() && isRetried() == taskModel.isRetried() && isExecuted() == taskModel.isExecuted() && isCallbackFromWorker() == taskModel.isCallbackFromWorker() && getResponseTimeoutSeconds() == taskModel.getResponseTimeoutSeconds() && getCallbackAfterSeconds() == taskModel.getCallbackAfterSeconds() && getRateLimitPerFrequency() == taskModel.getRateLimitPerFrequency() && getRateLimitFrequencyInSeconds() == taskModel.getRateLimitFrequencyInSeconds() && getWorkflowPriority() == taskModel.getWorkflowPriority() && getIteration() == taskModel.getIteration() && isSubworkflowChanged() == taskModel.isSubworkflowChanged() && Objects.equals(getTaskType(), taskModel.getTaskType()) && getStatus() == taskModel.getStatus() && Objects.equals(getInputData(), taskModel.getInputData()) && Objects.equals(getReferenceTaskName(), taskModel.getReferenceTaskName()) && Objects.equals(getCorrelationId(), taskModel.getCorrelationId()) && Objects.equals(getTaskDefName(), taskModel.getTaskDefName()) && Objects.equals(getRetriedTaskId(), taskModel.getRetriedTaskId()) && Objects.equals(getWorkflowInstanceId(), taskModel.getWorkflowInstanceId()) && Objects.equals(getWorkflowType(), taskModel.getWorkflowType()) && Objects.equals(getTaskId(), taskModel.getTaskId()) && Objects.equals(getReasonForIncompletion(), taskModel.getReasonForIncompletion()) && Objects.equals(getWorkerId(), taskModel.getWorkerId()) && Objects.equals(getWaitTimeout(), taskModel.getWaitTimeout()) && Objects.equals(outputData, taskModel.outputData) && Objects.equals(outputPayload, taskModel.outputPayload) && Objects.equals(getWorkflowTask(), taskModel.getWorkflowTask()) && Objects.equals(getDomain(), taskModel.getDomain()) && Objects.equals(getInputMessage(), taskModel.getInputMessage()) && Objects.equals(getOutputMessage(), taskModel.getOutputMessage()) && Objects.equals(getExternalInputPayloadStoragePath(), taskModel.getExternalInputPayloadStoragePath()) && Objects.equals(getExternalOutputPayloadStoragePath(), taskModel.getExternalOutputPayloadStoragePath()) && Objects.equals(getExecutionNameSpace(), taskModel.getExecutionNameSpace()) && Objects.equals(getIsolationGroupId(), taskModel.getIsolationGroupId()) && Objects.equals(getSubWorkflowId(), taskModel.getSubWorkflowId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                getTaskType(),
-                getStatus(),
-                getInputData(),
-                getReferenceTaskName(),
-                getRetryCount(),
-                getSeq(),
-                getCorrelationId(),
-                getPollCount(),
-                getTaskDefName(),
-                getScheduledTime(),
-                getStartTime(),
-                getEndTime(),
-                getUpdateTime(),
-                getStartDelayInSeconds(),
-                getRetriedTaskId(),
-                isRetried(),
-                isExecuted(),
-                isCallbackFromWorker(),
-                getResponseTimeoutSeconds(),
-                getWorkflowInstanceId(),
-                getWorkflowType(),
-                getTaskId(),
-                getReasonForIncompletion(),
-                getCallbackAfterSeconds(),
-                getWorkerId(),
-                getWaitTimeout(),
-                outputData,
-                outputPayload,
-                getWorkflowTask(),
-                getDomain(),
-                getInputMessage(),
-                getOutputMessage(),
-                getRateLimitPerFrequency(),
-                getRateLimitFrequencyInSeconds(),
-                getExternalInputPayloadStoragePath(),
-                getExternalOutputPayloadStoragePath(),
-                getWorkflowPriority(),
-                getExecutionNameSpace(),
-                getIsolationGroupId(),
-                getIteration(),
-                getSubWorkflowId(),
-                isSubworkflowChanged());
+        return Objects.hash(getTaskType(), getStatus(), getInputData(), getReferenceTaskName(), getRetryCount(), getSeq(), getCorrelationId(), getPollCount(), getTaskDefName(), getScheduledTime(), getStartTime(), getEndTime(), getUpdateTime(), getStartDelayInSeconds(), getRetriedTaskId(), isRetried(), isExecuted(), isCallbackFromWorker(), getResponseTimeoutSeconds(), getWorkflowInstanceId(), getWorkflowType(), getTaskId(), getReasonForIncompletion(), getCallbackAfterSeconds(), getWorkerId(), getWaitTimeout(), outputData, outputPayload, getWorkflowTask(), getDomain(), getInputMessage(), getOutputMessage(), getRateLimitPerFrequency(), getRateLimitFrequencyInSeconds(), getExternalInputPayloadStoragePath(), getExternalOutputPayloadStoragePath(), getWorkflowPriority(), getExecutionNameSpace(), getIsolationGroupId(), getIteration(), getSubWorkflowId(), isSubworkflowChanged());
     }
 
     public Task toTask() {
         Task task = new Task();
         BeanUtils.copyProperties(this, task);
         task.setStatus(Task.Status.valueOf(status.name()));
-
         // ensure that input/output is properly represented
         if (externalInputPayloadStoragePath != null) {
             task.setInputData(new HashMap<>());
@@ -874,6 +714,7 @@ public class TaskModel {
         }
     }
 
+    @NullUnmarked
     public void clearOutput() {
         this.outputData.clear();
         this.outputPayload.clear();

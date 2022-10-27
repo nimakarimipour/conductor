@@ -82,7 +82,7 @@ tasks.withType(JavaCompile) {
             check("NullAway", CheckSeverity.ERROR)
             check("TypeAnnotatorScanner", CheckSeverity.ERROR)
             check("ExhaustiveFixSerializer", CheckSeverity.OFF)
-            check("NullUnmarkedCollector", CheckSeverity.OFF)
+            check("NullUnmarkedCollector", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", "com.netflix.conductor")
             option("NullAway:SerializeFixMetadata", "true")
             option("NullAway:FixSerializationConfigPath", "/tmp/NullAwayFix/nullaway.xml")

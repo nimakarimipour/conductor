@@ -12,13 +12,12 @@
  */
 package com.netflix.conductor.service;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.stereotype.Service;
-
 import com.netflix.conductor.annotations.Audit;
 import com.netflix.conductor.annotations.Trace;
 import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
@@ -41,15 +40,14 @@ import com.netflix.conductor.core.utils.Utils;
 public class WorkflowServiceImpl implements WorkflowService {
 
     private final WorkflowExecutor workflowExecutor;
+
     private final ExecutionService executionService;
+
     private final MetadataService metadataService;
+
     private final StartWorkflowOperation startWorkflowOperation;
 
-    public WorkflowServiceImpl(
-            WorkflowExecutor workflowExecutor,
-            ExecutionService executionService,
-            MetadataService metadataService,
-            StartWorkflowOperation startWorkflowOperation) {
+    public WorkflowServiceImpl(WorkflowExecutor workflowExecutor, ExecutionService executionService, MetadataService metadataService, StartWorkflowOperation startWorkflowOperation) {
         this.workflowExecutor = workflowExecutor;
         this.executionService = executionService;
         this.metadataService = metadataService;
@@ -80,15 +78,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param workflowDef - workflow definition
      * @return the id of the workflow instance that can be use for tracking.
      */
-    public String startWorkflow(
-            String name,
-            Integer version,
-            String correlationId,
-            Integer priority,
-            Map<String, Object> input,
-            String externalInputPayloadStoragePath,
-            Map<String, String> taskToDomain,
-            WorkflowDef workflowDef) {
+    public String startWorkflow(String name, Integer version, String correlationId, Integer priority, Map<String, Object> input, String externalInputPayloadStoragePath, Map<String, String> taskToDomain, WorkflowDef workflowDef) {
         StartWorkflowInput startWorkflowInput = new StartWorkflowInput();
         startWorkflowInput.setName(name);
         startWorkflowInput.setVersion(version);
@@ -98,7 +88,6 @@ public class WorkflowServiceImpl implements WorkflowService {
         startWorkflowInput.setExternalInputPayloadStoragePath(externalInputPayloadStoragePath);
         startWorkflowInput.setTaskToDomain(taskToDomain);
         startWorkflowInput.setWorkflowDefinition(workflowDef);
-
         return startWorkflowOperation.execute(startWorkflowInput);
     }
 
@@ -113,25 +102,17 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param input Input to the workflow you want to start.
      * @return the id of the workflow instance that can be use for tracking.
      */
-    public String startWorkflow(
-            String name,
-            Integer version,
-            String correlationId,
-            Integer priority,
-            Map<String, Object> input) {
+    public String startWorkflow(String name, Integer version, String correlationId, Integer priority, Map<String, Object> input) {
         WorkflowDef workflowDef = metadataService.getWorkflowDef(name, version);
         if (workflowDef == null) {
-            throw new NotFoundException(
-                    "No such workflow found by name: %s, version: %d", name, version);
+            throw new NotFoundException("No such workflow found by name: %s, version: %d", name, version);
         }
-
         StartWorkflowInput startWorkflowInput = new StartWorkflowInput();
         startWorkflowInput.setName(workflowDef.getName());
         startWorkflowInput.setVersion(workflowDef.getVersion());
         startWorkflowInput.setCorrelationId(correlationId);
         startWorkflowInput.setPriority(priority);
         startWorkflowInput.setWorkflowInput(input);
-
         return startWorkflowOperation.execute(startWorkflowInput);
     }
 
@@ -144,10 +125,8 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param includeTasks Includes tasks associated with workflows.
      * @return a list of {@link Workflow}
      */
-    public List<Workflow> getWorkflows(
-            String name, String correlationId, boolean includeClosed, boolean includeTasks) {
-        return executionService.getWorkflowInstances(
-                name, correlationId, includeClosed, includeTasks);
+    public List<Workflow> getWorkflows(String name, String correlationId, boolean includeClosed, boolean includeTasks) {
+        return executionService.getWorkflowInstances(name, correlationId, includeClosed, includeTasks);
     }
 
     /**
@@ -159,13 +138,10 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param correlationIds Includes tasks associated with workflows.
      * @return a {@link Map} of {@link String} as key and a list of {@link Workflow} as value
      */
-    public Map<String, List<Workflow>> getWorkflows(
-            String name, boolean includeClosed, boolean includeTasks, List<String> correlationIds) {
+    public Map<String, List<Workflow>> getWorkflows(String name, boolean includeClosed, boolean includeTasks, List<String> correlationIds) {
         Map<String, List<Workflow>> workflowMap = new HashMap<>();
         for (String correlationId : correlationIds) {
-            List<Workflow> workflows =
-                    executionService.getWorkflowInstances(
-                            name, correlationId, includeClosed, includeTasks);
+            List<Workflow> workflows = executionService.getWorkflowInstances(name, correlationId, includeClosed, includeTasks);
             workflowMap.put(correlationId, workflows);
         }
         return workflowMap;
@@ -205,20 +181,15 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param endTime EndTime of the workflow
      * @return a list of workflow Ids.
      */
-    public List<String> getRunningWorkflows(
-            String workflowName, Integer version, Long startTime, Long endTime) {
-        if (Optional.ofNullable(startTime).orElse(0L) != 0
-                && Optional.ofNullable(endTime).orElse(0L) != 0) {
+    @NullUnmarked
+    public List<String> getRunningWorkflows(String workflowName, Integer version, Long startTime, Long endTime) {
+        if (Optional.ofNullable(startTime).orElse(0L) != 0 && Optional.ofNullable(endTime).orElse(0L) != 0) {
             return workflowExecutor.getWorkflows(workflowName, version, startTime, endTime);
         } else {
-            version =
-                    Optional.ofNullable(version)
-                            .orElseGet(
-                                    () -> {
-                                        WorkflowDef workflowDef =
-                                                metadataService.getWorkflowDef(workflowName, null);
-                                        return workflowDef.getVersion();
-                                    });
+            version = Optional.ofNullable(version).orElseGet(() -> {
+                WorkflowDef workflowDef = metadataService.getWorkflowDef(workflowName, null);
+                return workflowDef.getVersion();
+            });
             return workflowExecutor.getRunningWorkflowIds(workflowName, version);
         }
     }
@@ -257,8 +228,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param taskReferenceName The task reference name.
      * @param skipTaskRequest {@link SkipTaskRequest} for task you want to skip.
      */
-    public void skipTaskFromWorkflow(
-            String workflowId, String taskReferenceName, SkipTaskRequest skipTaskRequest) {
+    public void skipTaskFromWorkflow(String workflowId, String taskReferenceName, SkipTaskRequest skipTaskRequest) {
         workflowExecutor.skipTaskFromWorkflow(workflowId, taskReferenceName, skipTaskRequest);
     }
 
@@ -324,10 +294,8 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<WorkflowSummary> searchWorkflows(
-            int start, int size, String sort, String freeText, String query) {
-        return executionService.search(
-                query, freeText, start, size, Utils.convertStringToList(sort));
+    public SearchResult<WorkflowSummary> searchWorkflows(int start, int size, String sort, String freeText, String query) {
+        return executionService.search(query, freeText, start, size, Utils.convertStringToList(sort));
     }
 
     /**
@@ -341,10 +309,8 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<Workflow> searchWorkflowsV2(
-            int start, int size, String sort, String freeText, String query) {
-        return executionService.searchV2(
-                query, freeText, start, size, Utils.convertStringToList(sort));
+    public SearchResult<Workflow> searchWorkflowsV2(int start, int size, String sort, String freeText, String query) {
+        return executionService.searchV2(query, freeText, start, size, Utils.convertStringToList(sort));
     }
 
     /**
@@ -358,8 +324,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<WorkflowSummary> searchWorkflows(
-            int start, int size, List<String> sort, String freeText, String query) {
+    public SearchResult<WorkflowSummary> searchWorkflows(int start, int size, List<String> sort, String freeText, String query) {
         return executionService.search(query, freeText, start, size, sort);
     }
 
@@ -374,8 +339,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<Workflow> searchWorkflowsV2(
-            int start, int size, List<String> sort, String freeText, String query) {
+    public SearchResult<Workflow> searchWorkflowsV2(int start, int size, List<String> sort, String freeText, String query) {
         return executionService.searchV2(query, freeText, start, size, sort);
     }
 
@@ -390,10 +354,8 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<WorkflowSummary> searchWorkflowsByTasks(
-            int start, int size, String sort, String freeText, String query) {
-        return executionService.searchWorkflowByTasks(
-                query, freeText, start, size, Utils.convertStringToList(sort));
+    public SearchResult<WorkflowSummary> searchWorkflowsByTasks(int start, int size, String sort, String freeText, String query) {
+        return executionService.searchWorkflowByTasks(query, freeText, start, size, Utils.convertStringToList(sort));
     }
 
     /**
@@ -407,10 +369,8 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<Workflow> searchWorkflowsByTasksV2(
-            int start, int size, String sort, String freeText, String query) {
-        return executionService.searchWorkflowByTasksV2(
-                query, freeText, start, size, Utils.convertStringToList(sort));
+    public SearchResult<Workflow> searchWorkflowsByTasksV2(int start, int size, String sort, String freeText, String query) {
+        return executionService.searchWorkflowByTasksV2(query, freeText, start, size, Utils.convertStringToList(sort));
     }
 
     /**
@@ -424,8 +384,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<WorkflowSummary> searchWorkflowsByTasks(
-            int start, int size, List<String> sort, String freeText, String query) {
+    public SearchResult<WorkflowSummary> searchWorkflowsByTasks(int start, int size, List<String> sort, String freeText, String query) {
         return executionService.searchWorkflowByTasks(query, freeText, start, size, sort);
     }
 
@@ -440,8 +399,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param query Query you want to search
      * @return instance of {@link SearchResult}
      */
-    public SearchResult<Workflow> searchWorkflowsByTasksV2(
-            int start, int size, List<String> sort, String freeText, String query) {
+    public SearchResult<Workflow> searchWorkflowsByTasksV2(int start, int size, List<String> sort, String freeText, String query) {
         return executionService.searchWorkflowByTasksV2(query, freeText, start, size, sort);
     }
 
@@ -454,8 +412,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @return {@link ExternalStorageLocation} containing the uri and the path to the payload is
      *     stored in external storage
      */
-    public ExternalStorageLocation getExternalStorageLocation(
-            String path, String operation, String type) {
+    public ExternalStorageLocation getExternalStorageLocation(String path, String operation, String type) {
         return executionService.getExternalStorageLocation(path, operation, type);
     }
 }

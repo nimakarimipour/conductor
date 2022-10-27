@@ -12,22 +12,23 @@
  */
 package com.netflix.conductor.core.execution.evaluators;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.core.exception.TerminateWorkflowException;
 
 @Component(ValueParamEvaluator.NAME)
 public class ValueParamEvaluator implements Evaluator {
 
     public static final String NAME = "value-param";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ValueParamEvaluator.class);
 
     @SuppressWarnings("unchecked")
     @Override
+    @NullUnmarked
     public Object evaluate(String expression, Object input) {
         LOGGER.debug("ValueParam evaluator -- evaluating: {}", expression);
         if (input instanceof Map) {

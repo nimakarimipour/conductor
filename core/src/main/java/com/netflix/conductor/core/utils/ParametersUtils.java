@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.utils;
 
+import com.netflix.conductor.NullUnmarked;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,19 +20,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.utils.EnvUtils;
 import com.netflix.conductor.common.utils.TaskUtils;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
@@ -39,37 +37,32 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 
-/** Used to parse and resolve the JSONPath bindings in the workflow and task definitions. */
+/**
+ * Used to parse and resolve the JSONPath bindings in the workflow and task definitions.
+ */
 @Component
 public class ParametersUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ParametersUtils.class);
 
     private final ObjectMapper objectMapper;
-    private final TypeReference<Map<String, Object>> map = new TypeReference<>() {};
+
+    private final TypeReference<Map<String, Object>> map = new TypeReference<>() {
+    };
 
     public ParametersUtils(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    public Map<String, Object> getTaskInput(
-            Map<String, Object> inputParams,
-            WorkflowModel workflow,
-            TaskDef taskDefinition,
-            String taskId) {
+    public Map<String, Object> getTaskInput(Map<String, Object> inputParams, WorkflowModel workflow, TaskDef taskDefinition, String taskId) {
         if (workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
             return getTaskInputV2(inputParams, workflow, taskId, taskDefinition);
         }
         return getTaskInputV1(workflow, inputParams);
     }
 
-    public Map<String, Object> getTaskInputV2(
-            Map<String, Object> input,
-            WorkflowModel workflow,
-            String taskId,
-            TaskDef taskDefinition) {
+    public Map<String, Object> getTaskInputV2(Map<String, Object> input, WorkflowModel workflow, String taskId, TaskDef taskDefinition) {
         Map<String, Object> inputParams;
-
         if (input != null) {
             inputParams = clone(input);
         } else {
@@ -78,9 +71,7 @@ public class ParametersUtils {
         if (taskDefinition != null && taskDefinition.getInputTemplate() != null) {
             clone(taskDefinition.getInputTemplate()).forEach(inputParams::putIfAbsent);
         }
-
         Map<String, Map<String, Object>> inputMap = new HashMap<>();
-
         Map<String, Object> workflowParams = new HashMap<>();
         workflowParams.put("input", workflow.getInput());
         workflowParams.put("output", workflow.getOutput());
@@ -94,55 +85,39 @@ public class ParametersUtils {
         workflowParams.put("reasonForIncompletion", workflow.getReasonForIncompletion());
         workflowParams.put("schemaVersion", workflow.getWorkflowDefinition().getSchemaVersion());
         workflowParams.put("variables", workflow.getVariables());
-
         inputMap.put("workflow", workflowParams);
-
         // For new workflow being started the list of tasks will be empty
-        workflow.getTasks().stream()
-                .map(TaskModel::getReferenceTaskName)
-                .map(workflow::getTaskByRefName)
-                .forEach(
-                        task -> {
-                            Map<String, Object> taskParams = new HashMap<>();
-                            taskParams.put("input", task.getInputData());
-                            taskParams.put("output", task.getOutputData());
-                            taskParams.put("taskType", task.getTaskType());
-                            if (task.getStatus() != null) {
-                                taskParams.put("status", task.getStatus().toString());
-                            }
-                            taskParams.put("referenceTaskName", task.getReferenceTaskName());
-                            taskParams.put("retryCount", task.getRetryCount());
-                            taskParams.put("correlationId", task.getCorrelationId());
-                            taskParams.put("pollCount", task.getPollCount());
-                            taskParams.put("taskDefName", task.getTaskDefName());
-                            taskParams.put("scheduledTime", task.getScheduledTime());
-                            taskParams.put("startTime", task.getStartTime());
-                            taskParams.put("endTime", task.getEndTime());
-                            taskParams.put("workflowInstanceId", task.getWorkflowInstanceId());
-                            taskParams.put("taskId", task.getTaskId());
-                            taskParams.put(
-                                    "reasonForIncompletion", task.getReasonForIncompletion());
-                            taskParams.put("callbackAfterSeconds", task.getCallbackAfterSeconds());
-                            taskParams.put("workerId", task.getWorkerId());
-                            taskParams.put("iteration", task.getIteration());
-                            inputMap.put(
-                                    task.isLoopOverTask()
-                                            ? TaskUtils.removeIterationFromTaskRefName(
-                                                    task.getReferenceTaskName())
-                                            : task.getReferenceTaskName(),
-                                    taskParams);
-                        });
-
-        Configuration option =
-                Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+        workflow.getTasks().stream().map(TaskModel::getReferenceTaskName).map(workflow::getTaskByRefName).forEach(task -> {
+            Map<String, Object> taskParams = new HashMap<>();
+            taskParams.put("input", task.getInputData());
+            taskParams.put("output", task.getOutputData());
+            taskParams.put("taskType", task.getTaskType());
+            if (task.getStatus() != null) {
+                taskParams.put("status", task.getStatus().toString());
+            }
+            taskParams.put("referenceTaskName", task.getReferenceTaskName());
+            taskParams.put("retryCount", task.getRetryCount());
+            taskParams.put("correlationId", task.getCorrelationId());
+            taskParams.put("pollCount", task.getPollCount());
+            taskParams.put("taskDefName", task.getTaskDefName());
+            taskParams.put("scheduledTime", task.getScheduledTime());
+            taskParams.put("startTime", task.getStartTime());
+            taskParams.put("endTime", task.getEndTime());
+            taskParams.put("workflowInstanceId", task.getWorkflowInstanceId());
+            taskParams.put("taskId", task.getTaskId());
+            taskParams.put("reasonForIncompletion", task.getReasonForIncompletion());
+            taskParams.put("callbackAfterSeconds", task.getCallbackAfterSeconds());
+            taskParams.put("workerId", task.getWorkerId());
+            taskParams.put("iteration", task.getIteration());
+            inputMap.put(task.isLoopOverTask() ? TaskUtils.removeIterationFromTaskRefName(task.getReferenceTaskName()) : task.getReferenceTaskName(), taskParams);
+        });
+        Configuration option = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.parse(inputMap, option);
         Map<String, Object> replacedTaskInput = replace(inputParams, documentContext, taskId);
         if (taskDefinition != null && taskDefinition.getInputTemplate() != null) {
             // If input for a given key resolves to null, try replacing it with one from
             // inputTemplate, if it exists.
-            replacedTaskInput.replaceAll(
-                    (key, value) ->
-                            (value == null) ? taskDefinition.getInputTemplate().get(key) : value);
+            replacedTaskInput.replaceAll((key, value) -> (value == null) ? taskDefinition.getInputTemplate().get(key) : value);
         }
         return replacedTaskInput;
     }
@@ -157,6 +132,7 @@ public class ParametersUtils {
         }
     }
 
+    @NullUnmarked
     public Map<String, Object> replace(Map<String, Object> input, Object json) {
         Object doc;
         if (json instanceof String) {
@@ -164,22 +140,20 @@ public class ParametersUtils {
         } else {
             doc = json;
         }
-        Configuration option =
-                Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+        Configuration option = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.parse(doc, option);
         return replace(input, documentContext, null);
     }
 
+    @NullUnmarked
     public Object replace(String paramString) {
-        Configuration option =
-                Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+        Configuration option = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.parse(Collections.emptyMap(), option);
         return replaceVariables(paramString, documentContext, null);
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> replace(
-            Map<String, Object> input, DocumentContext documentContext, String taskId) {
+    private Map<String, Object> replace(Map<String, Object> input, DocumentContext documentContext, String taskId) {
         Map<String, Object> result = new HashMap<>();
         for (Entry<String, Object> e : input.entrySet()) {
             Object newValue;
@@ -219,8 +193,7 @@ public class ParametersUtils {
         return replacedList;
     }
 
-    private Object replaceVariables(
-            String paramString, DocumentContext documentContext, String taskId) {
+    private Object replaceVariables(String paramString, DocumentContext documentContext, String taskId) {
         String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=})");
         Object[] convertedValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
@@ -238,15 +211,11 @@ public class ParametersUtils {
                     if (sysValue != null) {
                         convertedValues[i] = sysValue;
                     }
-
                 } else {
                     try {
                         convertedValues[i] = documentContext.read(paramPath);
                     } catch (Exception e) {
-                        LOGGER.warn(
-                                "Error reading documentContext for paramPath: {}. Exception: {}",
-                                paramPath,
-                                e);
+                        LOGGER.warn("Error reading documentContext for paramPath: {}. Exception: {}", paramPath, e);
                         convertedValues[i] = null;
                     }
                 }
@@ -254,7 +223,6 @@ public class ParametersUtils {
                 convertedValues[i] = values[i].replaceAll("\\$\\$\\{", "\\${");
             }
         }
-
         Object retObj = convertedValues[0];
         // If the parameter String was "v1 v2 v3" then make sure to stitch it back
         if (convertedValues.length > 1) {
@@ -274,48 +242,40 @@ public class ParametersUtils {
     }
 
     @Deprecated
-    // Workflow schema version 1 is deprecated and new workflows should be using version 2
-    private Map<String, Object> getTaskInputV1(
-            WorkflowModel workflow, Map<String, Object> inputParams) {
+    private // Workflow schema version 1 is deprecated and new workflows should be using version 2
+    Map<String, Object> getTaskInputV1(WorkflowModel workflow, Map<String, Object> inputParams) {
         Map<String, Object> input = new HashMap<>();
         if (inputParams == null) {
             return input;
         }
         Map<String, Object> workflowInput = workflow.getInput();
-        inputParams.forEach(
-                (paramName, value) -> {
-                    String paramPath = "" + value;
-                    String[] paramPathComponents = paramPath.split("\\.");
-                    Utils.checkArgument(
-                            paramPathComponents.length == 3,
-                            "Invalid input expression for "
-                                    + paramName
-                                    + ", paramPathComponents.size="
-                                    + paramPathComponents.length
-                                    + ", expression="
-                                    + paramPath);
-
-                    String source = paramPathComponents[0]; // workflow, or task reference name
-                    String type = paramPathComponents[1]; // input/output
-                    String name = paramPathComponents[2]; // name of the parameter
-                    if ("workflow".equals(source)) {
-                        input.put(paramName, workflowInput.get(name));
+        inputParams.forEach((paramName, value) -> {
+            String paramPath = "" + value;
+            String[] paramPathComponents = paramPath.split("\\.");
+            Utils.checkArgument(paramPathComponents.length == 3, "Invalid input expression for " + paramName + ", paramPathComponents.size=" + paramPathComponents.length + ", expression=" + paramPath);
+            // workflow, or task reference name
+            String source = paramPathComponents[0];
+            // input/output
+            String type = paramPathComponents[1];
+            // name of the parameter
+            String name = paramPathComponents[2];
+            if ("workflow".equals(source)) {
+                input.put(paramName, workflowInput.get(name));
+            } else {
+                TaskModel task = workflow.getTaskByRefName(source);
+                if (task != null) {
+                    if ("input".equals(type)) {
+                        input.put(paramName, task.getInputData().get(name));
                     } else {
-                        TaskModel task = workflow.getTaskByRefName(source);
-                        if (task != null) {
-                            if ("input".equals(type)) {
-                                input.put(paramName, task.getInputData().get(name));
-                            } else {
-                                input.put(paramName, task.getOutputData().get(name));
-                            }
-                        }
+                        input.put(paramName, task.getOutputData().get(name));
                     }
-                });
+                }
+            }
+        });
         return input;
     }
 
-    public Map<String, Object> getWorkflowInput(
-            WorkflowDef workflowDef, Map<String, Object> inputParams) {
+    public Map<String, Object> getWorkflowInput(WorkflowDef workflowDef, Map<String, Object> inputParams) {
         if (workflowDef != null && workflowDef.getInputTemplate() != null) {
             clone(workflowDef.getInputTemplate()).forEach(inputParams::putIfAbsent);
         }

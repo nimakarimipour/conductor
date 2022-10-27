@@ -12,16 +12,15 @@
  */
 package com.netflix.conductor.service;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
 import com.netflix.conductor.common.metadata.events.EventHandler;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
@@ -37,32 +36,30 @@ import com.netflix.conductor.validations.ValidationContext;
 
 @Service
 public class MetadataServiceImpl implements MetadataService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataServiceImpl.class);
+
     private final MetadataDAO metadataDAO;
+
     private final EventHandlerDAO eventHandlerDAO;
 
-    public MetadataServiceImpl(
-            MetadataDAO metadataDAO,
-            EventHandlerDAO eventHandlerDAO,
-            ConductorProperties properties) {
+    public MetadataServiceImpl(MetadataDAO metadataDAO, EventHandlerDAO eventHandlerDAO, ConductorProperties properties) {
         this.metadataDAO = metadataDAO;
         this.eventHandlerDAO = eventHandlerDAO;
-
         ValidationContext.initialize(metadataDAO);
-        OwnerEmailMandatoryConstraint.WorkflowTaskValidValidator.setOwnerEmailMandatory(
-                properties.isOwnerEmailMandatory());
+        OwnerEmailMandatoryConstraint.WorkflowTaskValidValidator.setOwnerEmailMandatory(properties.isOwnerEmailMandatory());
     }
 
     /**
      * @param taskDefinitions Task Definitions to register
      */
+    @NullUnmarked
     public void registerTaskDef(List<TaskDef> taskDefinitions) {
         for (TaskDef taskDefinition : taskDefinitions) {
             taskDefinition.setCreatedBy(WorkflowContext.get().getClientApp());
             taskDefinition.setCreateTime(System.currentTimeMillis());
             taskDefinition.setUpdatedBy(null);
             taskDefinition.setUpdateTime(null);
-
             metadataDAO.createTaskDef(taskDefinition);
         }
     }
@@ -122,6 +119,7 @@ public class MetadataServiceImpl implements MetadataService {
     /**
      * @param workflowDefList Workflow definitions to be updated.
      */
+    @NullUnmarked
     public BulkResponse updateWorkflowDef(List<WorkflowDef> workflowDefList) {
         BulkResponse bulkResponse = new BulkResponse();
         for (WorkflowDef workflowDef : workflowDefList) {
@@ -148,11 +146,7 @@ public class MetadataServiceImpl implements MetadataService {
         } else {
             workflowDef = metadataDAO.getWorkflowDef(name, version);
         }
-
-        return workflowDef.orElseThrow(
-                () ->
-                        new NotFoundException(
-                                "No such workflow found by name: %s, version: %d", name, version));
+        return workflowDef.orElseThrow(() -> new NotFoundException("No such workflow found by name: %s, version: %d", name, version));
     }
 
     /**
@@ -220,18 +214,14 @@ public class MetadataServiceImpl implements MetadataService {
 
     public Map<String, ? extends Iterable<WorkflowDefSummary>> getWorkflowNamesAndVersions() {
         List<WorkflowDef> workflowDefs = metadataDAO.getAllWorkflowDefs();
-
         Map<String, TreeSet<WorkflowDefSummary>> retval = new HashMap<>();
         for (WorkflowDef def : workflowDefs) {
             String workflowName = def.getName();
             WorkflowDefSummary summary = fromWorkflowDef(def);
-
             retval.putIfAbsent(workflowName, new TreeSet<WorkflowDefSummary>());
-
             TreeSet<WorkflowDefSummary> versions = retval.get(workflowName);
             versions.add(summary);
         }
-
         return retval;
     }
 
@@ -240,7 +230,6 @@ public class MetadataServiceImpl implements MetadataService {
         summary.setName(def.getName());
         summary.setVersion(def.getVersion());
         summary.setCreateTime(def.getCreateTime());
-
         return summary;
     }
 }

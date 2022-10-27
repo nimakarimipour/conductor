@@ -12,16 +12,14 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.common.utils.TaskUtils;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_JOIN;
 
 @Component(TASK_TYPE_JOIN)
@@ -33,9 +31,8 @@ public class Join extends WorkflowSystemTask {
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean execute(
-            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
-
+    @NullUnmarked
+    public boolean execute(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         boolean allDone = true;
         boolean hasFailures = false;
         StringBuilder failureReason = new StringBuilder();
@@ -43,10 +40,7 @@ public class Join extends WorkflowSystemTask {
         List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
         if (task.isLoopOverTask()) {
             // If join is part of loop over task, wait for specific iteration to get complete
-            joinOn =
-                    joinOn.stream()
-                            .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
-                            .collect(Collectors.toList());
+            joinOn = joinOn.stream().map(name -> TaskUtils.appendIteration(name, task.getIteration())).collect(Collectors.toList());
         }
         for (String joinOnRef : joinOn) {
             TaskModel forkedTask = workflow.getTaskByRefName(joinOnRef);
@@ -70,16 +64,9 @@ public class Join extends WorkflowSystemTask {
             if (hasFailures) {
                 break;
             }
-
             // check for optional task failures
-            if (forkedTask.getWorkflowTask().isOptional()
-                    && taskStatus == TaskModel.Status.COMPLETED_WITH_ERRORS) {
-                optionalTaskFailures
-                        .append(
-                                String.format(
-                                        "%s/%s",
-                                        forkedTask.getTaskDefName(), forkedTask.getTaskId()))
-                        .append(" ");
+            if (forkedTask.getWorkflowTask().isOptional() && taskStatus == TaskModel.Status.COMPLETED_WITH_ERRORS) {
+                optionalTaskFailures.append(String.format("%s/%s", forkedTask.getTaskDefName(), forkedTask.getTaskId())).append(" ");
             }
         }
         if (allDone || hasFailures || optionalTaskFailures.length() > 0) {

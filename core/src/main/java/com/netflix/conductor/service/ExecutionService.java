@@ -12,14 +12,13 @@
  */
 package com.netflix.conductor.service;
 
+import com.netflix.conductor.NullUnmarked;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import com.netflix.conductor.annotations.Trace;
 import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.tasks.*;
@@ -46,40 +45,39 @@ public class ExecutionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionService.class);
 
     private final WorkflowExecutor workflowExecutor;
+
     private final ExecutionDAOFacade executionDAOFacade;
+
     private final QueueDAO queueDAO;
+
     private final ExternalPayloadStorage externalPayloadStorage;
+
     private final SystemTaskRegistry systemTaskRegistry;
 
     private final long queueTaskMessagePostponeSecs;
 
     private static final int MAX_POLL_TIMEOUT_MS = 5000;
+
     private static final int POLL_COUNT_ONE = 1;
+
     private static final int POLLING_TIMEOUT_IN_MS = 100;
 
-    public ExecutionService(
-            WorkflowExecutor workflowExecutor,
-            ExecutionDAOFacade executionDAOFacade,
-            QueueDAO queueDAO,
-            ConductorProperties properties,
-            ExternalPayloadStorage externalPayloadStorage,
-            SystemTaskRegistry systemTaskRegistry) {
+    public ExecutionService(WorkflowExecutor workflowExecutor, ExecutionDAOFacade executionDAOFacade, QueueDAO queueDAO, ConductorProperties properties, ExternalPayloadStorage externalPayloadStorage, SystemTaskRegistry systemTaskRegistry) {
         this.workflowExecutor = workflowExecutor;
         this.executionDAOFacade = executionDAOFacade;
         this.queueDAO = queueDAO;
         this.externalPayloadStorage = externalPayloadStorage;
-
-        this.queueTaskMessagePostponeSecs =
-                properties.getTaskExecutionPostponeDuration().getSeconds();
+        this.queueTaskMessagePostponeSecs = properties.getTaskExecutionPostponeDuration().getSeconds();
         this.systemTaskRegistry = systemTaskRegistry;
     }
 
+    @NullUnmarked
     public Task poll(String taskType, String workerId) {
         return poll(taskType, workerId, null);
     }
 
+    @NullUnmarked
     public Task poll(String taskType, String workerId, String domain) {
-
         List<Task> tasks = poll(taskType, workerId, domain, 1, 100);
         if (tasks.isEmpty()) {
             return null;
@@ -87,34 +85,26 @@ public class ExecutionService {
         return tasks.get(0);
     }
 
+    @NullUnmarked
     public List<Task> poll(String taskType, String workerId, int count, int timeoutInMilliSecond) {
         return poll(taskType, workerId, null, count, timeoutInMilliSecond);
     }
 
-    public List<Task> poll(
-            String taskType, String workerId, String domain, int count, int timeoutInMilliSecond) {
+    @NullUnmarked
+    public List<Task> poll(String taskType, String workerId, String domain, int count, int timeoutInMilliSecond) {
         if (timeoutInMilliSecond > MAX_POLL_TIMEOUT_MS) {
-            throw new IllegalArgumentException(
-                    "Long Poll Timeout value cannot be more than 5 seconds");
+            throw new IllegalArgumentException("Long Poll Timeout value cannot be more than 5 seconds");
         }
         String queueName = QueueUtils.getQueueName(taskType, domain, null, null);
-
         List<String> taskIds = new LinkedList<>();
         List<Task> tasks = new LinkedList<>();
         try {
             taskIds = queueDAO.pop(queueName, count, timeoutInMilliSecond);
         } catch (Exception e) {
-            LOGGER.error(
-                    "Error polling for task: {} from worker: {} in domain: {}, count: {}",
-                    taskType,
-                    workerId,
-                    domain,
-                    count,
-                    e);
+            LOGGER.error("Error polling for task: {} from worker: {} in domain: {}, count: {}", taskType, workerId, domain, count, e);
             Monitors.error(this.getClass().getCanonicalName(), "taskPoll");
             Monitors.recordTaskPollError(taskType, domain, e.getClass().getSimpleName());
         }
-
         for (String taskId : taskIds) {
             try {
                 TaskModel taskModel = executionDAOFacade.getTaskModel(taskId);
@@ -124,57 +114,33 @@ public class ExecutionService {
                     LOGGER.debug("Removed task: {} from the queue: {}", taskId, queueName);
                     continue;
                 }
-
                 if (executionDAOFacade.exceedsInProgressLimit(taskModel)) {
                     // Postpone this message, so that it would be available for poll again.
-                    queueDAO.postpone(
-                            queueName,
-                            taskId,
-                            taskModel.getWorkflowPriority(),
-                            queueTaskMessagePostponeSecs);
-                    LOGGER.debug(
-                            "Postponed task: {} in queue: {} by {} seconds",
-                            taskId,
-                            queueName,
-                            queueTaskMessagePostponeSecs);
+                    queueDAO.postpone(queueName, taskId, taskModel.getWorkflowPriority(), queueTaskMessagePostponeSecs);
+                    LOGGER.debug("Postponed task: {} in queue: {} by {} seconds", taskId, queueName, queueTaskMessagePostponeSecs);
                     continue;
                 }
-                TaskDef taskDef =
-                        taskModel.getTaskDefinition().isPresent()
-                                ? taskModel.getTaskDefinition().get()
-                                : null;
-                if (taskModel.getRateLimitPerFrequency() > 0
-                        && executionDAOFacade.exceedsRateLimitPerFrequency(taskModel, taskDef)) {
+                TaskDef taskDef = taskModel.getTaskDefinition().isPresent() ? taskModel.getTaskDefinition().get() : null;
+                if (taskModel.getRateLimitPerFrequency() > 0 && executionDAOFacade.exceedsRateLimitPerFrequency(taskModel, taskDef)) {
                     // Postpone this message, so that it would be available for poll again.
-                    queueDAO.postpone(
-                            queueName,
-                            taskId,
-                            taskModel.getWorkflowPriority(),
-                            queueTaskMessagePostponeSecs);
-                    LOGGER.debug(
-                            "RateLimit Execution limited for {}:{}, limit:{}",
-                            taskId,
-                            taskModel.getTaskDefName(),
-                            taskModel.getRateLimitPerFrequency());
+                    queueDAO.postpone(queueName, taskId, taskModel.getWorkflowPriority(), queueTaskMessagePostponeSecs);
+                    LOGGER.debug("RateLimit Execution limited for {}:{}, limit:{}", taskId, taskModel.getTaskDefName(), taskModel.getRateLimitPerFrequency());
                     continue;
                 }
-
                 taskModel.setStatus(TaskModel.Status.IN_PROGRESS);
                 if (taskModel.getStartTime() == 0) {
                     taskModel.setStartTime(System.currentTimeMillis());
-                    Monitors.recordQueueWaitTime(
-                            taskModel.getTaskDefName(), taskModel.getQueueWaitTime());
+                    Monitors.recordQueueWaitTime(taskModel.getTaskDefName(), taskModel.getQueueWaitTime());
                 }
-                taskModel.setCallbackAfterSeconds(
-                        0); // reset callbackAfterSeconds when giving the task to the worker
+                taskModel.setCallbackAfterSeconds(// reset callbackAfterSeconds when giving the task to the worker
+                0);
                 taskModel.setWorkerId(workerId);
                 taskModel.incrementPollCount();
                 executionDAOFacade.updateTask(taskModel);
                 tasks.add(taskModel.toTask());
             } catch (Exception e) {
                 // db operation failed for dequeued message, re-enqueue with a delay
-                LOGGER.warn(
-                        "DB operation failed for task: {}, postponing task in queue", taskId, e);
+                LOGGER.warn("DB operation failed for task: {}, postponing task in queue", taskId, e);
                 Monitors.recordTaskPollError(taskType, domain, e.getClass().getSimpleName());
                 queueDAO.postpone(queueName, taskId, 0, queueTaskMessagePostponeSecs);
             }
@@ -185,24 +151,16 @@ public class ExecutionService {
         return tasks;
     }
 
+    @NullUnmarked
     public Task getLastPollTask(String taskType, String workerId, String domain) {
         List<Task> tasks = poll(taskType, workerId, domain, POLL_COUNT_ONE, POLLING_TIMEOUT_IN_MS);
         if (tasks.isEmpty()) {
-            LOGGER.debug(
-                    "No Task available for the poll: /tasks/poll/{}?{}&{}",
-                    taskType,
-                    workerId,
-                    domain);
+            LOGGER.debug("No Task available for the poll: /tasks/poll/{}?{}&{}", taskType, workerId, domain);
             return null;
         }
         Task task = tasks.get(0);
         ackTaskReceived(task);
-        LOGGER.debug(
-                "The Task {} being returned for /tasks/poll/{}?{}&{}",
-                task,
-                taskType,
-                workerId,
-                domain);
+        LOGGER.debug("The Task {} being returned for /tasks/poll/{}?{}&{}", task, taskType, workerId, domain);
         return task;
     }
 
@@ -216,21 +174,15 @@ public class ExecutionService {
         } catch (UnsupportedOperationException uoe) {
             List<PollData> allPollData = new ArrayList<>();
             Map<String, Long> queueSizes = queueDAO.queuesDetail();
-            queueSizes
-                    .keySet()
-                    .forEach(
-                            queueName -> {
-                                try {
-                                    if (!queueName.contains(QueueUtils.DOMAIN_SEPARATOR)) {
-                                        allPollData.addAll(
-                                                getPollData(
-                                                        QueueUtils.getQueueNameWithoutDomain(
-                                                                queueName)));
-                                    }
-                                } catch (Exception e) {
-                                    LOGGER.error("Unable to fetch all poll data!", e);
-                                }
-                            });
+            queueSizes.keySet().forEach(queueName -> {
+                try {
+                    if (!queueName.contains(QueueUtils.DOMAIN_SEPARATOR)) {
+                        allPollData.addAll(getPollData(QueueUtils.getQueueNameWithoutDomain(queueName)));
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Unable to fetch all poll data!", e);
+                }
+            });
             return allPollData;
         }
     }
@@ -251,13 +203,11 @@ public class ExecutionService {
         return executionDAOFacade.getTask(taskId);
     }
 
+    @NullUnmarked
     public Task getPendingTaskForWorkflow(String taskReferenceName, String workflowId) {
-        return executionDAOFacade.getTasksForWorkflow(workflowId).stream()
-                .filter(task -> !task.getStatus().isTerminal())
-                .filter(task -> task.getReferenceTaskName().equals(taskReferenceName))
-                .findFirst() // There can only be one task by a given reference name running at a
-                // time.
-                .orElse(null);
+        return executionDAOFacade.getTasksForWorkflow(workflowId).stream().filter(task -> !task.getStatus().isTerminal()).filter(task -> task.getReferenceTaskName().equals(taskReferenceName)).// There can only be one task by a given reference name running at a
+        findFirst().// time.
+        orElse(null);
     }
 
     /**
@@ -295,24 +245,16 @@ public class ExecutionService {
     }
 
     public int requeuePendingTasks(String taskType) {
-
         int count = 0;
         List<Task> tasks = getPendingTasksForTaskType(taskType);
-
         for (Task pending : tasks) {
-
             if (systemTaskRegistry.isSystemTask(pending.getTaskType())) {
                 continue;
             }
             if (pending.getStatus().isTerminal()) {
                 continue;
             }
-
-            LOGGER.debug(
-                    "Requeuing Task: {} of taskType: {} in Workflow: {}",
-                    pending.getTaskId(),
-                    pending.getTaskType(),
-                    pending.getWorkflowInstanceId());
+            LOGGER.debug("Requeuing Task: {} of taskType: {} in Workflow: {}", pending.getTaskId(), pending.getTaskType(), pending.getWorkflowInstanceId());
             boolean pushed = requeue(pending);
             if (pushed) {
                 count++;
@@ -332,42 +274,24 @@ public class ExecutionService {
         if (callback < 0) {
             callback = 0;
         }
-        return queueDAO.pushIfNotExists(
-                QueueUtils.getQueueName(pending),
-                pending.getTaskId(),
-                pending.getWorkflowPriority(),
-                callback);
+        return queueDAO.pushIfNotExists(QueueUtils.getQueueName(pending), pending.getTaskId(), pending.getWorkflowPriority(), callback);
     }
 
-    public List<Workflow> getWorkflowInstances(
-            String workflowName,
-            String correlationId,
-            boolean includeClosed,
-            boolean includeTasks) {
-
-        List<Workflow> workflows =
-                executionDAOFacade.getWorkflowsByCorrelationId(workflowName, correlationId, false);
-        return workflows.stream()
-                .parallel()
-                .filter(
-                        workflow -> {
-                            if (includeClosed
-                                    || workflow.getStatus()
-                                            .equals(Workflow.WorkflowStatus.RUNNING)) {
-                                // including tasks for subset of workflows to increase performance
-                                if (includeTasks) {
-                                    List<Task> tasks =
-                                            executionDAOFacade.getTasksForWorkflow(
-                                                    workflow.getWorkflowId());
-                                    tasks.sort(Comparator.comparingInt(Task::getSeq));
-                                    workflow.setTasks(tasks);
-                                }
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        })
-                .collect(Collectors.toList());
+    public List<Workflow> getWorkflowInstances(String workflowName, String correlationId, boolean includeClosed, boolean includeTasks) {
+        List<Workflow> workflows = executionDAOFacade.getWorkflowsByCorrelationId(workflowName, correlationId, false);
+        return workflows.stream().parallel().filter(workflow -> {
+            if (includeClosed || workflow.getStatus().equals(Workflow.WorkflowStatus.RUNNING)) {
+                // including tasks for subset of workflows to increase performance
+                if (includeTasks) {
+                    List<Task> tasks = executionDAOFacade.getTasksForWorkflow(workflow.getWorkflowId());
+                    tasks.sort(Comparator.comparingInt(Task::getSeq));
+                    workflow.setTasks(tasks);
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }).collect(Collectors.toList());
     }
 
     public Workflow getExecutionStatus(String workflowId, boolean includeTasks) {
@@ -382,152 +306,92 @@ public class ExecutionService {
         executionDAOFacade.removeWorkflow(workflowId, archiveWorkflow);
     }
 
-    public SearchResult<WorkflowSummary> search(
-            String query, String freeText, int start, int size, List<String> sortOptions) {
+    public SearchResult<WorkflowSummary> search(String query, String freeText, int start, int size, List<String> sortOptions) {
         return executionDAOFacade.searchWorkflowSummary(query, freeText, start, size, sortOptions);
     }
 
-    public SearchResult<Workflow> searchV2(
-            String query, String freeText, int start, int size, List<String> sortOptions) {
-
-        SearchResult<String> result =
-                executionDAOFacade.searchWorkflows(query, freeText, start, size, sortOptions);
-        List<Workflow> workflows =
-                result.getResults().stream()
-                        .parallel()
-                        .map(
-                                workflowId -> {
-                                    try {
-                                        return executionDAOFacade.getWorkflow(workflowId, false);
-                                    } catch (Exception e) {
-                                        LOGGER.error(
-                                                "Error fetching workflow by id: {}", workflowId, e);
-                                        return null;
-                                    }
-                                })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+    public SearchResult<Workflow> searchV2(String query, String freeText, int start, int size, List<String> sortOptions) {
+        SearchResult<String> result = executionDAOFacade.searchWorkflows(query, freeText, start, size, sortOptions);
+        List<Workflow> workflows = result.getResults().stream().parallel().map(workflowId -> {
+            try {
+                return executionDAOFacade.getWorkflow(workflowId, false);
+            } catch (Exception e) {
+                LOGGER.error("Error fetching workflow by id: {}", workflowId, e);
+                return null;
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         int missing = result.getResults().size() - workflows.size();
         long totalHits = result.getTotalHits() - missing;
         return new SearchResult<>(totalHits, workflows);
     }
 
-    public SearchResult<WorkflowSummary> searchWorkflowByTasks(
-            String query, String freeText, int start, int size, List<String> sortOptions) {
-        SearchResult<TaskSummary> taskSummarySearchResult =
-                searchTaskSummary(query, freeText, start, size, sortOptions);
-        List<WorkflowSummary> workflowSummaries =
-                taskSummarySearchResult.getResults().stream()
-                        .parallel()
-                        .map(
-                                taskSummary -> {
-                                    try {
-                                        String workflowId = taskSummary.getWorkflowId();
-                                        return new WorkflowSummary(
-                                                executionDAOFacade.getWorkflow(workflowId, false));
-                                    } catch (Exception e) {
-                                        LOGGER.error(
-                                                "Error fetching workflow by id: {}",
-                                                taskSummary.getWorkflowId(),
-                                                e);
-                                        return null;
-                                    }
-                                })
-                        .filter(Objects::nonNull)
-                        .distinct()
-                        .collect(Collectors.toList());
+    public SearchResult<WorkflowSummary> searchWorkflowByTasks(String query, String freeText, int start, int size, List<String> sortOptions) {
+        SearchResult<TaskSummary> taskSummarySearchResult = searchTaskSummary(query, freeText, start, size, sortOptions);
+        List<WorkflowSummary> workflowSummaries = taskSummarySearchResult.getResults().stream().parallel().map(taskSummary -> {
+            try {
+                String workflowId = taskSummary.getWorkflowId();
+                return new WorkflowSummary(executionDAOFacade.getWorkflow(workflowId, false));
+            } catch (Exception e) {
+                LOGGER.error("Error fetching workflow by id: {}", taskSummary.getWorkflowId(), e);
+                return null;
+            }
+        }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
         int missing = taskSummarySearchResult.getResults().size() - workflowSummaries.size();
         long totalHits = taskSummarySearchResult.getTotalHits() - missing;
         return new SearchResult<>(totalHits, workflowSummaries);
     }
 
-    public SearchResult<Workflow> searchWorkflowByTasksV2(
-            String query, String freeText, int start, int size, List<String> sortOptions) {
-        SearchResult<TaskSummary> taskSummarySearchResult =
-                searchTasks(query, freeText, start, size, sortOptions);
-        List<Workflow> workflows =
-                taskSummarySearchResult.getResults().stream()
-                        .parallel()
-                        .map(
-                                taskSummary -> {
-                                    try {
-                                        String workflowId = taskSummary.getWorkflowId();
-                                        return executionDAOFacade.getWorkflow(workflowId, false);
-                                    } catch (Exception e) {
-                                        LOGGER.error(
-                                                "Error fetching workflow by id: {}",
-                                                taskSummary.getWorkflowId(),
-                                                e);
-                                        return null;
-                                    }
-                                })
-                        .filter(Objects::nonNull)
-                        .distinct()
-                        .collect(Collectors.toList());
+    public SearchResult<Workflow> searchWorkflowByTasksV2(String query, String freeText, int start, int size, List<String> sortOptions) {
+        SearchResult<TaskSummary> taskSummarySearchResult = searchTasks(query, freeText, start, size, sortOptions);
+        List<Workflow> workflows = taskSummarySearchResult.getResults().stream().parallel().map(taskSummary -> {
+            try {
+                String workflowId = taskSummary.getWorkflowId();
+                return executionDAOFacade.getWorkflow(workflowId, false);
+            } catch (Exception e) {
+                LOGGER.error("Error fetching workflow by id: {}", taskSummary.getWorkflowId(), e);
+                return null;
+            }
+        }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
         int missing = taskSummarySearchResult.getResults().size() - workflows.size();
         long totalHits = taskSummarySearchResult.getTotalHits() - missing;
         return new SearchResult<>(totalHits, workflows);
     }
 
-    public SearchResult<TaskSummary> searchTasks(
-            String query, String freeText, int start, int size, List<String> sortOptions) {
-
-        SearchResult<String> result =
-                executionDAOFacade.searchTasks(query, freeText, start, size, sortOptions);
-        List<TaskSummary> workflows =
-                result.getResults().stream()
-                        .parallel()
-                        .map(
-                                task -> {
-                                    try {
-                                        return new TaskSummary(executionDAOFacade.getTask(task));
-                                    } catch (Exception e) {
-                                        LOGGER.error("Error fetching task by id: {}", task, e);
-                                        return null;
-                                    }
-                                })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+    public SearchResult<TaskSummary> searchTasks(String query, String freeText, int start, int size, List<String> sortOptions) {
+        SearchResult<String> result = executionDAOFacade.searchTasks(query, freeText, start, size, sortOptions);
+        List<TaskSummary> workflows = result.getResults().stream().parallel().map(task -> {
+            try {
+                return new TaskSummary(executionDAOFacade.getTask(task));
+            } catch (Exception e) {
+                LOGGER.error("Error fetching task by id: {}", task, e);
+                return null;
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         int missing = result.getResults().size() - workflows.size();
         long totalHits = result.getTotalHits() - missing;
         return new SearchResult<>(totalHits, workflows);
     }
 
-    public SearchResult<TaskSummary> searchTaskSummary(
-            String query, String freeText, int start, int size, List<String> sortOptions) {
+    public SearchResult<TaskSummary> searchTaskSummary(String query, String freeText, int start, int size, List<String> sortOptions) {
         return executionDAOFacade.searchTaskSummary(query, freeText, start, size, sortOptions);
     }
 
-    public SearchResult<TaskSummary> getSearchTasks(
-            String query,
-            String freeText,
-            int start,
-            /*@Max(value = MAX_SEARCH_SIZE, message = "Cannot return more than {value} workflows." +
-            " Please use pagination.")*/ int size,
-            String sortString) {
-        return searchTaskSummary(
-                query, freeText, start, size, Utils.convertStringToList(sortString));
+    public SearchResult<TaskSummary> getSearchTasks(String query, String freeText, int start, /*@Max(value = MAX_SEARCH_SIZE, message = "Cannot return more than {value} workflows." +
+            " Please use pagination.")*/
+    int size, String sortString) {
+        return searchTaskSummary(query, freeText, start, size, Utils.convertStringToList(sortString));
     }
 
-    public SearchResult<Task> getSearchTasksV2(
-            String query, String freeText, int start, int size, String sortString) {
-        SearchResult<String> result =
-                executionDAOFacade.searchTasks(
-                        query, freeText, start, size, Utils.convertStringToList(sortString));
-        List<Task> tasks =
-                result.getResults().stream()
-                        .parallel()
-                        .map(
-                                task -> {
-                                    try {
-                                        return executionDAOFacade.getTask(task);
-                                    } catch (Exception e) {
-                                        LOGGER.error("Error fetching task by id: {}", task, e);
-                                        return null;
-                                    }
-                                })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+    public SearchResult<Task> getSearchTasksV2(String query, String freeText, int start, int size, String sortString) {
+        SearchResult<String> result = executionDAOFacade.searchTasks(query, freeText, start, size, Utils.convertStringToList(sortString));
+        List<Task> tasks = result.getResults().stream().parallel().map(task -> {
+            try {
+                return executionDAOFacade.getTask(task);
+            } catch (Exception e) {
+                LOGGER.error("Error fetching task by id: {}", task, e);
+                return null;
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         int missing = result.getResults().size() - tasks.size();
         long totalHits = result.getTotalHits() - missing;
         return new SearchResult<>(totalHits, tasks);
@@ -587,18 +451,13 @@ public class ExecutionService {
      * @param type the {@link PayloadType} at the external uri
      * @return the external uri at which the payload is stored/to be stored
      */
-    public ExternalStorageLocation getExternalStorageLocation(
-            String path, String operation, String type) {
+    public ExternalStorageLocation getExternalStorageLocation(String path, String operation, String type) {
         try {
-            ExternalPayloadStorage.Operation payloadOperation =
-                    ExternalPayloadStorage.Operation.valueOf(StringUtils.upperCase(operation));
-            ExternalPayloadStorage.PayloadType payloadType =
-                    ExternalPayloadStorage.PayloadType.valueOf(StringUtils.upperCase(type));
+            ExternalPayloadStorage.Operation payloadOperation = ExternalPayloadStorage.Operation.valueOf(StringUtils.upperCase(operation));
+            ExternalPayloadStorage.PayloadType payloadType = ExternalPayloadStorage.PayloadType.valueOf(StringUtils.upperCase(type));
             return externalPayloadStorage.getLocation(payloadOperation, payloadType, path);
         } catch (Exception e) {
-            String errorMsg =
-                    String.format(
-                            "Invalid input - Operation: %s, PayloadType: %s", operation, type);
+            String errorMsg = String.format("Invalid input - Operation: %s, PayloadType: %s", operation, type);
             LOGGER.error(errorMsg);
             throw new IllegalArgumentException(errorMsg);
         }
