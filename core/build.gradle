@@ -80,6 +80,7 @@ tasks.withType(JavaCompile) {
             check("NullAway", CheckSeverity.ERROR)
             check("AnnotatorScanner", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", "com.netflix.conductor")
+            option("NullAway:UnannotatedSubPackages", "com.netflix.conductor.common")
             option("NullAway:SerializeFixMetadata", "true")
             option("NullAway:FixSerializationConfigPath", "/tmp/NullAwayFix/nullaway.xml")
             option("AnnotatorScanner:ConfigPath", "/tmp/NullAwayFix/scanner.xml")
