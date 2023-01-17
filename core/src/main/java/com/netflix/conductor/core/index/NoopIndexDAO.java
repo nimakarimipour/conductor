@@ -23,6 +23,7 @@ import com.netflix.conductor.common.run.TaskSummary;
 import com.netflix.conductor.common.run.WorkflowSummary;
 import com.netflix.conductor.core.events.queue.Message;
 import com.netflix.conductor.dao.IndexDAO;
+import javax.annotation.Nullable;
 
 /**
  * Dummy implementation of {@link IndexDAO} which does nothing. Nothing is ever indexed, and no
@@ -51,7 +52,7 @@ public class NoopIndexDAO implements IndexDAO {
 
     @Override
     public SearchResult<String> searchWorkflows(
-            String query, String freeText, int start, int count, List<String> sort) {
+            String query, String freeText, int start, int count, @Nullable List<String> sort) {
         return new SearchResult<>(0, Collections.emptyList());
     }
 
@@ -77,12 +78,12 @@ public class NoopIndexDAO implements IndexDAO {
     public void removeWorkflow(String workflowId) {}
 
     @Override
-    public CompletableFuture<Void> asyncRemoveWorkflow(String workflowId) {
+    public CompletableFuture<Void> asyncRemoveWorkflow(@Nullable String workflowId) {
         return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public void updateWorkflow(String workflowInstanceId, String[] keys, Object[] values) {}
+    public void updateWorkflow(@Nullable String workflowInstanceId, String[] keys, Object[] values) {}
 
     @Override
     public CompletableFuture<Void> asyncUpdateWorkflow(
@@ -90,8 +91,8 @@ public class NoopIndexDAO implements IndexDAO {
         return CompletableFuture.completedFuture(null);
     }
 
-    @Override
-    public String get(String workflowInstanceId, String key) {
+    @Nullable @Override
+    public String get(@Nullable String workflowInstanceId, String key) {
         return null;
     }
 
@@ -116,7 +117,7 @@ public class NoopIndexDAO implements IndexDAO {
         return Collections.emptyList();
     }
 
-    @Override
+    @Nullable @Override
     public CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution) {
         return null;
     }

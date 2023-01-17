@@ -20,17 +20,18 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.execution.DeciderService;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 /** Business Object class used for interaction between the DeciderService and Different Mappers */
 public class TaskMapperContext {
 
     private final WorkflowModel workflowModel;
-    private final TaskDef taskDefinition;
+    @Nullable private final TaskDef taskDefinition;
     private final WorkflowTask workflowTask;
     private final Map<String, Object> taskInput;
     private final int retryCount;
-    private final String retryTaskId;
-    private final String taskId;
+    @Nullable private final String retryTaskId;
+    @Nullable private final String taskId;
     private final DeciderService deciderService;
 
     private TaskMapperContext(Builder builder) {
@@ -69,7 +70,7 @@ public class TaskMapperContext {
         return workflowModel;
     }
 
-    public TaskDef getTaskDefinition() {
+    @Nullable public TaskDef getTaskDefinition() {
         return taskDefinition;
     }
 
@@ -81,11 +82,11 @@ public class TaskMapperContext {
         return retryCount;
     }
 
-    public String getRetryTaskId() {
+    @Nullable public String getRetryTaskId() {
         return retryTaskId;
     }
 
-    public String getTaskId() {
+    @Nullable public String getTaskId() {
         return taskId;
     }
 
@@ -187,12 +188,12 @@ public class TaskMapperContext {
     public static final class Builder {
 
         private WorkflowModel workflowModel;
-        private TaskDef taskDefinition;
+        @Nullable private TaskDef taskDefinition;
         private WorkflowTask workflowTask;
         private Map<String, Object> taskInput;
         private int retryCount;
-        private String retryTaskId;
-        private String taskId;
+        @Nullable private String retryTaskId;
+        @Nullable private String taskId;
         private DeciderService deciderService;
 
         private Builder() {}
@@ -264,7 +265,7 @@ public class TaskMapperContext {
          * @param val the {@code retryTaskId} to set
          * @return a reference to this Builder
          */
-        public Builder withRetryTaskId(String val) {
+        public Builder withRetryTaskId(@Nullable String val) {
             retryTaskId = val;
             return this;
         }

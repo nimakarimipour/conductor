@@ -35,6 +35,7 @@ import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 /**
  * Populates metadata definitions within workflow objects. Benefits of loading and populating
@@ -56,7 +57,7 @@ public class MetadataMapperService {
         this.metadataDAO = metadataDAO;
     }
 
-    public WorkflowDef lookupForWorkflowDefinition(String name, Integer version) {
+    public WorkflowDef lookupForWorkflowDefinition(@Nullable String name, @Nullable Integer version) {
         Optional<WorkflowDef> potentialDef =
                 version == null
                         ? lookupLatestWorkflowDefinition(name)
@@ -75,7 +76,7 @@ public class MetadataMapperService {
     }
 
     @VisibleForTesting
-    Optional<WorkflowDef> lookupWorkflowDefinition(String workflowName, int workflowVersion) {
+    Optional<WorkflowDef> lookupWorkflowDefinition(@Nullable String workflowName, int workflowVersion) {
         Utils.checkArgument(
                 StringUtils.isNotBlank(workflowName),
                 "Workflow name must be specified when searching for a definition");
@@ -83,7 +84,7 @@ public class MetadataMapperService {
     }
 
     @VisibleForTesting
-    Optional<WorkflowDef> lookupLatestWorkflowDefinition(String workflowName) {
+    Optional<WorkflowDef> lookupLatestWorkflowDefinition(@Nullable String workflowName) {
         Utils.checkArgument(
                 StringUtils.isNotBlank(workflowName),
                 "Workflow name must be specified when searching for a definition");
