@@ -53,6 +53,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
+import javax.annotation.Nullable;
 
 /**
  * Service that acts as a facade for accessing execution data from the {@link ExecutionDAO}, {@link
@@ -428,7 +429,7 @@ public class ExecutionDAOFacade {
         return taskModel;
     }
 
-    public Task getTask(String taskId) {
+    @Nullable public Task getTask(String taskId) {
         TaskModel taskModel = getTaskFromDatastore(taskId);
         if (taskModel != null) {
             return taskModel.toTask();
@@ -522,7 +523,7 @@ public class ExecutionDAOFacade {
         return pollDataDAO.getAllPollData();
     }
 
-    public PollData getTaskPollDataByDomain(String taskName, String domain) {
+    @Nullable public PollData getTaskPollDataByDomain(String taskName, String domain) {
         try {
             return pollDataDAO.getPollData(taskName, domain);
         } catch (Exception e) {
@@ -586,7 +587,7 @@ public class ExecutionDAOFacade {
         return concurrentExecutionLimitDAO.exceedsLimit(task);
     }
 
-    public boolean exceedsRateLimitPerFrequency(TaskModel task, TaskDef taskDef) {
+    public boolean exceedsRateLimitPerFrequency(TaskModel task, @Nullable TaskDef taskDef) {
         return rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef);
     }
 

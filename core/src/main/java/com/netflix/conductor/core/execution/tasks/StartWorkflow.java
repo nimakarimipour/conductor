@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_START_WORKFLOW;
 import static com.netflix.conductor.model.TaskModel.Status.COMPLETED;
 import static com.netflix.conductor.model.TaskModel.Status.FAILED;
+import javax.annotation.Nullable;
 
 @Component(TASK_TYPE_START_WORKFLOW)
 public class StartWorkflow extends WorkflowSystemTask {
@@ -92,7 +93,7 @@ public class StartWorkflow extends WorkflowSystemTask {
         }
     }
 
-    private StartWorkflowRequest getRequest(TaskModel taskModel) {
+    @Nullable private StartWorkflowRequest getRequest(TaskModel taskModel) {
         Map<String, Object> taskInput = taskModel.getInputData();
 
         StartWorkflowRequest startWorkflowRequest = null;

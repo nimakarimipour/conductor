@@ -16,6 +16,7 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.annotation.Nullable;
 
 public class ScriptEvaluator {
 
@@ -58,7 +59,7 @@ public class ScriptEvaluator {
      * @param input Generic object that will be inspected to return a boolean value.
      * @return True or False based on the input provided.
      */
-    public static Boolean toBoolean(Object input) {
+    public static Boolean toBoolean(@Nullable Object input) {
         if (input instanceof Boolean) {
             return ((Boolean) input);
         } else if (input instanceof Number) {

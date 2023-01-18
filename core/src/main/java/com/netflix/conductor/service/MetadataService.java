@@ -28,6 +28,7 @@ import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDefSummary;
 import com.netflix.conductor.common.model.BulkResponse;
+import javax.annotation.Nullable;
 
 @Validated
 public interface MetadataService {
@@ -82,7 +83,7 @@ public interface MetadataService {
      */
     WorkflowDef getWorkflowDef(
             @NotEmpty(message = "Workflow name cannot be null or empty") String name,
-            Integer version);
+            @Nullable Integer version);
 
     /**
      * @param name Name of the workflow to retrieve

@@ -28,6 +28,7 @@ import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.TaskSummary;
+import javax.annotation.Nullable;
 
 @Validated
 public interface TaskService {
@@ -40,7 +41,7 @@ public interface TaskService {
      * @param domain Domain of the workflow
      * @return polled {@link Task}
      */
-    Task poll(
+    @Nullable Task poll(
             @NotEmpty(message = "TaskType cannot be null or empty.") String taskType,
             String workerId,
             String domain);
@@ -82,7 +83,7 @@ public interface TaskService {
      * @param taskReferenceName Task reference name.
      * @return instance of {@link Task}
      */
-    Task getPendingTaskForWorkflow(
+    @Nullable Task getPendingTaskForWorkflow(
             @NotEmpty(message = "WorkflowId cannot be null or empty.") String workflowId,
             @NotEmpty(message = "TaskReferenceName cannot be null or empty.")
                     String taskReferenceName);

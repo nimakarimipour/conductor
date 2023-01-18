@@ -47,6 +47,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TERMINATE;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.USER_DEFINED;
 import static com.netflix.conductor.model.TaskModel.Status.*;
+import javax.annotation.Nullable;
 
 /**
  * Decider evaluates the state of the workflow by inspecting the current state along with the
@@ -351,7 +352,7 @@ public class DeciderService {
      *     last task in the workflow will be copied to workflow output of no output parameters are
      *     specified in the workflow definition
      */
-    void updateWorkflowOutput(final WorkflowModel workflow, TaskModel task) {
+    void updateWorkflowOutput(final WorkflowModel workflow, @Nullable TaskModel task) {
         List<TaskModel> allTasks = workflow.getTasks();
         if (allTasks.isEmpty()) {
             return;
@@ -495,7 +496,7 @@ public class DeciderService {
         return Collections.emptyList();
     }
 
-    private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
+    @Nullable private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef def = workflow.getWorkflowDefinition();
 
         String taskReferenceName = task.getReferenceTaskName();
@@ -508,7 +509,7 @@ public class DeciderService {
 
     @VisibleForTesting
     Optional<TaskModel> retry(
-            TaskDef taskDefinition,
+            @Nullable TaskDef taskDefinition,
             WorkflowTask workflowTask,
             TaskModel task,
             WorkflowModel workflow)
@@ -827,7 +828,7 @@ public class DeciderService {
             WorkflowModel workflow,
             WorkflowTask taskToSchedule,
             int retryCount,
-            String retriedTaskId) {
+            @Nullable String retriedTaskId) {
         Map<String, Object> input =
                 parametersUtils.getTaskInput(
                         taskToSchedule.getInputParameters(), workflow, null, null);
@@ -897,7 +898,7 @@ public class DeciderService {
         List<TaskModel> tasksToBeScheduled = new LinkedList<>();
         List<TaskModel> tasksToBeUpdated = new LinkedList<>();
         boolean isComplete;
-        TaskModel terminateTask;
+        @Nullable TaskModel terminateTask;
 
         private DeciderOutcome() {}
     }
