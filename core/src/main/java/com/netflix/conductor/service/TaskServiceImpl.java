@@ -37,6 +37,7 @@ import com.netflix.conductor.core.utils.QueueUtils;
 import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Audit
 @Trace
@@ -158,7 +159,7 @@ public class TaskServiceImpl implements TaskService {
      * @param taskId id of the task
      * @return `true|false` if task is received or not
      */
-    public boolean ackTaskReceived(String taskId) {
+    @NullUnmarked public boolean ackTaskReceived(String taskId) {
         LOGGER.debug("Ack received for task: {}", taskId);
         AtomicBoolean ackResult = new AtomicBoolean(false);
         try {

@@ -18,6 +18,7 @@ import java.util.Objects;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 public class StartWorkflowInput {
 
@@ -129,7 +130,7 @@ public class StartWorkflowInput {
         this.event = event;
     }
 
-    public Map<String, String> getTaskToDomain() {
+    @NullUnmarked public Map<String, String> getTaskToDomain() {
         return taskToDomain;
     }
 

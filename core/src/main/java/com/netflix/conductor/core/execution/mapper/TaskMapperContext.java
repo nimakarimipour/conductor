@@ -21,6 +21,7 @@ import com.netflix.conductor.core.execution.DeciderService;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /** Business Object class used for interaction between the DeciderService and Different Mappers */
 public class TaskMapperContext {
@@ -138,7 +139,7 @@ public class TaskMapperContext {
                 + '}';
     }
 
-    @Override
+    @NullUnmarked @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -172,7 +173,7 @@ public class TaskMapperContext {
         return getTaskId().equals(that.getTaskId());
     }
 
-    @Override
+    @NullUnmarked @Override
     public int hashCode() {
         int result = getWorkflowDefinition().hashCode();
         result = 31 * result + getWorkflowModel().hashCode();
@@ -187,16 +188,16 @@ public class TaskMapperContext {
     /** {@code TaskMapperContext} builder static inner class. */
     public static final class Builder {
 
-        private WorkflowModel workflowModel;
+        @SuppressWarnings("NullAway.Init") private WorkflowModel workflowModel;
         @Nullable private TaskDef taskDefinition;
-        private WorkflowTask workflowTask;
-        private Map<String, Object> taskInput;
+        @SuppressWarnings("NullAway.Init") private WorkflowTask workflowTask;
+        @SuppressWarnings("NullAway.Init") private Map<String, Object> taskInput;
         private int retryCount;
         @Nullable private String retryTaskId;
         @Nullable private String taskId;
-        private DeciderService deciderService;
+        @SuppressWarnings("NullAway.Init") private DeciderService deciderService;
 
-        private Builder() {}
+        @NullUnmarked private Builder() {}
 
         /**
          * Sets the {@code workflowModel} and returns a reference to this Builder so that the

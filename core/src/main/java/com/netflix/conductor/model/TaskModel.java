@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 public class TaskModel {
 
@@ -67,9 +68,9 @@ public class TaskModel {
         }
     }
 
-    private String taskType;
+    @SuppressWarnings("NullAway.Init") private String taskType;
 
-    private Status status;
+    @SuppressWarnings("NullAway.Init") private Status status;
 
     @Nullable private String referenceTaskName;
 
@@ -217,7 +218,7 @@ public class TaskModel {
         return inputData;
     }
 
-    public String getReferenceTaskName() {
+    @NullUnmarked public String getReferenceTaskName() {
         return referenceTaskName;
     }
 
@@ -364,7 +365,7 @@ public class TaskModel {
         this.workflowType = workflowType;
     }
 
-    public String getTaskId() {
+    @NullUnmarked public String getTaskId() {
         return taskId;
     }
 
@@ -435,7 +436,7 @@ public class TaskModel {
         return outputData;
     }
 
-    public WorkflowTask getWorkflowTask() {
+    @NullUnmarked public WorkflowTask getWorkflowTask() {
         return workflowTask;
     }
 
