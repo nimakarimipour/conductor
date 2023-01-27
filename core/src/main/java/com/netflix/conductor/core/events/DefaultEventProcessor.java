@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spotify.futures.CompletableFutures;
 
 import static com.netflix.conductor.core.utils.Utils.isTransientException;
+import javax.annotation.Nullable;
 
 /**
  * Event Processor is used to dispatch actions configured in the event handlers, based on incoming
@@ -258,7 +259,7 @@ public class DefaultEventProcessor {
      *     completed/failed with non-transient error the input event execution, if the execution
      *     failed due to transient error
      */
-    protected EventExecution execute(EventExecution eventExecution, Action action, Object payload) {
+    protected EventExecution execute(EventExecution eventExecution, Action action, @Nullable Object payload) {
         try {
             LOGGER.debug(
                     "Executing action: {} for event: {} with messageId: {} with payload: {}",
@@ -305,7 +306,7 @@ public class DefaultEventProcessor {
         return eventExecution;
     }
 
-    private Object getPayloadObject(String payload) {
+    @Nullable private Object getPayloadObject(@Nullable String payload) {
         Object payloadObject = null;
         if (payload != null) {
             try {

@@ -13,6 +13,7 @@
 package com.netflix.conductor.core.sync;
 
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * Interface implemented by a distributed lock client.
@@ -57,19 +58,19 @@ public interface Lock {
      * @param unit time unit
      * @return true, if successfully acquired
      */
-    boolean acquireLock(String lockId, long timeToTry, long leaseTime, TimeUnit unit);
+    boolean acquireLock(@Nullable String lockId, long timeToTry, long leaseTime, TimeUnit unit);
 
     /**
      * Release a previously acquired lock
      *
      * @param lockId resource to lock on
      */
-    void releaseLock(String lockId);
+    void releaseLock(@Nullable String lockId);
 
     /**
      * Explicitly cleanup lock resources, if releasing it wouldn't do so.
      *
      * @param lockId resource to lock on
      */
-    void deleteLock(String lockId);
+    void deleteLock(@Nullable String lockId);
 }
