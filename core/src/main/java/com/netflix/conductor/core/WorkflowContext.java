@@ -11,6 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 package com.netflix.conductor.core;
+import javax.annotation.Nullable;
 
 /** Store the authentication context, app or username or both */
 public class WorkflowContext {
@@ -20,7 +21,7 @@ public class WorkflowContext {
 
     private final String clientApp;
 
-    private final String userName;
+    @Nullable private final String userName;
 
     public WorkflowContext(String clientApp) {
         this.clientApp = clientApp;
@@ -54,7 +55,7 @@ public class WorkflowContext {
     /**
      * @return the username
      */
-    public String getUserName() {
+    @Nullable public String getUserName() {
         return userName;
     }
 }

@@ -33,6 +33,7 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 /**
  * A helper service that tries to keep ExecutionDAO and QueueDAO in sync, based on the task or
@@ -155,7 +156,7 @@ public class WorkflowRepairService {
         return false;
     }
 
-    private boolean verifyAndRepairWorkflow(String workflowId) {
+    private boolean verifyAndRepairWorkflow(@Nullable String workflowId) {
         if (StringUtils.isNotEmpty(workflowId)) {
             String queueName = Utils.DECIDER_QUEUE;
             if (!queueDAO.containsMessage(queueName, workflowId)) {
