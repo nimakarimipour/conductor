@@ -18,6 +18,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Nullable;
 
 /** This class contains utility functions for parsing/expanding JSON. */
 @SuppressWarnings("unchecked")
@@ -36,7 +37,7 @@ public class JsonUtils {
      * @param input the object to be expanded
      * @return the expanded object containing java types like {@link Map} and {@link List}
      */
-    public Object expand(Object input) {
+    @Nullable public Object expand(@Nullable Object input) {
         if (input instanceof List) {
             expandList((List<Object>) input);
             return input;

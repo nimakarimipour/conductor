@@ -29,6 +29,7 @@ import com.netflix.conductor.core.sync.Lock;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import javax.annotation.Nullable;
 
 public class LocalOnlyLock implements Lock {
 
@@ -69,7 +70,7 @@ public class LocalOnlyLock implements Lock {
     }
 
     @Override
-    public boolean acquireLock(String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
+    public boolean acquireLock(@Nullable String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
         LOGGER.trace(
                 "Locking {} with timeout {} {} for {} {}",
                 lockId,
@@ -86,7 +87,7 @@ public class LocalOnlyLock implements Lock {
         return false;
     }
 
-    private void removeLeaseExpirationJob(String lockId) {
+    private void removeLeaseExpirationJob(@Nullable String lockId) {
         ScheduledFuture<?> schedFuture = SCHEDULEDFUTURES.get(lockId);
         if (schedFuture != null && schedFuture.cancel(false)) {
             SCHEDULEDFUTURES.remove(lockId);
@@ -95,7 +96,7 @@ public class LocalOnlyLock implements Lock {
     }
 
     @Override
-    public void releaseLock(String lockId) {
+    public void releaseLock(@Nullable String lockId) {
         // Synchronized to prevent race condition between semaphore check and actual release
         // The check is here to prevent semaphore getting above 1
         // e.g. in case when lease runs out but release is also called
@@ -109,7 +110,7 @@ public class LocalOnlyLock implements Lock {
     }
 
     @Override
-    public void deleteLock(String lockId) {
+    public void deleteLock(@Nullable String lockId) {
         LOGGER.trace("Deleting {}", lockId);
         LOCKIDTOSEMAPHOREMAP.invalidate(lockId);
     }
