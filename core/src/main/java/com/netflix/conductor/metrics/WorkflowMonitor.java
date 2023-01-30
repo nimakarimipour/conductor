@@ -32,6 +32,7 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.service.MetadataService;
 
 import static com.netflix.conductor.core.execution.tasks.SystemTaskRegistry.ASYNC_SYSTEM_TASKS_QUALIFIER;
+import javax.annotation.Nullable;
 
 @Component
 @ConditionalOnProperty(
@@ -48,8 +49,8 @@ public class WorkflowMonitor {
     private final int metadataRefreshInterval;
     private final Set<WorkflowSystemTask> asyncSystemTasks;
 
-    private List<TaskDef> taskDefs;
-    private List<WorkflowDef> workflowDefs;
+    @Nullable private List<TaskDef> taskDefs;
+    @Nullable private List<WorkflowDef> workflowDefs;
     private int refreshCounter = 0;
 
     public WorkflowMonitor(

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.netflix.conductor.core.events.queue.Message;
+import javax.annotation.Nullable;
 
 /** DAO responsible for managing queuing for the tasks. */
 public interface QueueDAO {
@@ -26,7 +27,7 @@ public interface QueueDAO {
      * @param offsetTimeInSecond time in seconds, after which the message should be marked visible.
      *     (for timed queues)
      */
-    void push(String queueName, String id, long offsetTimeInSecond);
+    void push(@Nullable String queueName, @Nullable String id, long offsetTimeInSecond);
 
     /**
      * @param queueName name of the queue
@@ -35,7 +36,7 @@ public interface QueueDAO {
      * @param offsetTimeInSecond time in seconds, after which the message should be marked visible.
      *     (for timed queues)
      */
-    void push(String queueName, String id, int priority, long offsetTimeInSecond);
+    void push(@Nullable String queueName, @Nullable String id, int priority, long offsetTimeInSecond);
 
     /**
      * @param queueName Name of the queue
@@ -62,7 +63,7 @@ public interface QueueDAO {
      * @return true if the element was added to the queue. false otherwise indicating the element
      *     already exists in the queue.
      */
-    boolean pushIfNotExists(String queueName, String id, int priority, long offsetTimeInSecond);
+    boolean pushIfNotExists(@Nullable String queueName, String id, int priority, long offsetTimeInSecond);
 
     /**
      * @param queueName Name of the queue
@@ -70,7 +71,7 @@ public interface QueueDAO {
      * @param timeout timeout in milliseconds
      * @return list of elements from the named queue
      */
-    List<String> pop(String queueName, int count, int timeout);
+    List<String> pop(@Nullable String queueName, int count, int timeout);
 
     /**
      * @param queueName Name of the queue
@@ -84,20 +85,20 @@ public interface QueueDAO {
      * @param queueName Name of the queue
      * @param messageId Message id
      */
-    void remove(String queueName, String messageId);
+    void remove(@Nullable String queueName, @Nullable String messageId);
 
     /**
      * @param queueName Name of the queue
      * @return size of the queue
      */
-    int getSize(String queueName);
+    int getSize(@Nullable String queueName);
 
     /**
      * @param queueName Name of the queue
      * @param messageId Message Id
      * @return true if the message was found and ack'ed
      */
-    boolean ack(String queueName, String messageId);
+    boolean ack(@Nullable String queueName, @Nullable String messageId);
 
     /**
      * Extend the lease of the unacknowledged message for longer period.
@@ -108,7 +109,7 @@ public interface QueueDAO {
      *     (replaces the current value with this value)
      * @return true if the message was updated with extended lease. false otherwise.
      */
-    boolean setUnackTimeout(String queueName, String messageId, long unackTimeout);
+    boolean setUnackTimeout(String queueName, @Nullable String messageId, long unackTimeout);
 
     /**
      * @param queueName Name of the queue
@@ -134,7 +135,7 @@ public interface QueueDAO {
      * @param id message id
      * @return true if the message is in queue and the change was successful else returns false
      */
-    boolean resetOffsetTime(String queueName, String id);
+    boolean resetOffsetTime(@Nullable String queueName, @Nullable String id);
 
     /**
      * Postpone a given message with postponeDurationInSeconds, so that the message won't be
@@ -147,7 +148,7 @@ public interface QueueDAO {
      * @param postponeDurationInSeconds duration in seconds by which the message is to be postponed
      */
     default boolean postpone(
-            String queueName, String messageId, int priority, long postponeDurationInSeconds) {
+            @Nullable String queueName, @Nullable String messageId, int priority, long postponeDurationInSeconds) {
         remove(queueName, messageId);
         push(queueName, messageId, priority, postponeDurationInSeconds);
         return true;
@@ -160,7 +161,7 @@ public interface QueueDAO {
      * @param messageId
      * @return
      */
-    default boolean containsMessage(String queueName, String messageId) {
+    default boolean containsMessage(@Nullable String queueName, @Nullable String messageId) {
         throw new UnsupportedOperationException(
                 "Please ensure your provided Queue implementation overrides and implements this method.");
     }

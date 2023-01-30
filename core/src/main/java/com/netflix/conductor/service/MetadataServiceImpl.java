@@ -34,6 +34,7 @@ import com.netflix.conductor.core.exception.NotFoundException;
 import com.netflix.conductor.dao.EventHandlerDAO;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.validations.ValidationContext;
+import javax.annotation.Nullable;
 
 @Service
 public class MetadataServiceImpl implements MetadataService {
@@ -141,7 +142,7 @@ public class MetadataServiceImpl implements MetadataService {
      * @param version Optional. Version. If null, then retrieves the latest
      * @return Workflow definition
      */
-    public WorkflowDef getWorkflowDef(String name, Integer version) {
+    public WorkflowDef getWorkflowDef(String name, @Nullable Integer version) {
         Optional<WorkflowDef> workflowDef;
         if (version == null) {
             workflowDef = metadataDAO.getLatestWorkflowDef(name);

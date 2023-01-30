@@ -25,6 +25,7 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 @Component
 public class AsyncSystemTaskExecutor {
@@ -178,7 +179,7 @@ public class AsyncSystemTaskExecutor {
         }
     }
 
-    private void postponeQuietly(String queueName, TaskModel task) {
+    private void postponeQuietly(@Nullable String queueName, TaskModel task) {
         try {
             queueDAO.postpone(
                     queueName,
@@ -190,7 +191,7 @@ public class AsyncSystemTaskExecutor {
         }
     }
 
-    private TaskModel loadTaskQuietly(String taskId) {
+    @Nullable private TaskModel loadTaskQuietly(String taskId) {
         try {
             return executionDAOFacade.getTaskModel(taskId);
         } catch (Exception e) {

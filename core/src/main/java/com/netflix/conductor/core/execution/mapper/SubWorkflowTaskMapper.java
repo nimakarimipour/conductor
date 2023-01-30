@@ -30,6 +30,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_SUB_WORKFLOW;
+import javax.annotation.Nullable;
 
 @Component
 public class SubWorkflowTaskMapper implements TaskMapper {
@@ -88,7 +89,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
     }
 
     @VisibleForTesting
-    SubWorkflowParams getSubWorkflowParams(WorkflowTask workflowTask) {
+    SubWorkflowParams getSubWorkflowParams(@Nullable WorkflowTask workflowTask) {
         return Optional.ofNullable(workflowTask.getSubWorkflowParam())
                 .orElseThrow(
                         () -> {
@@ -103,7 +104,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
     }
 
     private Map<String, Object> getSubWorkflowInputParameters(
-            WorkflowModel workflowModel, SubWorkflowParams subWorkflowParams) {
+            @Nullable WorkflowModel workflowModel, SubWorkflowParams subWorkflowParams) {
         Map<String, Object> params = new HashMap<>();
         params.put("name", subWorkflowParams.getName());
 

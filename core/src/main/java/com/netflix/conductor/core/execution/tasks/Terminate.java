@@ -24,6 +24,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_TERMINATE;
 import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.COMPLETED;
 import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.FAILED;
+import javax.annotation.Nullable;
 
 /**
  * Task that can terminate a workflow with a given status and modify the workflow's output with a
@@ -93,7 +94,7 @@ public class Terminate extends WorkflowSystemTask {
         return TERMINATION_WORKFLOW_OUTPUT;
     }
 
-    public static Boolean validateInputStatus(String status) {
+    public static Boolean validateInputStatus(@Nullable String status) {
         return COMPLETED.name().equals(status) || FAILED.name().equals(status);
     }
 

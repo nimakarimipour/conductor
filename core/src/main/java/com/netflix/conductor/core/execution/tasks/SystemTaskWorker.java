@@ -34,6 +34,7 @@ import com.netflix.conductor.core.utils.SemaphoreUtil;
 import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.service.ExecutionService;
+import javax.annotation.Nullable;
 
 /** The worker that polls and executes an async system task. */
 @Component
@@ -75,7 +76,7 @@ public class SystemTaskWorker extends LifecycleAwareComponent {
         startPolling(systemTask, systemTask.getTaskType());
     }
 
-    public void startPolling(WorkflowSystemTask systemTask, String queueName) {
+    public void startPolling(WorkflowSystemTask systemTask, @Nullable String queueName) {
         Executors.newSingleThreadScheduledExecutor()
                 .scheduleWithFixedDelay(
                         () -> this.pollAndExecute(systemTask, queueName),
@@ -85,7 +86,7 @@ public class SystemTaskWorker extends LifecycleAwareComponent {
         LOGGER.info("Started listening for task: {} in queue: {}", systemTask, queueName);
     }
 
-    void pollAndExecute(WorkflowSystemTask systemTask, String queueName) {
+    void pollAndExecute(WorkflowSystemTask systemTask, @Nullable String queueName) {
         if (!isRunning()) {
             LOGGER.debug(
                     "{} stopped. Not polling for task: {}", getClass().getSimpleName(), systemTask);
@@ -156,7 +157,7 @@ public class SystemTaskWorker extends LifecycleAwareComponent {
     }
 
     @VisibleForTesting
-    ExecutionConfig getExecutionConfig(String taskQueue) {
+    ExecutionConfig getExecutionConfig(@Nullable String taskQueue) {
         if (!QueueUtils.isIsolatedQueue(taskQueue)) {
             return this.defaultExecutionConfig;
         }
