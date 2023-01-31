@@ -16,6 +16,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.model.WorkflowModel.Status.FAILED;
+import com.netflix.conductor.NullUnmarked;
 
 public class TerminateWorkflowException extends RuntimeException {
 
@@ -26,7 +27,7 @@ public class TerminateWorkflowException extends RuntimeException {
         this(reason, FAILED);
     }
 
-    public TerminateWorkflowException(String reason, WorkflowModel.Status workflowStatus) {
+    @NullUnmarked public TerminateWorkflowException(String reason, WorkflowModel.Status workflowStatus) {
         this(reason, workflowStatus, null);
     }
 

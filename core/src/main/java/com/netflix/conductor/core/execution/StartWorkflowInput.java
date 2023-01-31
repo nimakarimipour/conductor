@@ -20,19 +20,19 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 
 public class StartWorkflowInput {
 
-    private String name;
-    private Integer version;
-    private WorkflowDef workflowDefinition;
-    private Map<String, Object> workflowInput;
-    private String externalInputPayloadStoragePath;
-    private String correlationId;
-    private Integer priority;
-    private String parentWorkflowId;
-    private String parentWorkflowTaskId;
-    private String event;
-    private Map<String, String> taskToDomain;
-    private String workflowId;
-    private String triggeringWorkflowId;
+    @SuppressWarnings("NullAway.Init") private String name;
+    @SuppressWarnings("NullAway.Init") private Integer version;
+    @SuppressWarnings("NullAway.Init") private WorkflowDef workflowDefinition;
+    @SuppressWarnings("NullAway.Init") private Map<String, Object> workflowInput;
+    @SuppressWarnings("NullAway.Init") private String externalInputPayloadStoragePath;
+    @SuppressWarnings("NullAway.Init") private String correlationId;
+    @SuppressWarnings("NullAway.Init") private Integer priority;
+    @SuppressWarnings("NullAway.Init") private String parentWorkflowId;
+    @SuppressWarnings("NullAway.Init") private String parentWorkflowTaskId;
+    @SuppressWarnings("NullAway.Init") private String event;
+    @SuppressWarnings("NullAway.Init") private Map<String, String> taskToDomain;
+    @SuppressWarnings("NullAway.Init") private String workflowId;
+    @SuppressWarnings("NullAway.Init") private String triggeringWorkflowId;
 
     public StartWorkflowInput() {}
 

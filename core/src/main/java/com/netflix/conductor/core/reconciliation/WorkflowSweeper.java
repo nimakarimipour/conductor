@@ -38,6 +38,7 @@ import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.core.config.SchedulerConfiguration.SWEEPER_EXECUTOR_NAME;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 public class WorkflowSweeper {
@@ -51,7 +52,7 @@ public class WorkflowSweeper {
 
     private static final String CLASS_NAME = WorkflowSweeper.class.getSimpleName();
 
-    @Autowired
+    @NullUnmarked @Autowired
     public WorkflowSweeper(
             WorkflowExecutor workflowExecutor,
             Optional<WorkflowRepairService> workflowRepairService,

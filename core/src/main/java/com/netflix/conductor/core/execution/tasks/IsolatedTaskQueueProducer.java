@@ -35,6 +35,7 @@ import com.netflix.conductor.core.utils.QueueUtils;
 import com.netflix.conductor.service.MetadataService;
 
 import static com.netflix.conductor.core.execution.tasks.SystemTaskRegistry.ASYNC_SYSTEM_TASKS_QUALIFIER;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 @ConditionalOnProperty(
@@ -97,7 +98,7 @@ public class IsolatedTaskQueueProducer {
         return isolationExecutionNameSpaces;
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     void addTaskQueues() {
         Set<TaskDef> isolationTaskDefs = getIsolationExecutionNameSpaces();
         LOGGER.debug("Retrieved queues {}", isolationTaskDefs);

@@ -23,6 +23,7 @@ import com.netflix.conductor.common.run.TaskSummary;
 import com.netflix.conductor.common.run.WorkflowSummary;
 import com.netflix.conductor.core.events.queue.Message;
 import com.netflix.conductor.dao.IndexDAO;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * Dummy implementation of {@link IndexDAO} which does nothing. Nothing is ever indexed, and no
@@ -90,7 +91,7 @@ public class NoopIndexDAO implements IndexDAO {
         return CompletableFuture.completedFuture(null);
     }
 
-    @Override
+    @NullUnmarked @Override
     public String get(String workflowInstanceId, String key) {
         return null;
     }
@@ -116,7 +117,7 @@ public class NoopIndexDAO implements IndexDAO {
         return Collections.emptyList();
     }
 
-    @Override
+    @NullUnmarked @Override
     public CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution) {
         return null;
     }

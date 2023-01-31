@@ -25,6 +25,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_LAMBDA;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * @author X-Ultra
@@ -62,7 +63,7 @@ public class Lambda extends WorkflowSystemTask {
         super(TASK_TYPE_LAMBDA);
     }
 
-    @Override
+    @NullUnmarked @Override
     public boolean execute(
             WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> taskInput = task.getInputData();

@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spotify.futures.CompletableFutures;
 
 import static com.netflix.conductor.core.utils.Utils.isTransientException;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * Event Processor is used to dispatch actions configured in the event handlers, based on incoming
@@ -305,7 +306,7 @@ public class DefaultEventProcessor {
         return eventExecution;
     }
 
-    private Object getPayloadObject(String payload) {
+    @NullUnmarked private Object getPayloadObject(String payload) {
         Object payloadObject = null;
         if (payload != null) {
             try {

@@ -57,6 +57,7 @@ import com.netflix.conductor.service.ExecutionLockService;
 
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import static com.netflix.conductor.model.TaskModel.Status.*;
+import com.netflix.conductor.NullUnmarked;
 
 /** Workflow services provider interface */
 @Trace
@@ -170,7 +171,7 @@ public class WorkflowExecutor {
      * @throws NotFoundException Workflow definition is not found or Workflow is deemed
      *     non-restartable as per workflow definition.
      */
-    public void restart(String workflowId, boolean useLatestDefinitions) {
+    @NullUnmarked public void restart(String workflowId, boolean useLatestDefinitions) {
         final WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
 
         if (!workflow.getStatus().isTerminal()) {
@@ -322,7 +323,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private void retry(WorkflowModel workflow) {
+    @NullUnmarked private void retry(WorkflowModel workflow) {
         // Get all FAILED or CANCELED tasks that are not COMPLETED (or reach other terminal states)
         // on further executions.
         // // Eg: for Seq of tasks task1.CANCELED, task1.COMPLETED, task1 shouldn't be retried.
@@ -416,7 +417,7 @@ public class WorkflowExecutor {
      * @param task failed or cancelled task
      * @return new instance of a task with "SCHEDULED" status
      */
-    private TaskModel taskToBeRescheduled(WorkflowModel workflow, TaskModel task) {
+    @NullUnmarked private TaskModel taskToBeRescheduled(WorkflowModel workflow, TaskModel task) {
         TaskModel taskToBeRetried = task.copy();
         taskToBeRetried.setTaskId(idGenerator.generate());
         taskToBeRetried.setRetriedTaskId(task.getTaskId());
@@ -490,7 +491,7 @@ public class WorkflowExecutor {
      * @param workflow the workflow to be completed
      * @throws ConflictException if workflow is already in terminal state.
      */
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     WorkflowModel completeWorkflow(WorkflowModel workflow) {
         LOGGER.debug("Completing workflow execution for {}", workflow.getWorkflowId());
 
@@ -557,7 +558,7 @@ public class WorkflowExecutor {
         return workflow;
     }
 
-    public void terminateWorkflow(String workflowId, String reason) {
+    @NullUnmarked public void terminateWorkflow(String workflowId, String reason) {
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
         if (WorkflowModel.Status.COMPLETED.equals(workflow.getStatus())) {
             throw new ConflictException("Cannot terminate a COMPLETED workflow.");
@@ -572,7 +573,7 @@ public class WorkflowExecutor {
      * @param failureWorkflow the failure workflow (if any) to be triggered as a result of this
      *     termination
      */
-    public WorkflowModel terminateWorkflow(
+    @NullUnmarked public WorkflowModel terminateWorkflow(
             WorkflowModel workflow, String reason, String failureWorkflow) {
         try {
             executionLockService.acquireLock(workflow.getWorkflowId(), 60000);
@@ -930,7 +931,7 @@ public class WorkflowExecutor {
         return workflowTasks.stream().noneMatch(t -> t.getTaskReferenceName().equals(taskRefName));
     }
 
-    public TaskModel getTask(String taskId) {
+    @NullUnmarked public TaskModel getTask(String taskId) {
         return Optional.ofNullable(executionDAOFacade.getTaskModel(taskId))
                 .map(
                         task -> {
@@ -963,7 +964,7 @@ public class WorkflowExecutor {
     }
 
     /** Records a metric for the "decide" process. */
-    public WorkflowModel decide(String workflowId) {
+    @NullUnmarked public WorkflowModel decide(String workflowId) {
         StopWatch watch = new StopWatch();
         watch.start();
         if (!executionLockService.acquireLock(workflowId)) {
@@ -1368,7 +1369,7 @@ public class WorkflowExecutor {
      * @param domains the array of domains for the task. (Must contain atleast one element).
      * @return the active domain where the task will be queued
      */
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     String getActiveDomain(String taskType, String[] domains) {
         if (domains == null || domains.length == 0) {
             return null;
@@ -1502,7 +1503,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private WorkflowModel terminate(
+    @NullUnmarked private WorkflowModel terminate(
             final WorkflowModel workflow, TerminateWorkflowException terminateWorkflowException) {
         if (!workflow.getStatus().isTerminal()) {
             workflow.setStatus(terminateWorkflowException.getWorkflowStatus());
@@ -1527,7 +1528,7 @@ public class WorkflowExecutor {
                 workflow, terminateWorkflowException.getMessage(), failureWorkflow);
     }
 
-    private boolean rerunWF(
+    @NullUnmarked private boolean rerunWF(
             String workflowId,
             String taskId,
             Map<String, Object> taskInput,
@@ -1668,7 +1669,7 @@ public class WorkflowExecutor {
         return false;
     }
 
-    public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
+    @NullUnmarked public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
         // Schedule only first loop over task. Rest will be taken care in Decider Service when this
         // task will get completed.
         List<TaskModel> scheduledLoopOverTasks =

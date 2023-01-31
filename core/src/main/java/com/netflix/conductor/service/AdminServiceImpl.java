@@ -29,6 +29,7 @@ import com.netflix.conductor.core.events.EventQueueManager;
 import com.netflix.conductor.core.reconciliation.WorkflowRepairService;
 import com.netflix.conductor.core.utils.Utils;
 import com.netflix.conductor.dao.QueueDAO;
+import com.netflix.conductor.NullUnmarked;
 
 @Audit
 @Trace
@@ -42,7 +43,7 @@ public class AdminServiceImpl implements AdminService {
     private final EventQueueManager eventQueueManager;
     private final BuildProperties buildProperties;
 
-    public AdminServiceImpl(
+    @NullUnmarked public AdminServiceImpl(
             ConductorProperties properties,
             ExecutionService executionService,
             QueueDAO queueDAO,

@@ -16,6 +16,7 @@ import java.io.InputStream;
 
 import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * A dummy implementation of {@link ExternalPayloadStorage} used when no external payload is
@@ -23,7 +24,7 @@ import com.netflix.conductor.common.utils.ExternalPayloadStorage;
  */
 public class DummyPayloadStorage implements ExternalPayloadStorage {
 
-    @Override
+    @NullUnmarked @Override
     public ExternalStorageLocation getLocation(
             Operation operation, PayloadType payloadType, String path) {
         return null;
@@ -32,7 +33,7 @@ public class DummyPayloadStorage implements ExternalPayloadStorage {
     @Override
     public void upload(String path, InputStream payload, long payloadSize) {}
 
-    @Override
+    @NullUnmarked @Override
     public InputStream download(String path) {
         return null;
     }

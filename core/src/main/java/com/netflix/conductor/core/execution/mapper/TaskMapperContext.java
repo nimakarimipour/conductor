@@ -20,6 +20,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.execution.DeciderService;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /** Business Object class used for interaction between the DeciderService and Different Mappers */
 public class TaskMapperContext {
@@ -186,16 +187,16 @@ public class TaskMapperContext {
     /** {@code TaskMapperContext} builder static inner class. */
     public static final class Builder {
 
-        private WorkflowModel workflowModel;
-        private TaskDef taskDefinition;
-        private WorkflowTask workflowTask;
-        private Map<String, Object> taskInput;
+        @SuppressWarnings("NullAway.Init") private WorkflowModel workflowModel;
+        @SuppressWarnings("NullAway.Init") private TaskDef taskDefinition;
+        @SuppressWarnings("NullAway.Init") private WorkflowTask workflowTask;
+        @SuppressWarnings("NullAway.Init") private Map<String, Object> taskInput;
         private int retryCount;
-        private String retryTaskId;
-        private String taskId;
-        private DeciderService deciderService;
+        @SuppressWarnings("NullAway.Init") private String retryTaskId;
+        @SuppressWarnings("NullAway.Init") private String taskId;
+        @SuppressWarnings("NullAway.Init") private DeciderService deciderService;
 
-        private Builder() {}
+        @NullUnmarked private Builder() {}
 
         /**
          * Sets the {@code workflowModel} and returns a reference to this Builder so that the

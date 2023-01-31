@@ -31,6 +31,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_SUB_WORKFLOW;
+import com.netflix.conductor.NullUnmarked;
 
 @Component(TASK_TYPE_SUB_WORKFLOW)
 public class SubWorkflow extends WorkflowSystemTask {
@@ -47,7 +48,7 @@ public class SubWorkflow extends WorkflowSystemTask {
         this.startWorkflowOperation = startWorkflowOperation;
     }
 
-    @SuppressWarnings("unchecked")
+    @NullUnmarked @SuppressWarnings("unchecked")
     @Override
     public void start(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> input = task.getInputData();
@@ -131,7 +132,7 @@ public class SubWorkflow extends WorkflowSystemTask {
         return true;
     }
 
-    @Override
+    @NullUnmarked @Override
     public void cancel(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         String workflowId = task.getSubWorkflowId();
         if (StringUtils.isEmpty(workflowId)) {

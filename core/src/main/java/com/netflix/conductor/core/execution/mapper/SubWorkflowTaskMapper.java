@@ -30,6 +30,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_SUB_WORKFLOW;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 public class SubWorkflowTaskMapper implements TaskMapper {
@@ -49,7 +50,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
         return TaskType.SUB_WORKFLOW.name();
     }
 
-    @SuppressWarnings("rawtypes")
+    @NullUnmarked @SuppressWarnings("rawtypes")
     @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
         LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);
@@ -102,7 +103,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
                         });
     }
 
-    private Map<String, Object> getSubWorkflowInputParameters(
+    @NullUnmarked private Map<String, Object> getSubWorkflowInputParameters(
             WorkflowModel workflowModel, SubWorkflowParams subWorkflowParams) {
         Map<String, Object> params = new HashMap<>();
         params.put("name", subWorkflowParams.getName());
