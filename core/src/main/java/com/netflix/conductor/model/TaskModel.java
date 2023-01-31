@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 public class TaskModel {
 
@@ -836,7 +837,7 @@ public class TaskModel {
                 isSubworkflowChanged());
     }
 
-    public Task toTask() {
+    @NullUnmarked public Task toTask() {
         Task task = new Task();
         BeanUtils.copyProperties(this, task);
         task.setStatus(Task.Status.valueOf(status.name()));

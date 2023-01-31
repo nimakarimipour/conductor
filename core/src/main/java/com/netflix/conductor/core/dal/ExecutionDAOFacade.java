@@ -54,6 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * Service that acts as a facade for accessing execution data from the {@link ExecutionDAO}, {@link
@@ -285,7 +286,7 @@ public class ExecutionDAOFacade {
      * @param workflowModel the workflow tp be updated
      * @return the id of the updated workflow
      */
-    @Nullable public String updateWorkflow(WorkflowModel workflowModel) {
+    @NullUnmarked @Nullable public String updateWorkflow(WorkflowModel workflowModel) {
         workflowModel.setUpdatedTime(System.currentTimeMillis());
         if (workflowModel.getStatus().isTerminal()) {
             workflowModel.setEndTime(System.currentTimeMillis());

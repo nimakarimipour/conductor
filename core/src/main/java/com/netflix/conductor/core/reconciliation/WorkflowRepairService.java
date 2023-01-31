@@ -34,6 +34,7 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * A helper service that tries to keep ExecutionDAO and QueueDAO in sync, based on the task or
@@ -126,7 +127,7 @@ public class WorkflowRepairService {
      * @param task the task to be repaired
      * @return true - if the task was queued for repair
      */
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     boolean verifyAndRepairTask(TaskModel task) {
         if (isTaskRepairable.test(task)) {
             // Ensure QueueDAO contains this taskId

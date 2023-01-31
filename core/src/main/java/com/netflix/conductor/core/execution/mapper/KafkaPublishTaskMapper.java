@@ -32,6 +32,7 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 public class KafkaPublishTaskMapper implements TaskMapper {
@@ -61,7 +62,7 @@ public class KafkaPublishTaskMapper implements TaskMapper {
      * @return a List with just one Kafka task
      * @throws TerminateWorkflowException In case if the task definition does not exist
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
 

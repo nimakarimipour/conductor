@@ -28,6 +28,7 @@ import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import com.netflix.conductor.core.execution.evaluators.Evaluator;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -69,7 +70,7 @@ public class SwitchTaskMapper implements TaskMapper {
      *           WorkflowTask#getDefaultCase()} Tasks are scheduled.
      *     </ul>
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
         LOGGER.debug("TaskMapperContext {} in SwitchTaskMapper", taskMapperContext);
         List<TaskModel> tasksToBeScheduled = new LinkedList<>();

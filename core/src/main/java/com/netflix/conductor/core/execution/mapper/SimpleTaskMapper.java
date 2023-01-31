@@ -28,6 +28,7 @@ import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -58,7 +59,7 @@ public class SimpleTaskMapper implements TaskMapper {
      * @throws TerminateWorkflowException In case if the task definition does not exist
      * @return a List with just one simple task
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
 

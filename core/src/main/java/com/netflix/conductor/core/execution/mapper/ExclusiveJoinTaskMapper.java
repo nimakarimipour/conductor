@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.model.TaskModel;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 public class ExclusiveJoinTaskMapper implements TaskMapper {
@@ -34,7 +35,7 @@ public class ExclusiveJoinTaskMapper implements TaskMapper {
         return TaskType.EXCLUSIVE_JOIN.name();
     }
 
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
         LOGGER.debug("TaskMapperContext {} in ExclusiveJoinTaskMapper", taskMapperContext);

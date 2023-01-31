@@ -39,6 +39,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import static com.netflix.conductor.core.config.SchedulerConfiguration.SWEEPER_EXECUTOR_NAME;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 public class WorkflowSweeper {
@@ -113,7 +114,7 @@ public class WorkflowSweeper {
         }
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     void unack(WorkflowModel workflowModel, long workflowOffsetTimeout) {
         long postponeDurationSeconds = 0;
         for (TaskModel taskModel : workflowModel.getTasks()) {

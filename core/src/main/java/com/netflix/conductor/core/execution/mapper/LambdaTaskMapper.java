@@ -27,6 +27,7 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * @author x-ultra
@@ -52,7 +53,7 @@ public class LambdaTaskMapper implements TaskMapper {
         return TaskType.LAMBDA.name();
     }
 
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
         LOGGER.debug("TaskMapperContext {} in LambdaTaskMapper", taskMapperContext);

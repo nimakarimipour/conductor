@@ -32,6 +32,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_DO_WHILE;
+import com.netflix.conductor.NullUnmarked;
 
 @Component(TASK_TYPE_DO_WHILE)
 public class DoWhile extends WorkflowSystemTask {
@@ -50,7 +51,7 @@ public class DoWhile extends WorkflowSystemTask {
         task.setStatus(TaskModel.Status.CANCELED);
     }
 
-    @Override
+    @NullUnmarked @Override
     public boolean execute(
             WorkflowModel workflow, TaskModel doWhileTaskModel, WorkflowExecutor workflowExecutor) {
 
@@ -164,7 +165,7 @@ public class DoWhile extends WorkflowSystemTask {
      * @return true if all tasks in DO_WHILE.loopOver are in <code>referenceNameToModel</code> and
      *     reached terminal state.
      */
-    private boolean isIterationComplete(
+    @NullUnmarked private boolean isIterationComplete(
             TaskModel doWhileTaskModel, Map<String, TaskModel> referenceNameToModel) {
         List<WorkflowTask> workflowTasksInsideDoWhile =
                 doWhileTaskModel.getWorkflowTask().getLoopOver();
@@ -188,7 +189,7 @@ public class DoWhile extends WorkflowSystemTask {
         return allTasksTerminal;
     }
 
-    boolean scheduleNextIteration(
+    @NullUnmarked boolean scheduleNextIteration(
             TaskModel doWhileTaskModel, WorkflowModel workflow, WorkflowExecutor workflowExecutor) {
         LOGGER.debug(
                 "Scheduling loop tasks for task {} as condition {} evaluated to true",
@@ -215,7 +216,7 @@ public class DoWhile extends WorkflowSystemTask {
         return true;
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     boolean evaluateCondition(WorkflowModel workflow, TaskModel task) throws ScriptException {
         TaskDef taskDefinition = task.getTaskDefinition().orElse(null);
         // Use paramUtils to compute the task input

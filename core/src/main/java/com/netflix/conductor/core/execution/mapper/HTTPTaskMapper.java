@@ -28,6 +28,7 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -62,7 +63,7 @@ public class HTTPTaskMapper implements TaskMapper {
      * @return a List with just one HTTP task
      * @throws TerminateWorkflowException In case if the task definition does not exist
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
 

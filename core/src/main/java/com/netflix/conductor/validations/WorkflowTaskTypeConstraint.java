@@ -39,6 +39,7 @@ import static com.netflix.conductor.core.execution.tasks.Wait.UNTIL_INPUT;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * This constraint class validates following things. 1. Correct parameters are set depending on task
@@ -349,7 +350,7 @@ public @interface WorkflowTaskTypeConstraint {
             return valid;
         }
 
-        private boolean isHttpTaskValid(
+        @NullUnmarked private boolean isHttpTaskValid(
                 WorkflowTask workflowTask, ConstraintValidatorContext context) {
             boolean valid = true;
             boolean isInputParameterSet = false;
@@ -428,7 +429,7 @@ public @interface WorkflowTaskTypeConstraint {
             return valid;
         }
 
-        private boolean isKafkaPublishTaskValid(
+        @NullUnmarked private boolean isKafkaPublishTaskValid(
                 WorkflowTask workflowTask, ConstraintValidatorContext context) {
             boolean valid = true;
             boolean isInputParameterSet = false;
@@ -483,7 +484,7 @@ public @interface WorkflowTaskTypeConstraint {
             return valid;
         }
 
-        private boolean isJSONJQTransformTaskValid(
+        @NullUnmarked private boolean isJSONJQTransformTaskValid(
                 WorkflowTask workflowTask, ConstraintValidatorContext context) {
             boolean valid = true;
             boolean isInputParameterSet = false;

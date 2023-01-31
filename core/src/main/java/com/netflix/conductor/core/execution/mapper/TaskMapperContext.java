@@ -21,6 +21,7 @@ import com.netflix.conductor.core.execution.DeciderService;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /** Business Object class used for interaction between the DeciderService and Different Mappers */
 public class TaskMapperContext {
@@ -62,7 +63,7 @@ public class TaskMapperContext {
         return builder;
     }
 
-    @Nullable public WorkflowDef getWorkflowDefinition() {
+    @NullUnmarked @Nullable public WorkflowDef getWorkflowDefinition() {
         return workflowModel.getWorkflowDefinition();
     }
 
@@ -98,7 +99,7 @@ public class TaskMapperContext {
         return deciderService;
     }
 
-    public TaskModel createTaskModel() {
+    @NullUnmarked public TaskModel createTaskModel() {
         TaskModel taskModel = new TaskModel();
         taskModel.setReferenceTaskName(workflowTask.getTaskReferenceName());
         taskModel.setWorkflowInstanceId(workflowModel.getWorkflowId());
@@ -138,7 +139,7 @@ public class TaskMapperContext {
                 + '}';
     }
 
-    @Override
+    @NullUnmarked @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -172,7 +173,7 @@ public class TaskMapperContext {
         return getTaskId().equals(that.getTaskId());
     }
 
-    @Override
+    @NullUnmarked @Override
     public int hashCode() {
         int result = getWorkflowDefinition().hashCode();
         result = 31 * result + getWorkflowModel().hashCode();

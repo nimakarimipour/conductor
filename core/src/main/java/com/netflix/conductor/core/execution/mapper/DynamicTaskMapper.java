@@ -33,6 +33,7 @@ import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -66,7 +67,7 @@ public class DynamicTaskMapper implements TaskMapper {
      * @return A {@link List} that contains a single {@link TaskModel} with a {@link
      *     TaskModel.Status#SCHEDULED}
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
         LOGGER.debug("TaskMapperContext {} in DynamicTaskMapper", taskMapperContext);
@@ -116,7 +117,7 @@ public class DynamicTaskMapper implements TaskMapper {
      * @throws TerminateWorkflowException : In case is there is no value dynamic task name in the
      *     input parameters.
      */
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     String getDynamicTaskName(@Nullable Map<String, Object> taskInput, String taskNameParam)
             throws TerminateWorkflowException {
         return Optional.ofNullable(taskInput.get(taskNameParam))

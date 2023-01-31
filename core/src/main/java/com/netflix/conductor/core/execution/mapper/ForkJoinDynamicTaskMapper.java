@@ -43,6 +43,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -119,7 +120,7 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
      *       <li>When the input parameters for the dynamic tasks are not of type {@link Map}
      *     </ul>
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
         LOGGER.debug("TaskMapperContext {} in ForkJoinDynamicTaskMapper", taskMapperContext);

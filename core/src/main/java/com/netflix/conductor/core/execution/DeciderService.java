@@ -48,6 +48,7 @@ import static com.netflix.conductor.common.metadata.tasks.TaskType.TERMINATE;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.USER_DEFINED;
 import static com.netflix.conductor.model.TaskModel.Status.*;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * Decider evaluates the state of the workflow by inspecting the current state along with the
@@ -87,7 +88,7 @@ public class DeciderService {
         this.systemTaskRegistry = systemTaskRegistry;
     }
 
-    public DeciderOutcome decide(WorkflowModel workflow) throws TerminateWorkflowException {
+    @NullUnmarked public DeciderOutcome decide(WorkflowModel workflow) throws TerminateWorkflowException {
 
         // In case of a new workflow the list of tasks will be empty.
         final List<TaskModel> tasks = workflow.getTasks();
@@ -110,7 +111,7 @@ public class DeciderService {
         return decide(workflow, tasksToBeScheduled);
     }
 
-    private DeciderOutcome decide(final WorkflowModel workflow, List<TaskModel> preScheduledTasks)
+    @NullUnmarked private DeciderOutcome decide(final WorkflowModel workflow, List<TaskModel> preScheduledTasks)
             throws TerminateWorkflowException {
 
         DeciderOutcome outcome = new DeciderOutcome();
@@ -261,7 +262,7 @@ public class DeciderService {
         return outcome;
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     List<TaskModel> filterNextLoopOverTasks(
             List<TaskModel> tasks, TaskModel pendingTask, WorkflowModel workflow) {
 
@@ -290,7 +291,7 @@ public class DeciderService {
                 .collect(Collectors.toList());
     }
 
-    private List<TaskModel> startWorkflow(WorkflowModel workflow)
+    @NullUnmarked private List<TaskModel> startWorkflow(WorkflowModel workflow)
             throws TerminateWorkflowException {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
@@ -352,7 +353,7 @@ public class DeciderService {
      *     last task in the workflow will be copied to workflow output of no output parameters are
      *     specified in the workflow definition
      */
-    void updateWorkflowOutput(final WorkflowModel workflow, @Nullable TaskModel task) {
+    @NullUnmarked void updateWorkflowOutput(final WorkflowModel workflow, @Nullable TaskModel task) {
         List<TaskModel> allTasks = workflow.getTasks();
         if (allTasks.isEmpty()) {
             return;
@@ -403,7 +404,7 @@ public class DeciderService {
         workflow.setOutput(output);
     }
 
-    public boolean checkForWorkflowCompletion(final WorkflowModel workflow)
+    @NullUnmarked public boolean checkForWorkflowCompletion(final WorkflowModel workflow)
             throws TerminateWorkflowException {
 
         Map<String, TaskModel.Status> taskStatusMap = new HashMap<>();
@@ -457,7 +458,7 @@ public class DeciderService {
         return noPendingSchedule;
     }
 
-    List<TaskModel> getNextTask(WorkflowModel workflow, TaskModel task) {
+    @NullUnmarked List<TaskModel> getNextTask(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
         // Get the following task after the last completed task
@@ -496,7 +497,7 @@ public class DeciderService {
         return Collections.emptyList();
     }
 
-    @Nullable private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
+    @NullUnmarked @Nullable private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef def = workflow.getWorkflowDefinition();
 
         String taskReferenceName = task.getReferenceTaskName();
@@ -507,7 +508,7 @@ public class DeciderService {
         return taskToSchedule == null ? null : taskToSchedule.getTaskReferenceName();
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     Optional<TaskModel> retry(
             @Nullable TaskDef taskDefinition,
             WorkflowTask workflowTask,
@@ -615,7 +616,7 @@ public class DeciderService {
         return Optional.of(rescheduled);
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     void checkWorkflowTimeout(WorkflowModel workflow) {
         WorkflowDef workflowDef = workflow.getWorkflowDefinition();
         if (workflowDef == null) {
@@ -658,7 +659,7 @@ public class DeciderService {
         }
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     void checkTaskTimeout(TaskDef taskDef, TaskModel task) {
 
         if (taskDef == null) {
@@ -694,7 +695,7 @@ public class DeciderService {
         timeoutTaskWithTimeoutPolicy(reason, taskDef, task);
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     void checkTaskPollTimeout(TaskDef taskDef, TaskModel task) {
         if (taskDef == null) {
             LOGGER.warn(
@@ -747,7 +748,7 @@ public class DeciderService {
         }
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     boolean isResponseTimedOut(TaskDef taskDefinition, TaskModel task) {
         if (taskDefinition == null) {
             LOGGER.warn(
@@ -824,7 +825,7 @@ public class DeciderService {
         return getTasksToBeScheduled(workflow, taskToSchedule, retryCount, null);
     }
 
-    public List<TaskModel> getTasksToBeScheduled(
+    @NullUnmarked public List<TaskModel> getTasksToBeScheduled(
             @Nullable WorkflowModel workflow,
             WorkflowTask taskToSchedule,
             int retryCount,
@@ -871,7 +872,7 @@ public class DeciderService {
                 .collect(Collectors.toList());
     }
 
-    private boolean isTaskSkipped(WorkflowTask taskToSchedule, WorkflowModel workflow) {
+    @NullUnmarked private boolean isTaskSkipped(WorkflowTask taskToSchedule, WorkflowModel workflow) {
         try {
             boolean isTaskSkipped = false;
             if (taskToSchedule != null) {

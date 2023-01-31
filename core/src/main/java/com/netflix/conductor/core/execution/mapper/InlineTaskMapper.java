@@ -27,6 +27,7 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -51,7 +52,7 @@ public class InlineTaskMapper implements TaskMapper {
         return TaskType.INLINE.name();
     }
 
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
         LOGGER.debug("TaskMapperContext {} in InlineTaskMapper", taskMapperContext);

@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * Monitors and processes messages on the default event queues that Conductor listens on.
@@ -67,7 +68,7 @@ public class DefaultEventQueueProcessor {
                 "DefaultEventQueueProcessor initialized with {} queues", queues.entrySet().size());
     }
 
-    private void startMonitor(Status status, ObservableQueue queue) {
+    @NullUnmarked private void startMonitor(Status status, ObservableQueue queue) {
 
         queue.observe()
                 .subscribe(

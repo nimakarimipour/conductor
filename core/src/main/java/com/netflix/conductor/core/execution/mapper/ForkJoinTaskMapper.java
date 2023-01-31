@@ -26,6 +26,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -58,7 +59,7 @@ public class ForkJoinTaskMapper implements TaskMapper {
      * @throws TerminateWorkflowException When the task after {@link TaskType#FORK_JOIN} is not a
      *     {@link TaskType#JOIN}
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
 

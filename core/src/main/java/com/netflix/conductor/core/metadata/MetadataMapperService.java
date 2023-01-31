@@ -36,6 +36,7 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * Populates metadata definitions within workflow objects. Benefits of loading and populating
@@ -118,7 +119,7 @@ public class MetadataMapperService {
         return workflowDefinition;
     }
 
-    private void populateWorkflowTaskWithDefinition(@Nullable WorkflowTask workflowTask) {
+    @NullUnmarked private void populateWorkflowTaskWithDefinition(@Nullable WorkflowTask workflowTask) {
         Utils.checkNotNull(workflowTask, "WorkflowTask cannot be null");
         if (shouldPopulateTaskDefinition(workflowTask)) {
             workflowTask.setTaskDefinition(metadataDAO.getTaskDef(workflowTask.getName()));
@@ -186,7 +187,7 @@ public class MetadataMapperService {
         return task;
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     boolean shouldPopulateTaskDefinition(@Nullable WorkflowTask workflowTask) {
         Utils.checkNotNull(workflowTask, "WorkflowTask cannot be null");
         Utils.checkNotNull(workflowTask.getType(), "WorkflowTask type cannot be null");

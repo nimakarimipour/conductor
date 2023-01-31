@@ -39,6 +39,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /** Used to parse and resolve the JSONPath bindings in the workflow and task definitions. */
 @Component
@@ -53,7 +54,7 @@ public class ParametersUtils {
         this.objectMapper = objectMapper;
     }
 
-    public Map<String, Object> getTaskInput(
+    @NullUnmarked public Map<String, Object> getTaskInput(
             Map<String, Object> inputParams,
             @Nullable WorkflowModel workflow,
             @Nullable TaskDef taskDefinition,
@@ -64,7 +65,7 @@ public class ParametersUtils {
         return getTaskInputV1(workflow, inputParams);
     }
 
-    public Map<String, Object> getTaskInputV2(
+    @NullUnmarked public Map<String, Object> getTaskInputV2(
             Map<String, Object> input,
             @Nullable WorkflowModel workflow,
             @Nullable String taskId,
@@ -220,7 +221,7 @@ public class ParametersUtils {
         return replacedList;
     }
 
-    private Object replaceVariables(
+    @NullUnmarked private Object replaceVariables(
             @Nullable String paramString, DocumentContext documentContext, @Nullable String taskId) {
         String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=})");
         Object[] convertedValues = new Object[values.length];

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 public class WorkflowModel {
 
@@ -415,7 +416,7 @@ public class WorkflowModel {
      *
      * @return the workflow definition name.
      */
-    public String getWorkflowName() {
+    @NullUnmarked public String getWorkflowName() {
         Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
         return workflowDefinition.getName();
     }
@@ -425,7 +426,7 @@ public class WorkflowModel {
      *
      * @return the workflow definition version.
      */
-    public int getWorkflowVersion() {
+    @NullUnmarked public int getWorkflowVersion() {
         Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
         return workflowDefinition.getVersion();
     }

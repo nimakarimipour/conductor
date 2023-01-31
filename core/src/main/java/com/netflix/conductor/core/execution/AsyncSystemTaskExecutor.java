@@ -26,6 +26,7 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 public class AsyncSystemTaskExecutor {
@@ -61,7 +62,7 @@ public class AsyncSystemTaskExecutor {
      * @param systemTask The {@link WorkflowSystemTask} to be executed.
      * @param taskId The id of the {@link TaskModel} object.
      */
-    public void execute(WorkflowSystemTask systemTask, String taskId) {
+    @NullUnmarked public void execute(WorkflowSystemTask systemTask, String taskId) {
         TaskModel task = loadTaskQuietly(taskId);
         if (task == null) {
             LOGGER.error("TaskId: {} could not be found while executing {}", taskId, systemTask);

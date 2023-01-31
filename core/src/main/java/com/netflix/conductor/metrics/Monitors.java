@@ -30,6 +30,7 @@ import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.Timer;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 public class Monitors {
 
@@ -143,7 +144,7 @@ public class Monitors {
                         });
     }
 
-    private static Map<String, String> toMap(String className, @Nullable String... additionalTags) {
+    @NullUnmarked private static Map<String, String> toMap(String className, @Nullable String... additionalTags) {
         Map<String, String> tags = new HashMap<>();
         tags.put("class", className);
         for (int j = 0; j < additionalTags.length - 1; j++) {

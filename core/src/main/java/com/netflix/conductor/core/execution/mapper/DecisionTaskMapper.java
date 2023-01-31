@@ -33,6 +33,7 @@ import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -71,7 +72,7 @@ public class DecisionTaskMapper implements TaskMapper {
      *           are scheduled.
      *     </ul>
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
         LOGGER.debug("TaskMapperContext {} in DecisionTaskMapper", taskMapperContext);
         List<TaskModel> tasksToBeScheduled = new LinkedList<>();
@@ -130,7 +131,7 @@ public class DecisionTaskMapper implements TaskMapper {
      *     expression.
      * @return A String representation of the evaluated result
      */
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     String getEvaluatedCaseValue(@Nullable WorkflowTask workflowTask, @Nullable Map<String, Object> taskInput) {
         String expression = workflowTask.getCaseExpression();
         String caseValue;

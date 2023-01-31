@@ -24,6 +24,7 @@ import com.netflix.conductor.model.TaskModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.START_WORKFLOW;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_START_WORKFLOW;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 public class StartWorkflowTaskMapper implements TaskMapper {
@@ -35,7 +36,7 @@ public class StartWorkflowTaskMapper implements TaskMapper {
         return START_WORKFLOW.name();
     }
 
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
         WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();

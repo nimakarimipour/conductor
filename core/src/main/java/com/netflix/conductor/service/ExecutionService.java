@@ -39,6 +39,7 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Trace
 @Service
@@ -92,7 +93,7 @@ public class ExecutionService {
         return poll(taskType, workerId, null, count, timeoutInMilliSecond);
     }
 
-    public List<Task> poll(
+    @NullUnmarked public List<Task> poll(
             String taskType, String workerId, @Nullable String domain, int count, int timeoutInMilliSecond) {
         if (timeoutInMilliSecond > MAX_POLL_TIMEOUT_MS) {
             throw new IllegalArgumentException(

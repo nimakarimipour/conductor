@@ -25,6 +25,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -49,7 +50,7 @@ public class JoinTaskMapper implements TaskMapper {
      *     WorkflowDef}, {@link WorkflowModel} and a string representation of the TaskId
      * @return A {@link TaskModel} of type {@link TaskType#JOIN} in a List
      */
-    @Override
+    @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
         LOGGER.debug("TaskMapperContext {} in JoinTaskMapper", taskMapperContext);

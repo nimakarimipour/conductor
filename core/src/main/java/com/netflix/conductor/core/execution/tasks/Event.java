@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_EVENT;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Component(TASK_TYPE_EVENT)
 public class Event extends WorkflowSystemTask {
@@ -120,7 +121,7 @@ public class Event extends WorkflowSystemTask {
         queue.ack(List.of(message));
     }
 
-    @Nullable @VisibleForTesting
+    @NullUnmarked @Nullable @VisibleForTesting
     String computeQueueName(WorkflowModel workflow, TaskModel task) {
         String sinkValueRaw = (String) task.getInputData().get("sink");
         Map<String, Object> input = new HashMap<>();

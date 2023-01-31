@@ -33,6 +33,7 @@ import com.netflix.conductor.service.MetadataService;
 
 import static com.netflix.conductor.core.execution.tasks.SystemTaskRegistry.ASYNC_SYSTEM_TASKS_QUALIFIER;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Component
 @ConditionalOnProperty(
@@ -68,7 +69,7 @@ public class WorkflowMonitor {
         LOGGER.info("{} initialized.", WorkflowMonitor.class.getSimpleName());
     }
 
-    @Scheduled(
+    @NullUnmarked @Scheduled(
             initialDelayString = "${conductor.workflow-monitor.stats.initial-delay:120000}",
             fixedDelayString = "${conductor.workflow-monitor.stats.delay:60000}")
     public void reportMetrics() {

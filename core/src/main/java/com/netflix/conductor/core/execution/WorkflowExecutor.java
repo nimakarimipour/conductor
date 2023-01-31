@@ -58,6 +58,7 @@ import com.netflix.conductor.service.ExecutionLockService;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import static com.netflix.conductor.model.TaskModel.Status.*;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /** Workflow services provider interface */
 @Trace
@@ -67,11 +68,11 @@ public class WorkflowExecutor {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowExecutor.class);
     private static final int EXPEDITED_PRIORITY = 10;
     private static final String CLASS_NAME = WorkflowExecutor.class.getSimpleName();
-    private static final Predicate<TaskModel> UNSUCCESSFUL_TERMINAL_TASK =
+    @SuppressWarnings("NullAway") private static final Predicate<TaskModel> UNSUCCESSFUL_TERMINAL_TASK =
             task -> !task.getStatus().isSuccessful() && task.getStatus().isTerminal();
     private static final Predicate<TaskModel> UNSUCCESSFUL_JOIN_TASK =
             UNSUCCESSFUL_TERMINAL_TASK.and(t -> TaskType.TASK_TYPE_JOIN.equals(t.getTaskType()));
-    private static final Predicate<TaskModel> NON_TERMINAL_TASK =
+    @SuppressWarnings("NullAway") private static final Predicate<TaskModel> NON_TERMINAL_TASK =
             task -> !task.getStatus().isTerminal();
     private final MetadataDAO metadataDAO;
     private final QueueDAO queueDAO;
@@ -280,7 +281,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private void updateAndPushParents(WorkflowModel workflow, String operation) {
+    @NullUnmarked private void updateAndPushParents(WorkflowModel workflow, String operation) {
         String workflowIdentifier = "";
         while (workflow.hasParent()) {
             // update parent's sub workflow task
@@ -323,7 +324,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private void retry(WorkflowModel workflow) {
+    @NullUnmarked private void retry(WorkflowModel workflow) {
         // Get all FAILED or CANCELED tasks that are not COMPLETED (or reach other terminal states)
         // on further executions.
         // // Eg: for Seq of tasks task1.CANCELED, task1.COMPLETED, task1 shouldn't be retried.
@@ -417,7 +418,7 @@ public class WorkflowExecutor {
      * @param task failed or cancelled task
      * @return new instance of a task with "SCHEDULED" status
      */
-    private TaskModel taskToBeRescheduled(WorkflowModel workflow, TaskModel task) {
+    @NullUnmarked private TaskModel taskToBeRescheduled(WorkflowModel workflow, TaskModel task) {
         TaskModel taskToBeRetried = task.copy();
         taskToBeRetried.setTaskId(idGenerator.generate());
         taskToBeRetried.setRetriedTaskId(task.getTaskId());
@@ -450,7 +451,7 @@ public class WorkflowExecutor {
         return taskToBeRetried;
     }
 
-    private void endExecution(WorkflowModel workflow, @Nullable TaskModel terminateTask) {
+    @NullUnmarked private void endExecution(WorkflowModel workflow, @Nullable TaskModel terminateTask) {
         if (terminateTask != null) {
             String terminationStatus =
                     (String)
@@ -491,7 +492,7 @@ public class WorkflowExecutor {
      * @param workflow the workflow to be completed
      * @throws ConflictException if workflow is already in terminal state.
      */
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     WorkflowModel completeWorkflow(WorkflowModel workflow) {
         LOGGER.debug("Completing workflow execution for {}", workflow.getWorkflowId());
 
@@ -702,7 +703,7 @@ public class WorkflowExecutor {
      * @throws IllegalArgumentException if the {@link TaskResult} is null.
      * @throws NotFoundException if the Task is not found.
      */
-    public void updateTask(TaskResult taskResult) {
+    @NullUnmarked public void updateTask(TaskResult taskResult) {
         if (taskResult == null) {
             throw new IllegalArgumentException("Task object is null");
         } else if (taskResult.isExtendLease()) {
@@ -863,7 +864,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private void extendLease(TaskResult taskResult) {
+    @NullUnmarked private void extendLease(TaskResult taskResult) {
         TaskModel task =
                 Optional.ofNullable(executionDAOFacade.getTaskModel(taskResult.getTaskId()))
                         .orElseThrow(
@@ -905,7 +906,7 @@ public class WorkflowExecutor {
      * @param task The task which is attempting to trigger the evaluation
      * @return true if workflow can be lazily evaluated, false otherwise
      */
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     boolean isLazyEvaluateWorkflow(@Nullable WorkflowDef workflowDef, TaskModel task) {
         if (task.isLoopOverTask()) {
             return false;
@@ -1057,7 +1058,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private void adjustStateIfSubWorkflowChanged(WorkflowModel workflow) {
+    @NullUnmarked private void adjustStateIfSubWorkflowChanged(WorkflowModel workflow) {
         Optional<TaskModel> changedSubWorkflowTask = findChangedSubWorkflowTask(workflow);
         if (changedSubWorkflowTask.isPresent()) {
             // reset the flag
@@ -1089,7 +1090,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private Optional<TaskModel> findChangedSubWorkflowTask(WorkflowModel workflow) {
+    @NullUnmarked private Optional<TaskModel> findChangedSubWorkflowTask(WorkflowModel workflow) {
         WorkflowDef workflowDef =
                 Optional.ofNullable(workflow.getWorkflowDefinition())
                         .orElseGet(
@@ -1116,7 +1117,7 @@ public class WorkflowExecutor {
         return Optional.empty();
     }
 
-    @VisibleForTesting
+    @NullUnmarked @VisibleForTesting
     List<String> cancelNonTerminalTasks(WorkflowModel workflow) {
         List<String> erroredTasks = new ArrayList<>();
         // Update non-terminal tasks' status to CANCELED
@@ -1243,7 +1244,7 @@ public class WorkflowExecutor {
      * @param skipTaskRequest the {@link SkipTaskRequest} object
      * @throws IllegalStateException
      */
-    public void skipTaskFromWorkflow(
+    @NullUnmarked public void skipTaskFromWorkflow(
             String workflowId, String taskReferenceName, SkipTaskRequest skipTaskRequest) {
 
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
@@ -1503,7 +1504,7 @@ public class WorkflowExecutor {
         }
     }
 
-    private WorkflowModel terminate(
+    @NullUnmarked private WorkflowModel terminate(
             final WorkflowModel workflow, TerminateWorkflowException terminateWorkflowException) {
         if (!workflow.getStatus().isTerminal()) {
             workflow.setStatus(terminateWorkflowException.getWorkflowStatus());
@@ -1528,7 +1529,7 @@ public class WorkflowExecutor {
                 workflow, terminateWorkflowException.getMessage(), failureWorkflow);
     }
 
-    private boolean rerunWF(
+    @NullUnmarked private boolean rerunWF(
             @Nullable String workflowId,
             String taskId,
             Map<String, Object> taskInput,
@@ -1669,7 +1670,7 @@ public class WorkflowExecutor {
         return false;
     }
 
-    public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
+    @NullUnmarked public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
         // Schedule only first loop over task. Rest will be taken care in Decider Service when this
         // task will get completed.
         List<TaskModel> scheduledLoopOverTasks =
@@ -1690,7 +1691,7 @@ public class WorkflowExecutor {
         workflow.getTasks().addAll(scheduledLoopOverTasks);
     }
 
-    public TaskDef getTaskDefinition(TaskModel task) {
+    @NullUnmarked public TaskDef getTaskDefinition(TaskModel task) {
         return task.getTaskDefinition()
                 .orElseGet(
                         () ->
