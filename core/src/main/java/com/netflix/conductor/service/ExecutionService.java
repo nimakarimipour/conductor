@@ -39,6 +39,7 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Trace
 @Service
@@ -248,7 +249,7 @@ public class ExecutionService {
         return executionDAOFacade.getTasksByName(taskType, startKey, count);
     }
 
-    public Task getTask(String taskId) {
+    @NullUnmarked public Task getTask(String taskId) {
         return executionDAOFacade.getTask(taskId);
     }
 

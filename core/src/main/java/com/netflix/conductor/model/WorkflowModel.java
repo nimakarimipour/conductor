@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 public class WorkflowModel {
 
@@ -82,7 +83,7 @@ public class WorkflowModel {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Set<String> failedTaskNames = new HashSet<>();
 
-    private WorkflowDef workflowDefinition;
+    @SuppressWarnings("NullAway.Init") private WorkflowDef workflowDefinition;
 
     @Nullable private String externalInputPayloadStoragePath;
 
@@ -370,7 +371,7 @@ public class WorkflowModel {
         this.ownerApp = ownerApp;
     }
 
-    public Long getCreateTime() {
+    @NullUnmarked public Long getCreateTime() {
         return createTime;
     }
 

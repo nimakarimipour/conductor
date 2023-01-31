@@ -37,6 +37,7 @@ import com.netflix.conductor.core.utils.QueueUtils;
 import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Audit
 @Trace
@@ -60,7 +61,7 @@ public class TaskServiceImpl implements TaskService {
      * @param domain Domain of the workflow
      * @return polled {@link Task}
      */
-    @Nullable public Task poll(String taskType, String workerId, String domain) {
+    @NullUnmarked @Nullable public Task poll(String taskType, String workerId, String domain) {
         LOGGER.debug("Task being polled: /tasks/poll/{}?{}&{}", taskType, workerId, domain);
         Task task = executionService.getLastPollTask(taskType, workerId, domain);
         if (task != null) {
@@ -117,7 +118,7 @@ public class TaskServiceImpl implements TaskService {
      * @param taskReferenceName Task reference name.
      * @return instance of {@link Task}
      */
-    @Nullable public Task getPendingTaskForWorkflow(String workflowId, String taskReferenceName) {
+    @NullUnmarked @Nullable public Task getPendingTaskForWorkflow(String workflowId, String taskReferenceName) {
         return executionService.getPendingTaskForWorkflow(taskReferenceName, workflowId);
     }
 

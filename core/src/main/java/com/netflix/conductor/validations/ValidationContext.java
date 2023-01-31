@@ -14,6 +14,7 @@ package com.netflix.conductor.validations;
 
 import com.netflix.conductor.dao.MetadataDAO;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /**
  * This context is defined to get access to {@link MetadataDAO} inside {@link
@@ -28,7 +29,7 @@ public class ValidationContext {
         ValidationContext.metadataDAO = metadataDAO;
     }
 
-    public static MetadataDAO getMetadataDAO() {
+    @NullUnmarked public static MetadataDAO getMetadataDAO() {
         return metadataDAO;
     }
 }

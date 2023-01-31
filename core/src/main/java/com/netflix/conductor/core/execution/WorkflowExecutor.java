@@ -58,6 +58,7 @@ import com.netflix.conductor.service.ExecutionLockService;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import static com.netflix.conductor.model.TaskModel.Status.*;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 /** Workflow services provider interface */
 @Trace
@@ -1528,7 +1529,7 @@ public class WorkflowExecutor {
                 workflow, terminateWorkflowException.getMessage(), failureWorkflow);
     }
 
-    private boolean rerunWF(
+    @NullUnmarked private boolean rerunWF(
             String workflowId,
             String taskId,
             Map<String, Object> taskInput,

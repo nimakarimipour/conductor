@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import javax.annotation.Nullable;
+import com.netflix.conductor.NullUnmarked;
 
 @Component(ValueParamEvaluator.NAME)
 public class ValueParamEvaluator implements Evaluator {
@@ -27,7 +28,7 @@ public class ValueParamEvaluator implements Evaluator {
     public static final String NAME = "value-param";
     private static final Logger LOGGER = LoggerFactory.getLogger(ValueParamEvaluator.class);
 
-    @Nullable @SuppressWarnings("unchecked")
+    @NullUnmarked @Nullable @SuppressWarnings("unchecked")
     @Override
     public Object evaluate(@Nullable String expression, @Nullable Object input) {
         LOGGER.debug("ValueParam evaluator -- evaluating: {}", expression);
