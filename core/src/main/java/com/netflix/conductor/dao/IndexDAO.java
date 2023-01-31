@@ -21,6 +21,7 @@ import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.TaskSummary;
 import com.netflix.conductor.common.run.WorkflowSummary;
 import com.netflix.conductor.core.events.queue.Message;
+import javax.annotation.Nullable;
 
 /** DAO to index the workflow and task details for searching. */
 public interface IndexDAO {
@@ -63,7 +64,7 @@ public interface IndexDAO {
      * @return List of workflow ids for the matching query
      */
     SearchResult<String> searchWorkflows(
-            String query, String freeText, int start, int count, List<String> sort);
+            String query, String freeText, int start, int count, @Nullable List<String> sort);
 
     /**
      * @param query SQL like query for workflow search parameters.
@@ -140,7 +141,7 @@ public interface IndexDAO {
      * @param key field to be retrieved
      * @return value of the field as string
      */
-    String get(String workflowInstanceId, String key);
+    @Nullable String get(String workflowInstanceId, String key);
 
     /**
      * @param logs Task Execution logs to be indexed
@@ -170,7 +171,7 @@ public interface IndexDAO {
      * @param eventExecution Event Execution to be indexed
      * @return CompletableFuture of type void
      */
-    CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution);
+    @Nullable CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution);
 
     /**
      * Adds an incoming external message into the index

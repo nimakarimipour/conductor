@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.model.TaskModel;
+import javax.annotation.Nullable;
 
 public class QueueUtils {
 
@@ -46,7 +47,7 @@ public class QueueUtils {
      * @return domain:taskType@eexecutionNameSpace-isolationGroupId.
      */
     public static String getQueueName(
-            String taskType, String domain, String isolationGroupId, String executionNamespace) {
+            String taskType, @Nullable String domain, @Nullable String isolationGroupId, @Nullable String executionNamespace) {
 
         String queueName;
         if (domain == null) {

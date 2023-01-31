@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.core.events.queue.ObservableQueue;
 import com.netflix.conductor.core.utils.ParametersUtils;
+import javax.annotation.Nullable;
 
 /** Holders for internal event queues */
 @Component
@@ -52,7 +53,7 @@ public class EventQueues {
     }
 
     @NonNull
-    public ObservableQueue getQueue(String eventType) {
+    public ObservableQueue getQueue(@Nullable String eventType) {
         String event = parametersUtils.replace(eventType).toString();
         int index = event.indexOf(':');
         if (index == -1) {

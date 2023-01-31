@@ -13,6 +13,7 @@
 package com.netflix.conductor.core.events.queue;
 
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class Message {
 
