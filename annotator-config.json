@@ -1,5 +1,5 @@
 {
-  "BUILD_COMMAND": "cd /Users/nima/Developer/NullAwayFixer/Projects/conductor && ./gradlew :conductor-core:compileJava --rerun-tasks",
+  "BUILD_COMMAND": "cd /Projects/conductor && ./gradlew :conductor-core:compileJava --rerun-tasks",
   "ANNOTATION": {
     "INITIALIZER": "com.netflix.conductor.Initializer",
     "NULLABLE": "javax.annotation.Nullable",
