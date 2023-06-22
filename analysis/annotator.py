@@ -24,6 +24,7 @@ def run_annotator():
     commands += ['-i', 'com.uber.nullaway.annotations.Initializer']
     commands += ['-n', 'javax.annotation.Nullable']
     commands += ['-cn', 'NULLAWAY']
+    commands += ['--suppress-remaining-errors', 'org.jspecify.annotations.NullUnmarked']
     # Uncomment to see build output
     # commands += ['-rboserr']
 
