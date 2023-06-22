@@ -65,6 +65,7 @@ dependencies {
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     compileOnly "com.uber.nullaway:nullaway-annotations:0.10.10"
+    compileOnly "org.jspecify:jspecify:0.3.0"
     errorprone "com.google.errorprone:error_prone_core:2.3.2"
     errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
 
