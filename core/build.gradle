@@ -83,8 +83,8 @@ tasks.withType(JavaCompile) {
             option("NullAway:AnnotatedPackages", "com.netflix.conductor")
             option("NullAway:UnannotatedSubPackages", "com.netflix.conductor.common")
             option("NullAway:SerializeFixMetadata", "true")
-            option("NullAway:FixSerializationConfigPath", "/tmp/NullAwayFix/nullaway.xml")
-            option("AnnotatorScanner:ConfigPath", "/tmp/NullAwayFix/scanner.xml")
+            option("NullAway:FixSerializationConfigPath", "/tmp/annotator/checker.xml")
+            option("AnnotatorScanner:ConfigPath", "/tmp/annotator/scanner.xml")
         }
         options.compilerArgs << "-Xmaxerrs" << "100000"
     }
