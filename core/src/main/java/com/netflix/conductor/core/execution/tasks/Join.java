@@ -23,7 +23,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_JOIN;
-import com.netflix.conductor.NullUnmarked;
+
 
 @Component(TASK_TYPE_JOIN)
 public class Join extends WorkflowSystemTask {
@@ -32,7 +32,7 @@ public class Join extends WorkflowSystemTask {
         super(TASK_TYPE_JOIN);
     }
 
-    @NullUnmarked @Override
+     @Override
     @SuppressWarnings("unchecked")
     public boolean execute(
             WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {

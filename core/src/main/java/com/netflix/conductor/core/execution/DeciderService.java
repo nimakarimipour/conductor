@@ -47,7 +47,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TERMINATE;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.USER_DEFINED;
 import static com.netflix.conductor.model.TaskModel.Status.*;
-import com.netflix.conductor.NullUnmarked;
+
 
 /**
  * Decider evaluates the state of the workflow by inspecting the current state along with the
@@ -110,7 +110,7 @@ public class DeciderService {
         return decide(workflow, tasksToBeScheduled);
     }
 
-    @NullUnmarked private DeciderOutcome decide(final WorkflowModel workflow, List<TaskModel> preScheduledTasks)
+     private DeciderOutcome decide(final WorkflowModel workflow, List<TaskModel> preScheduledTasks)
             throws TerminateWorkflowException {
 
         DeciderOutcome outcome = new DeciderOutcome();
@@ -352,7 +352,7 @@ public class DeciderService {
      *     last task in the workflow will be copied to workflow output of no output parameters are
      *     specified in the workflow definition
      */
-    @NullUnmarked void updateWorkflowOutput(final WorkflowModel workflow, TaskModel task) {
+     void updateWorkflowOutput(final WorkflowModel workflow, TaskModel task) {
         List<TaskModel> allTasks = workflow.getTasks();
         if (allTasks.isEmpty()) {
             return;
@@ -496,7 +496,7 @@ public class DeciderService {
         return Collections.emptyList();
     }
 
-    @NullUnmarked private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
+     private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef def = workflow.getWorkflowDefinition();
 
         String taskReferenceName = task.getReferenceTaskName();
@@ -507,7 +507,7 @@ public class DeciderService {
         return taskToSchedule == null ? null : taskToSchedule.getTaskReferenceName();
     }
 
-    @NullUnmarked @VisibleForTesting
+     @VisibleForTesting
     Optional<TaskModel> retry(
             TaskDef taskDefinition,
             WorkflowTask workflowTask,
@@ -819,12 +819,12 @@ public class DeciderService {
         task.setReasonForIncompletion(reason);
     }
 
-    @NullUnmarked public List<TaskModel> getTasksToBeScheduled(
+     public List<TaskModel> getTasksToBeScheduled(
             WorkflowModel workflow, WorkflowTask taskToSchedule, int retryCount) {
         return getTasksToBeScheduled(workflow, taskToSchedule, retryCount, null);
     }
 
-    @NullUnmarked public List<TaskModel> getTasksToBeScheduled(
+     public List<TaskModel> getTasksToBeScheduled(
             WorkflowModel workflow,
             WorkflowTask taskToSchedule,
             int retryCount,
@@ -871,7 +871,7 @@ public class DeciderService {
                 .collect(Collectors.toList());
     }
 
-    @NullUnmarked private boolean isTaskSkipped(WorkflowTask taskToSchedule, WorkflowModel workflow) {
+     private boolean isTaskSkipped(WorkflowTask taskToSchedule, WorkflowModel workflow) {
         try {
             boolean isTaskSkipped = false;
             if (taskToSchedule != null) {
@@ -898,8 +898,8 @@ public class DeciderService {
         List<TaskModel> tasksToBeScheduled = new LinkedList<>();
         List<TaskModel> tasksToBeUpdated = new LinkedList<>();
         boolean isComplete;
-        @SuppressWarnings("NullAway.Init") TaskModel terminateTask;
+         TaskModel terminateTask;
 
-        @NullUnmarked private DeciderOutcome() {}
+         private DeciderOutcome() {}
     }
 }

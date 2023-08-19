@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
-import com.netflix.conductor.NullUnmarked;
+
 
 /**
  * Monitors and processes messages on the default event queues that Conductor listens on.
@@ -166,7 +166,7 @@ public class DefaultEventQueueProcessor {
         LOGGER.info("QueueListener::STARTED...listening for " + queue.getName());
     }
 
-    @NullUnmarked private String getValue(String fieldName, JsonNode json) {
+     private String getValue(String fieldName, JsonNode json) {
         JsonNode node = json.findValue(fieldName);
         if (node == null) {
             return null;
@@ -206,7 +206,7 @@ public class DefaultEventQueueProcessor {
         update(externalIdMap, output, status);
     }
 
-    @NullUnmarked private void update(
+     private void update(
             Map<String, Object> externalIdMap, Map<String, Object> output, Status status)
             throws Exception {
         Map<String, Object> outputMap = new HashMap<>();

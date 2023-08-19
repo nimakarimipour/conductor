@@ -26,7 +26,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_INLINE;
-import com.netflix.conductor.NullUnmarked;
+
 
 /**
  * @author X-Ultra
@@ -67,7 +67,7 @@ public class Inline extends WorkflowSystemTask {
         this.evaluators = evaluators;
     }
 
-    @NullUnmarked @Override
+     @Override
     public boolean execute(
             WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> taskInput = task.getInputData();

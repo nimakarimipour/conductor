@@ -27,7 +27,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
-import com.netflix.conductor.NullUnmarked;
+
 
 public class TaskModel {
 
@@ -67,21 +67,21 @@ public class TaskModel {
         }
     }
 
-    @SuppressWarnings("NullAway.Init") private String taskType;
+     private String taskType;
 
-    @SuppressWarnings("NullAway.Init") private Status status;
+     private Status status;
 
-    @SuppressWarnings("NullAway.Init") private String referenceTaskName;
+     private String referenceTaskName;
 
     private int retryCount;
 
     private int seq;
 
-    @SuppressWarnings("NullAway.Init") private String correlationId;
+     private String correlationId;
 
     private int pollCount;
 
-    @SuppressWarnings("NullAway.Init") private String taskDefName;
+     private String taskDefName;
 
     /** Time when the task was scheduled */
     private long scheduledTime;
@@ -97,7 +97,7 @@ public class TaskModel {
 
     private int startDelayInSeconds;
 
-    @SuppressWarnings("NullAway.Init") private String retriedTaskId;
+     private String retriedTaskId;
 
     private boolean retried;
 
@@ -107,43 +107,43 @@ public class TaskModel {
 
     private long responseTimeoutSeconds;
 
-    @SuppressWarnings("NullAway.Init") private String workflowInstanceId;
+     private String workflowInstanceId;
 
-    @SuppressWarnings("NullAway.Init") private String workflowType;
+     private String workflowType;
 
-    @SuppressWarnings("NullAway.Init") private String taskId;
+     private String taskId;
 
-    @SuppressWarnings("NullAway.Init") private String reasonForIncompletion;
+     private String reasonForIncompletion;
 
     private long callbackAfterSeconds;
 
-    @SuppressWarnings("NullAway.Init") private String workerId;
+     private String workerId;
 
-    @SuppressWarnings("NullAway.Init") private WorkflowTask workflowTask;
+     private WorkflowTask workflowTask;
 
-    @SuppressWarnings("NullAway.Init") private String domain;
+     private String domain;
 
-    @SuppressWarnings("NullAway.Init") private Any inputMessage;
+     private Any inputMessage;
 
-    @SuppressWarnings("NullAway.Init") private Any outputMessage;
+     private Any outputMessage;
 
     private int rateLimitPerFrequency;
 
     private int rateLimitFrequencyInSeconds;
 
-    @SuppressWarnings("NullAway.Init") private String externalInputPayloadStoragePath;
+     private String externalInputPayloadStoragePath;
 
-    @SuppressWarnings("NullAway.Init") private String externalOutputPayloadStoragePath;
+     private String externalOutputPayloadStoragePath;
 
     private int workflowPriority;
 
-    @SuppressWarnings("NullAway.Init") private String executionNameSpace;
+     private String executionNameSpace;
 
-    @SuppressWarnings("NullAway.Init") private String isolationGroupId;
+     private String isolationGroupId;
 
     private int iteration;
 
-    @SuppressWarnings("NullAway.Init") private String subWorkflowId;
+     private String subWorkflowId;
 
     // Timeout after which the wait task should be marked as completed
     private long waitTimeout;
@@ -531,7 +531,7 @@ public class TaskModel {
         this.iteration = iteration;
     }
 
-    @NullUnmarked public String getSubWorkflowId() {
+     public String getSubWorkflowId() {
         // For backwards compatibility
         if (StringUtils.isNotBlank(subWorkflowId)) {
             return subWorkflowId;
@@ -875,7 +875,7 @@ public class TaskModel {
         }
     }
 
-    @NullUnmarked public void clearOutput() {
+     public void clearOutput() {
         this.outputData.clear();
         this.outputPayload.clear();
         this.externalOutputPayloadStoragePath = null;

@@ -48,8 +48,8 @@ public class WorkflowMonitor {
     private final int metadataRefreshInterval;
     private final Set<WorkflowSystemTask> asyncSystemTasks;
 
-    @SuppressWarnings("NullAway.Init") private List<TaskDef> taskDefs;
-    @SuppressWarnings("NullAway.Init") private List<WorkflowDef> workflowDefs;
+     private List<TaskDef> taskDefs;
+     private List<WorkflowDef> workflowDefs;
     private int refreshCounter = 0;
 
     public WorkflowMonitor(

@@ -25,7 +25,7 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-import com.netflix.conductor.NullUnmarked;
+
 
 @Component
 public class AsyncSystemTaskExecutor {
@@ -191,7 +191,7 @@ public class AsyncSystemTaskExecutor {
         }
     }
 
-    @NullUnmarked private TaskModel loadTaskQuietly(String taskId) {
+     private TaskModel loadTaskQuietly(String taskId) {
         try {
             return executionDAOFacade.getTaskModel(taskId);
         } catch (Exception e) {

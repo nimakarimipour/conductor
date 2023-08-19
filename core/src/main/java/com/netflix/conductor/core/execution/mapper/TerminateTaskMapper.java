@@ -25,7 +25,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_TERMINATE;
-import com.netflix.conductor.NullUnmarked;
+
 
 @Component
 public class TerminateTaskMapper implements TaskMapper {
@@ -42,7 +42,7 @@ public class TerminateTaskMapper implements TaskMapper {
         return TaskType.TERMINATE.name();
     }
 
-    @NullUnmarked @Override
+     @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
         logger.debug("TaskMapperContext {} in TerminateTaskMapper", taskMapperContext);

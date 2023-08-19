@@ -27,7 +27,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_EVENT;
-import com.netflix.conductor.NullUnmarked;
+
 
 @Component
 public class EventTaskMapper implements TaskMapper {
@@ -46,7 +46,7 @@ public class EventTaskMapper implements TaskMapper {
         return TaskType.EVENT.name();
     }
 
-    @NullUnmarked @Override
+     @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
         LOGGER.debug("TaskMapperContext {} in EventTaskMapper", taskMapperContext);

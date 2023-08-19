@@ -35,7 +35,7 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
-import com.netflix.conductor.NullUnmarked;
+
 
 @Component
 public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowInput, String> {
@@ -74,7 +74,7 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
         startWorkflow(workflowCreationEvent.getStartWorkflowInput());
     }
 
-    @NullUnmarked private String startWorkflow(StartWorkflowInput input) {
+     private String startWorkflow(StartWorkflowInput input) {
         WorkflowDef workflowDefinition;
 
         if (input.getWorkflowDefinition() == null) {

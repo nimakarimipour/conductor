@@ -34,7 +34,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_EVENT;
-import com.netflix.conductor.NullUnmarked;
+
 
 @Component(TASK_TYPE_EVENT)
 public class Event extends WorkflowSystemTask {
@@ -56,7 +56,7 @@ public class Event extends WorkflowSystemTask {
         this.objectMapper = objectMapper;
     }
 
-    @NullUnmarked @Override
+     @Override
     public void start(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> payload = new HashMap<>(task.getInputData());
         payload.put("workflowInstanceId", workflow.getWorkflowId());
@@ -80,7 +80,7 @@ public class Event extends WorkflowSystemTask {
         }
     }
 
-    @NullUnmarked @Override
+     @Override
     public boolean execute(
             WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         try {
@@ -112,7 +112,7 @@ public class Event extends WorkflowSystemTask {
         return false;
     }
 
-    @NullUnmarked @Override
+     @Override
     public void cancel(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Message message = new Message(task.getTaskId(), null, task.getTaskId());
         String queueName = computeQueueName(workflow, task);
@@ -120,7 +120,7 @@ public class Event extends WorkflowSystemTask {
         queue.ack(List.of(message));
     }
 
-    @NullUnmarked @VisibleForTesting
+     @VisibleForTesting
     String computeQueueName(WorkflowModel workflow, TaskModel task) {
         String sinkValueRaw = (String) task.getInputData().get("sink");
         Map<String, Object> input = new HashMap<>();

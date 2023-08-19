@@ -42,7 +42,7 @@ import com.netflix.conductor.model.WorkflowModel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.conductor.NullUnmarked;
+
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -119,7 +119,7 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
      *       <li>When the input parameters for the dynamic tasks are not of type {@link Map}
      *     </ul>
      */
-    @NullUnmarked @Override
+     @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext)
             throws TerminateWorkflowException {
         LOGGER.debug("TaskMapperContext {} in ForkJoinDynamicTaskMapper", taskMapperContext);
@@ -317,7 +317,7 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
      * @throws TerminateWorkflowException : In case of input parameters of the dynamic fork tasks
      *     not represented as {@link Map}
      */
-    @NullUnmarked @SuppressWarnings("unchecked")
+     @SuppressWarnings("unchecked")
     @VisibleForTesting
     Pair<List<WorkflowTask>, Map<String, Map<String, Object>>> getDynamicForkTasksAndInput(
             WorkflowTask workflowTask, WorkflowModel workflowModel, String dynamicForkTaskParam)
@@ -365,7 +365,7 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
      * @throws TerminateWorkflowException : In case of the {@link WorkflowTask#getInputParameters()}
      *     does not have a payload that contains the list of the dynamic tasks
      */
-    @NullUnmarked @VisibleForTesting
+     @VisibleForTesting
     Pair<List<WorkflowTask>, Map<String, Map<String, Object>>> getDynamicForkJoinTasksAndInput(
             WorkflowTask workflowTask, WorkflowModel workflowModel)
             throws TerminateWorkflowException {
