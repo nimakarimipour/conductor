@@ -53,6 +53,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
+import javax.annotation.Nullable;
 
 
 /**
@@ -134,7 +135,7 @@ public class ExecutionDAOFacade {
         }
     }
 
-    public WorkflowModel getWorkflowModel(String workflowId, boolean includeTasks) {
+    public WorkflowModel getWorkflowModel(@Nullable String workflowId, boolean includeTasks) {
         WorkflowModel workflowModel = getWorkflowModelFromDataStore(workflowId, includeTasks);
         populateWorkflowAndTaskPayloadData(workflowModel);
         return workflowModel;
@@ -154,7 +155,7 @@ public class ExecutionDAOFacade {
         return getWorkflowModelFromDataStore(workflowId, includeTasks).toWorkflow();
     }
 
-    private WorkflowModel getWorkflowModelFromDataStore(String workflowId, boolean includeTasks) {
+    private WorkflowModel getWorkflowModelFromDataStore(@Nullable String workflowId, boolean includeTasks) {
         WorkflowModel workflow = executionDAO.getWorkflow(workflowId, includeTasks);
         if (workflow == null) {
             LOGGER.debug("Workflow {} not found in executionDAO, checking indexDAO", workflowId);
@@ -248,7 +249,7 @@ public class ExecutionDAOFacade {
      * @param workflowModel the workflow to be created
      * @return the id of the created workflow
      */
-    public String createWorkflow(WorkflowModel workflowModel) {
+    @Nullable public String createWorkflow(WorkflowModel workflowModel) {
         externalizeWorkflowData(workflowModel);
         executionDAO.createWorkflow(workflowModel);
         // Add to decider queue
@@ -285,7 +286,7 @@ public class ExecutionDAOFacade {
      * @param workflowModel the workflow tp be updated
      * @return the id of the updated workflow
      */
-    public String updateWorkflow(WorkflowModel workflowModel) {
+    @Nullable public String updateWorkflow(WorkflowModel workflowModel) {
         workflowModel.setUpdatedTime(System.currentTimeMillis());
         if (workflowModel.getStatus().isTerminal()) {
             workflowModel.setEndTime(System.currentTimeMillis());
@@ -325,7 +326,7 @@ public class ExecutionDAOFacade {
         return workflowModel.getWorkflowId();
     }
 
-    public void removeFromPendingWorkflow(String workflowType, String workflowId) {
+    public void removeFromPendingWorkflow(String workflowType, @Nullable String workflowId) {
         executionDAO.removeFromPendingWorkflow(workflowType, workflowId);
     }
 
@@ -421,7 +422,7 @@ public class ExecutionDAOFacade {
                 .collect(Collectors.toList());
     }
 
-    public TaskModel getTaskModel(String taskId) {
+    public TaskModel getTaskModel(@Nullable String taskId) {
         TaskModel taskModel = getTaskFromDatastore(taskId);
         if (taskModel != null) {
             populateTaskData(taskModel);
@@ -429,7 +430,7 @@ public class ExecutionDAOFacade {
         return taskModel;
     }
 
-     public Task getTask(String taskId) {
+     @Nullable public Task getTask(String taskId) {
         TaskModel taskModel = getTaskFromDatastore(taskId);
         if (taskModel != null) {
             return taskModel.toTask();
@@ -437,7 +438,7 @@ public class ExecutionDAOFacade {
         return null;
     }
 
-    private TaskModel getTaskFromDatastore(String taskId) {
+    private TaskModel getTaskFromDatastore(@Nullable String taskId) {
         return executionDAO.getTask(taskId);
     }
 
@@ -506,7 +507,7 @@ public class ExecutionDAOFacade {
         tasks.forEach(this::updateTask);
     }
 
-    public void removeTask(String taskId) {
+    public void removeTask(@Nullable String taskId) {
         executionDAO.removeTask(taskId);
     }
 
@@ -523,7 +524,7 @@ public class ExecutionDAOFacade {
         return pollDataDAO.getAllPollData();
     }
 
-     public PollData getTaskPollDataByDomain(String taskName, String domain) {
+     @Nullable public PollData getTaskPollDataByDomain(@Nullable String taskName, String domain) {
         try {
             return pollDataDAO.getPollData(taskName, domain);
         } catch (Exception e) {
@@ -533,7 +534,7 @@ public class ExecutionDAOFacade {
         }
     }
 
-    public void updateTaskLastPoll(String taskName, String domain, String workerId) {
+    public void updateTaskLastPoll(String taskName, @Nullable String domain, String workerId) {
         try {
             pollDataDAO.updateLastPollData(taskName, domain, workerId);
         } catch (Exception e) {
@@ -587,7 +588,7 @@ public class ExecutionDAOFacade {
         return concurrentExecutionLimitDAO.exceedsLimit(task);
     }
 
-    public boolean exceedsRateLimitPerFrequency(TaskModel task, TaskDef taskDef) {
+    public boolean exceedsRateLimitPerFrequency(TaskModel task, @Nullable TaskDef taskDef) {
         return rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef);
     }
 
@@ -704,9 +705,9 @@ public class ExecutionDAOFacade {
 
     class DelayWorkflowUpdate implements Runnable {
 
-        private final String workflowId;
+        @Nullable private final String workflowId;
 
-        DelayWorkflowUpdate(String workflowId) {
+        DelayWorkflowUpdate(@Nullable String workflowId) {
             this.workflowId = workflowId;
         }
 

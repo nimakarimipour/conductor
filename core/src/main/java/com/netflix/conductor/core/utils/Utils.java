@@ -19,6 +19,7 @@ import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.conductor.core.exception.TransientException;
+import javax.annotation.Nullable;
 
 public class Utils {
 
@@ -71,7 +72,7 @@ public class Utils {
      * @param errorMessage The exception message use if the object is empty or null.
      * @throws NullPointerException if input object is not valid.
      */
-    public static void checkNotNull(Object object, String errorMessage) {
+    public static void checkNotNull(@Nullable Object object, String errorMessage) {
         if (object == null) {
             throw new NullPointerException(errorMessage);
         }

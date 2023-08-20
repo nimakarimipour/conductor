@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.model.TaskModel;
+import javax.annotation.Nullable;
 
 public class QueueUtils {
 
@@ -23,7 +24,7 @@ public class QueueUtils {
     private static final String ISOLATION_SEPARATOR = "-";
     private static final String EXECUTION_NAME_SPACE_SEPARATOR = "@";
 
-    public static String getQueueName(TaskModel taskModel) {
+    @Nullable public static String getQueueName(TaskModel taskModel) {
         return getQueueName(
                 taskModel.getTaskType(),
                 taskModel.getDomain(),
@@ -31,7 +32,7 @@ public class QueueUtils {
                 taskModel.getExecutionNameSpace());
     }
 
-    public static String getQueueName(Task task) {
+    @Nullable public static String getQueueName(Task task) {
         return getQueueName(
                 task.getTaskType(),
                 task.getDomain(),
@@ -45,8 +46,8 @@ public class QueueUtils {
      *
      * @return domain:taskType@eexecutionNameSpace-isolationGroupId.
      */
-    public static String getQueueName(
-            String taskType, String domain, String isolationGroupId, String executionNamespace) {
+    @Nullable public static String getQueueName(
+            @Nullable String taskType, @Nullable String domain, @Nullable String isolationGroupId, @Nullable String executionNamespace) {
 
         String queueName;
         if (domain == null) {
@@ -81,15 +82,15 @@ public class QueueUtils {
         }
     }
 
-    public static boolean isIsolatedQueue(String queue) {
+    public static boolean isIsolatedQueue(@Nullable String queue) {
         return StringUtils.isNotBlank(getIsolationGroup(queue));
     }
 
-    private static String getIsolationGroup(String queue) {
+    private static String getIsolationGroup(@Nullable String queue) {
         return StringUtils.substringAfter(queue, QueueUtils.ISOLATION_SEPARATOR);
     }
 
-    public static String getTaskType(String queue) {
+    public static String getTaskType(@Nullable String queue) {
 
         if (StringUtils.isBlank(queue)) {
             return StringUtils.EMPTY;

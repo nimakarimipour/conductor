@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
+import javax.annotation.Nullable;
 
 
 /**
@@ -166,7 +167,7 @@ public class DefaultEventQueueProcessor {
         LOGGER.info("QueueListener::STARTED...listening for " + queue.getName());
     }
 
-     private String getValue(String fieldName, JsonNode json) {
+     @Nullable private String getValue(String fieldName, JsonNode json) {
         JsonNode node = json.findValue(fieldName);
         if (node == null) {
             return null;

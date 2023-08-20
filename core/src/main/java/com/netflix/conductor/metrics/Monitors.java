@@ -29,6 +29,7 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.Timer;
 import com.netflix.spectator.api.histogram.PercentileTimer;
+import javax.annotation.Nullable;
 
 public class Monitors {
 
@@ -61,7 +62,7 @@ public class Monitors {
      * @param name
      * @param additionalTags
      */
-    private static void counter(String className, String name, String... additionalTags) {
+    private static void counter(String className, String name, @Nullable String... additionalTags) {
         getCounter(className, name, additionalTags).increment();
     }
 
@@ -76,7 +77,7 @@ public class Monitors {
      * @param additionalTags
      */
     private static void gauge(
-            String className, String name, long measurement, String... additionalTags) {
+            String className, String name, long measurement, @Nullable String... additionalTags) {
         getGauge(className, name, additionalTags).set(measurement);
     }
 
@@ -93,7 +94,7 @@ public class Monitors {
         getDistributionSummary(className, name, additionalTags).record(value);
     }
 
-    private static Timer getTimer(String className, String name, String... additionalTags) {
+    private static Timer getTimer(String className, String name, @Nullable String... additionalTags) {
         Map<String, String> tags = toMap(className, additionalTags);
         return timers.computeIfAbsent(name, s -> new ConcurrentHashMap<>())
                 .computeIfAbsent(
@@ -104,7 +105,7 @@ public class Monitors {
                         });
     }
 
-    private static Counter getCounter(String className, String name, String... additionalTags) {
+    private static Counter getCounter(String className, String name, @Nullable String... additionalTags) {
         Map<String, String> tags = toMap(className, additionalTags);
 
         return counters.computeIfAbsent(name, s -> new ConcurrentHashMap<>())
@@ -116,7 +117,7 @@ public class Monitors {
                         });
     }
 
-    private static Gauge getGauge(String className, String name, String... additionalTags) {
+    private static Gauge getGauge(String className, String name, @Nullable String... additionalTags) {
         Map<String, String> tags = toMap(className, additionalTags);
 
         return gauges.computeIfAbsent(name, s -> new ConcurrentHashMap<>())
@@ -142,7 +143,7 @@ public class Monitors {
                         });
     }
 
-    private static Map<String, String> toMap(String className, String... additionalTags) {
+    private static Map<String, String> toMap(String className, @Nullable String... additionalTags) {
         Map<String, String> tags = new HashMap<>();
         tags.put("class", className);
         for (int j = 0; j < additionalTags.length - 1; j++) {
@@ -172,13 +173,13 @@ public class Monitors {
         getCounter(classQualifier, name, additionalTags).increment(count);
     }
 
-    public static void recordQueueWaitTime(String taskType, long queueWaitTime) {
+    public static void recordQueueWaitTime(@Nullable String taskType, long queueWaitTime) {
         getTimer(classQualifier, "task_queue_wait", "taskType", taskType)
                 .record(queueWaitTime, TimeUnit.MILLISECONDS);
     }
 
     public static void recordTaskExecutionTime(
-            String taskType, long duration, boolean includesRetries, TaskModel.Status status) {
+            @Nullable String taskType, long duration, boolean includesRetries, TaskModel.Status status) {
         getTimer(
                         classQualifier,
                         "task_execution",
@@ -199,7 +200,7 @@ public class Monitors {
         recordTaskPollError(taskType, NO_DOMAIN, exception);
     }
 
-    public static void recordTaskPollError(String taskType, String domain, String exception) {
+    public static void recordTaskPollError(String taskType, @Nullable String domain, String exception) {
         counter(
                 classQualifier,
                 "task_poll_error",
@@ -211,15 +212,15 @@ public class Monitors {
                 exception);
     }
 
-    public static void recordTaskPoll(String taskType) {
+    public static void recordTaskPoll(@Nullable String taskType) {
         counter(classQualifier, "task_poll", "taskType", taskType);
     }
 
-    public static void recordTaskPollCount(String taskType, int count) {
+    public static void recordTaskPollCount(@Nullable String taskType, int count) {
         recordTaskPollCount(taskType, NO_DOMAIN, count);
     }
 
-    public static void recordTaskPollCount(String taskType, String domain, int count) {
+    public static void recordTaskPollCount(@Nullable String taskType, String domain, int count) {
         getCounter(classQualifier, "task_poll_count", "taskType", taskType, "domain", domain)
                 .increment(count);
     }
@@ -271,15 +272,15 @@ public class Monitors {
                 version);
     }
 
-    public static void recordTaskTimeout(String taskType) {
+    public static void recordTaskTimeout(@Nullable String taskType) {
         counter(classQualifier, "task_timeout", "taskType", taskType);
     }
 
-    public static void recordTaskResponseTimeout(String taskType) {
+    public static void recordTaskResponseTimeout(@Nullable String taskType) {
         counter(classQualifier, "task_response_timeout", "taskType", taskType);
     }
 
-    public static void recordTaskPendingTime(String taskType, String workflowType, long duration) {
+    public static void recordTaskPendingTime(@Nullable String taskType, @Nullable String workflowType, long duration) {
         gauge(
                 classQualifier,
                 "task_pending_time",
@@ -291,7 +292,7 @@ public class Monitors {
     }
 
     public static void recordWorkflowTermination(
-            String workflowType, WorkflowModel.Status status, String ownerApp) {
+            String workflowType, WorkflowModel.Status status, @Nullable String ownerApp) {
         counter(
                 classQualifier,
                 "workflow_failure",
@@ -304,7 +305,7 @@ public class Monitors {
     }
 
     public static void recordWorkflowStartSuccess(
-            String workflowType, String version, String ownerApp) {
+            String workflowType, String version, @Nullable String ownerApp) {
         counter(
                 classQualifier,
                 "workflow_start_success",
@@ -327,7 +328,7 @@ public class Monitors {
     }
 
     public static void recordUpdateConflict(
-            String taskType, String workflowType, WorkflowModel.Status status) {
+            @Nullable String taskType, String workflowType, WorkflowModel.Status status) {
         counter(
                 classQualifier,
                 "task_update_conflict",
@@ -340,7 +341,7 @@ public class Monitors {
     }
 
     public static void recordUpdateConflict(
-            String taskType, String workflowType, TaskModel.Status status) {
+            @Nullable String taskType, String workflowType, TaskModel.Status status) {
         counter(
                 classQualifier,
                 "task_update_conflict",
@@ -352,7 +353,7 @@ public class Monitors {
                 status.name());
     }
 
-    public static void recordTaskUpdateError(String taskType, String workflowType) {
+    public static void recordTaskUpdateError(@Nullable String taskType, String workflowType) {
         counter(
                 classQualifier,
                 "task_update_error",
@@ -362,7 +363,7 @@ public class Monitors {
                 taskType);
     }
 
-    public static void recordTaskExtendLeaseError(String taskType, String workflowType) {
+    public static void recordTaskExtendLeaseError(@Nullable String taskType, @Nullable String workflowType) {
         counter(
                 classQualifier,
                 "task_extendLease_error",
@@ -372,7 +373,7 @@ public class Monitors {
                 taskType);
     }
 
-    public static void recordTaskQueueOpError(String taskType, String workflowType) {
+    public static void recordTaskQueueOpError(@Nullable String taskType, String workflowType) {
         counter(
                 classQualifier,
                 "task_queue_op_error",
@@ -383,7 +384,7 @@ public class Monitors {
     }
 
     public static void recordWorkflowCompletion(
-            String workflowType, long duration, String ownerApp) {
+            String workflowType, long duration, @Nullable String ownerApp) {
         getTimer(
                         classQualifier,
                         "workflow_execution",
@@ -470,7 +471,7 @@ public class Monitors {
                 exceptionClazz);
     }
 
-    public static void recordEventActionError(String action, String entityName, String event) {
+    public static void recordEventActionError(String action, @Nullable String entityName, String event) {
         counter(
                 classQualifier,
                 "event_action_error",
@@ -518,7 +519,7 @@ public class Monitors {
     }
 
     public static void recordExternalPayloadStorageUsage(
-            String name, String operation, String payloadType) {
+            @Nullable String name, String operation, String payloadType) {
         counter(
                 classQualifier,
                 "external_payload_storage_usage",
@@ -577,7 +578,7 @@ public class Monitors {
         counter(classQualifier, "discarded_archival_count");
     }
 
-    public static void recordSystemTaskWorkerPollingLimited(String queueName) {
+    public static void recordSystemTaskWorkerPollingLimited(@Nullable String queueName) {
         counter(classQualifier, "system_task_worker_polling_limited", "queueName", queueName);
     }
 
@@ -585,7 +586,7 @@ public class Monitors {
         gauge(Monitors.classQualifier, "event_queue_poll", val, "queueType", queueType);
     }
 
-    public static void recordQueueMessageRepushFromRepairService(String queueName) {
+    public static void recordQueueMessageRepushFromRepairService(@Nullable String queueName) {
         counter(classQualifier, "queue_message_repushed", "queueName", queueName);
     }
 

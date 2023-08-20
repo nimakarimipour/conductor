@@ -18,6 +18,7 @@ import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 /** Data access layer for storing workflow executions */
 public interface ExecutionDAO {
@@ -72,13 +73,13 @@ public interface ExecutionDAO {
      * @param taskId id of the task to be removed.
      * @return true if the deletion is successful, false otherwise.
      */
-    boolean removeTask(String taskId);
+    boolean removeTask(@Nullable String taskId);
 
     /**
      * @param taskId Task instance id
      * @return Task
      */
-    TaskModel getTask(String taskId);
+    TaskModel getTask(@Nullable String taskId);
 
     /**
      * @param taskIds Task instance ids
@@ -129,7 +130,7 @@ public interface ExecutionDAO {
      * @param workflowType Workflow Type
      * @param workflowId workflow instance id
      */
-    void removeFromPendingWorkflow(String workflowType, String workflowId);
+    void removeFromPendingWorkflow(String workflowType, @Nullable String workflowId);
 
     /**
      * @param workflowId workflow instance id
@@ -143,7 +144,7 @@ public interface ExecutionDAO {
      *     Sequence number in Workflow.
      * @return Workflow instance details
      */
-    WorkflowModel getWorkflow(String workflowId, boolean includeTasks);
+    WorkflowModel getWorkflow(@Nullable String workflowId, boolean includeTasks);
 
     /**
      * @param workflowName name of the workflow

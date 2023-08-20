@@ -29,6 +29,7 @@ import com.netflix.conductor.core.events.EventQueueManager;
 import com.netflix.conductor.core.reconciliation.WorkflowRepairService;
 import com.netflix.conductor.core.utils.Utils;
 import com.netflix.conductor.dao.QueueDAO;
+import javax.annotation.Nullable;
 
 
 @Audit
@@ -39,9 +40,9 @@ public class AdminServiceImpl implements AdminService {
     private final ConductorProperties properties;
     private final ExecutionService executionService;
     private final QueueDAO queueDAO;
-    private final WorkflowRepairService workflowRepairService;
-    private final EventQueueManager eventQueueManager;
-    private final BuildProperties buildProperties;
+    @Nullable private final WorkflowRepairService workflowRepairService;
+    @Nullable private final EventQueueManager eventQueueManager;
+    @Nullable private final BuildProperties buildProperties;
 
      public AdminServiceImpl(
             ConductorProperties properties,

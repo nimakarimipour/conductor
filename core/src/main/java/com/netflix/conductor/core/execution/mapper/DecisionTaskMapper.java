@@ -32,6 +32,7 @@ import com.netflix.conductor.core.events.ScriptEvaluator;
 import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -130,7 +131,7 @@ public class DecisionTaskMapper implements TaskMapper {
      * @return A String representation of the evaluated result
      */
     @VisibleForTesting
-    String getEvaluatedCaseValue(WorkflowTask workflowTask, Map<String, Object> taskInput) {
+    String getEvaluatedCaseValue(@Nullable WorkflowTask workflowTask, @Nullable Map<String, Object> taskInput) {
         String expression = workflowTask.getCaseExpression();
         String caseValue;
         if (StringUtils.isNotBlank(expression)) {

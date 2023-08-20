@@ -16,23 +16,24 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.model.WorkflowModel.Status.FAILED;
+import javax.annotation.Nullable;
 
 
 public class TerminateWorkflowException extends RuntimeException {
 
     private final WorkflowModel.Status workflowStatus;
-    private final TaskModel task;
+    @Nullable private final TaskModel task;
 
-    public TerminateWorkflowException(String reason) {
+    public TerminateWorkflowException(@Nullable String reason) {
         this(reason, FAILED);
     }
 
-     public TerminateWorkflowException(String reason, WorkflowModel.Status workflowStatus) {
+     public TerminateWorkflowException(@Nullable String reason, WorkflowModel.Status workflowStatus) {
         this(reason, workflowStatus, null);
     }
 
     public TerminateWorkflowException(
-            String reason, WorkflowModel.Status workflowStatus, TaskModel task) {
+            @Nullable String reason, WorkflowModel.Status workflowStatus, @Nullable TaskModel task) {
         super(reason);
         this.workflowStatus = workflowStatus;
         this.task = task;
@@ -42,7 +43,7 @@ public class TerminateWorkflowException extends RuntimeException {
         return workflowStatus;
     }
 
-    public TaskModel getTask() {
+    @Nullable public TaskModel getTask() {
         return task;
     }
 }

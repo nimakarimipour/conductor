@@ -32,6 +32,7 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -116,7 +117,7 @@ public class DynamicTaskMapper implements TaskMapper {
      *     input parameters.
      */
     @VisibleForTesting
-    String getDynamicTaskName(Map<String, Object> taskInput, String taskNameParam)
+    String getDynamicTaskName(@Nullable Map<String, Object> taskInput, String taskNameParam)
             throws TerminateWorkflowException {
         return Optional.ofNullable(taskInput.get(taskNameParam))
                 .map(String::valueOf)

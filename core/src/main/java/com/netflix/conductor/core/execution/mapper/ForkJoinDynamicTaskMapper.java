@@ -42,6 +42,7 @@ import com.netflix.conductor.model.WorkflowModel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Nullable;
 
 
 /**
@@ -320,7 +321,7 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
      @SuppressWarnings("unchecked")
     @VisibleForTesting
     Pair<List<WorkflowTask>, Map<String, Map<String, Object>>> getDynamicForkTasksAndInput(
-            WorkflowTask workflowTask, WorkflowModel workflowModel, String dynamicForkTaskParam)
+            WorkflowTask workflowTask, @Nullable WorkflowModel workflowModel, String dynamicForkTaskParam)
             throws TerminateWorkflowException {
 
         Map<String, Object> input =
@@ -367,7 +368,7 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
      */
      @VisibleForTesting
     Pair<List<WorkflowTask>, Map<String, Map<String, Object>>> getDynamicForkJoinTasksAndInput(
-            WorkflowTask workflowTask, WorkflowModel workflowModel)
+            WorkflowTask workflowTask, @Nullable WorkflowModel workflowModel)
             throws TerminateWorkflowException {
         String dynamicForkJoinTaskParam = workflowTask.getDynamicForkJoinTasksParam();
         Map<String, Object> input =
