@@ -23,6 +23,7 @@ import com.netflix.conductor.common.run.TaskSummary;
 import com.netflix.conductor.common.run.WorkflowSummary;
 import com.netflix.conductor.core.events.queue.Message;
 import com.netflix.conductor.dao.IndexDAO;
+import javax.annotation.Nullable;
 
 
 /**
@@ -52,7 +53,7 @@ public class NoopIndexDAO implements IndexDAO {
 
     @Override
     public SearchResult<String> searchWorkflows(
-            String query, String freeText, int start, int count, List<String> sort) {
+            String query, String freeText, int start, int count, @Nullable List<String> sort) {
         return new SearchResult<>(0, Collections.emptyList());
     }
 
@@ -91,7 +92,7 @@ public class NoopIndexDAO implements IndexDAO {
         return CompletableFuture.completedFuture(null);
     }
 
-     @Override
+     @Nullable @Override
     public String get(String workflowInstanceId, String key) {
         return null;
     }
@@ -117,7 +118,7 @@ public class NoopIndexDAO implements IndexDAO {
         return Collections.emptyList();
     }
 
-     @Override
+     @Nullable @Override
     public CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution) {
         return null;
     }

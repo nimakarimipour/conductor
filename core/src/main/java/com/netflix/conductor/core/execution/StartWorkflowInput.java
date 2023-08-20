@@ -17,12 +17,13 @@ import java.util.Objects;
 
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import javax.annotation.Nullable;
 
 public class StartWorkflowInput {
 
      private String name;
      private Integer version;
-     private WorkflowDef workflowDefinition;
+     @Nullable private WorkflowDef workflowDefinition;
      private Map<String, Object> workflowInput;
      private String externalInputPayloadStoragePath;
      private String correlationId;
@@ -68,7 +69,7 @@ public class StartWorkflowInput {
         return workflowDefinition;
     }
 
-    public void setWorkflowDefinition(WorkflowDef workflowDefinition) {
+    public void setWorkflowDefinition(@Nullable WorkflowDef workflowDefinition) {
         this.workflowDefinition = workflowDefinition;
     }
 

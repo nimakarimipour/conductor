@@ -57,6 +57,7 @@ import com.netflix.conductor.service.ExecutionLockService;
 
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import static com.netflix.conductor.model.TaskModel.Status.*;
+import javax.annotation.Nullable;
 
 
 /** Workflow services provider interface */
@@ -450,7 +451,7 @@ public class WorkflowExecutor {
         return taskToBeRetried;
     }
 
-    private void endExecution(WorkflowModel workflow, TaskModel terminateTask) {
+    private void endExecution(WorkflowModel workflow, @Nullable TaskModel terminateTask) {
         if (terminateTask != null) {
             String terminationStatus =
                     (String)
@@ -574,7 +575,7 @@ public class WorkflowExecutor {
      *     termination
      */
      public WorkflowModel terminateWorkflow(
-            WorkflowModel workflow, String reason, String failureWorkflow) {
+            WorkflowModel workflow, @Nullable String reason, @Nullable String failureWorkflow) {
         try {
             executionLockService.acquireLock(workflow.getWorkflowId(), 60000);
 
@@ -931,7 +932,7 @@ public class WorkflowExecutor {
         return workflowTasks.stream().noneMatch(t -> t.getTaskReferenceName().equals(taskRefName));
     }
 
-     public TaskModel getTask(String taskId) {
+     @Nullable public TaskModel getTask(String taskId) {
         return Optional.ofNullable(executionDAOFacade.getTaskModel(taskId))
                 .map(
                         task -> {
@@ -964,7 +965,7 @@ public class WorkflowExecutor {
     }
 
     /** Records a metric for the "decide" process. */
-     public WorkflowModel decide(String workflowId) {
+     @Nullable public WorkflowModel decide(String workflowId) {
         StopWatch watch = new StopWatch();
         watch.start();
         if (!executionLockService.acquireLock(workflowId)) {
@@ -1369,7 +1370,7 @@ public class WorkflowExecutor {
      * @param domains the array of domains for the task. (Must contain atleast one element).
      * @return the active domain where the task will be queued
      */
-     @VisibleForTesting
+     @Nullable @VisibleForTesting
     String getActiveDomain(String taskType, String[] domains) {
         if (domains == null || domains.length == 0) {
             return null;
@@ -1532,8 +1533,8 @@ public class WorkflowExecutor {
             String workflowId,
             String taskId,
             Map<String, Object> taskInput,
-            Map<String, Object> workflowInput,
-            String correlationId) {
+            @Nullable Map<String, Object> workflowInput,
+            @Nullable String correlationId) {
 
         // Get the workflow
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);

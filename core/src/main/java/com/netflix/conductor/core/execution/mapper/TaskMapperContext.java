@@ -20,6 +20,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.execution.DeciderService;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
 
 
 /** Business Object class used for interaction between the DeciderService and Different Mappers */
@@ -201,7 +202,7 @@ public class TaskMapperContext {
          private WorkflowTask workflowTask;
          private Map<String, Object> taskInput;
         private int retryCount;
-         private String retryTaskId;
+         @Nullable private String retryTaskId;
          private String taskId;
          private DeciderService deciderService;
 
@@ -274,7 +275,7 @@ public class TaskMapperContext {
          * @param val the {@code retryTaskId} to set
          * @return a reference to this Builder
          */
-        public Builder withRetryTaskId(String val) {
+        public Builder withRetryTaskId(@Nullable String val) {
             retryTaskId = val;
             return this;
         }

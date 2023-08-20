@@ -11,6 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 package com.netflix.conductor.core.execution.evaluators;
+import javax.annotation.Nullable;
 
 public interface Evaluator {
     /**
@@ -21,5 +22,5 @@ public interface Evaluator {
      * @param input Input object to the evaluator to help evaluate the expression.
      * @return Return the evaluation result.
      */
-    Object evaluate(String expression, Object input);
+    @Nullable Object evaluate(String expression, Object input);
 }
