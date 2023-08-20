@@ -128,7 +128,8 @@ public class StartWorkflowInput {
         this.event = event;
     }
 
-    public Map<String, String> getTaskToDomain() {
+    public Map<String, String> getTaskToDomain() 
+    {
         return taskToDomain;
     }
 

@@ -221,29 +221,50 @@ public class ParametersUtils {
     }
 
     private Object replaceVariables(
-            String paramString, DocumentContext documentContext, String taskId) {
-        String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=})");
+            String paramString, DocumentContext documentContext, String taskId) 
+            {
+        String[] values = paramString
+                            .split("(?=(?<!\\$)\\$\\{)|(?<=})");
         Object[] convertedValues = new Object[values.length];
-        for (int i = 0; i < values.length; i++) {
+        for (int i = 0; i < values.length; i++) 
+        {
             convertedValues[i] = values[i];
-            if (values[i].startsWith("${") && values[i].endsWith("}")) {
-                String paramPath = values[i].substring(2, values[i].length() - 1);
+            if (values[i].startsWith("${") 
+                &&
+                values[i].endsWith("}")) 
+                {
+                String paramPath = values[i]
+                                    .substring(
+                                        2, 
+                                        values[i].length()
+                                        - 1);
                 // if the paramPath is blank, meaning no value in between ${ and }
                 // like ${}, ${  } etc, set the value to empty string
-                if (StringUtils.isBlank(paramPath)) {
+                if (
+                    StringUtils
+                    .isBlank(paramPath)
+                ) 
+                {
                     convertedValues[i] = "";
                     continue;
                 }
-                if (EnvUtils.isEnvironmentVariable(paramPath)) {
-                    String sysValue = EnvUtils.getSystemParametersValue(paramPath, taskId);
+                if (
+                    EnvUtils.isEnvironmentVariable(paramPath)
+                    ) 
+                {
+                    String sysValue = EnvUtils
+                                        .getSystemParametersValue(paramPath, taskId);
                     if (sysValue != null) {
                         convertedValues[i] = sysValue;
                     }
 
-                } else {
-                    try {
+                } else 
+                {
+                    try 
+                    {
                         convertedValues[i] = documentContext.read(paramPath);
-                    } catch (Exception e) {
+                    } catch (Exception e) 
+                    {
                         LOGGER.warn(
                                 "Error reading documentContext for paramPath: {}. Exception: {}",
                                 paramPath,
@@ -251,7 +272,8 @@ public class ParametersUtils {
                         convertedValues[i] = null;
                     }
                 }
-            } else if (values[i].contains("$${")) {
+            } else if (values[i].contains("$${")) 
+            {
                 convertedValues[i] = values[i].replaceAll("\\$\\$\\{", "\\${");
             }
         }

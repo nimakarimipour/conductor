@@ -34,15 +34,24 @@ public class TaskMapperContext {
     private final String taskId;
     private final DeciderService deciderService;
 
-    private TaskMapperContext(Builder builder) {
-        workflowModel = builder.workflowModel;
-        taskDefinition = builder.taskDefinition;
-        workflowTask = builder.workflowTask;
-        taskInput = builder.taskInput;
-        retryCount = builder.retryCount;
-        retryTaskId = builder.retryTaskId;
-        taskId = builder.taskId;
-        deciderService = builder.deciderService;
+    private TaskMapperContext(Builder builder) 
+    {
+        workflowModel = builder
+                            .workflowModel;
+        taskDefinition = builder
+                            .taskDefinition;
+        workflowTask = builder
+                            .workflowTask;
+        taskInput = builder
+                        .taskInput;
+        retryCount = builder
+                        .retryCount;
+        retryTaskId = builder
+                        .retryTaskId;
+        taskId = builder
+                        .taskId;
+        deciderService = builder
+                            .deciderService;
     }
 
     public static Builder newBuilder() {
