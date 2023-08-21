@@ -23,6 +23,7 @@ import com.netflix.conductor.annotations.Trace;
 import com.netflix.conductor.core.config.ConductorProperties;
 import com.netflix.conductor.core.sync.Lock;
 import com.netflix.conductor.metrics.Monitors;
+import javax.annotation.Nullable;
 
 @Service
 @Trace
@@ -51,15 +52,15 @@ public class ExecutionLockService {
      * @param lockId
      * @return
      */
-    public boolean acquireLock(String lockId) {
+    public boolean acquireLock(@Nullable String lockId) {
         return acquireLock(lockId, lockTimeToTry, lockLeaseTime);
     }
 
-    public boolean acquireLock(String lockId, long timeToTryMs) {
+    public boolean acquireLock(@Nullable String lockId, long timeToTryMs) {
         return acquireLock(lockId, timeToTryMs, lockLeaseTime);
     }
 
-    public boolean acquireLock(String lockId, long timeToTryMs, long leaseTimeMs) {
+    public boolean acquireLock(@Nullable String lockId, long timeToTryMs, long leaseTimeMs) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             if (!lock.acquireLock(lockId, timeToTryMs, leaseTimeMs, TimeUnit.MILLISECONDS)) {
                 LOGGER.debug(
@@ -92,7 +93,7 @@ public class ExecutionLockService {
         }
     }
 
-    public void releaseLock(String lockId) {
+    public void releaseLock(@Nullable String lockId) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             lock.releaseLock(lockId);
             LOGGER.debug(
@@ -102,7 +103,7 @@ public class ExecutionLockService {
         }
     }
 
-    public void deleteLock(String lockId) {
+    public void deleteLock(@Nullable String lockId) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             lock.deleteLock(lockId);
             LOGGER.debug("Thread {} deleted lockId {}.", Thread.currentThread().getId(), lockId);

@@ -34,6 +34,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_EVENT;
+import javax.annotation.Nullable;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Component(TASK_TYPE_EVENT)
@@ -120,7 +122,7 @@ public class Event extends WorkflowSystemTask {
         queue.ack(List.of(message));
     }
 
-     @VisibleForTesting
+     @NullUnmarked @Nullable @VisibleForTesting
     String computeQueueName(WorkflowModel workflow, TaskModel task) {
         String sinkValueRaw = (String) task.getInputData().get("sink");
         Map<String, Object> input = new HashMap<>();
@@ -153,7 +155,7 @@ public class Event extends WorkflowSystemTask {
     }
 
     @VisibleForTesting
-    ObservableQueue getQueue(String queueName, String taskId) {
+    ObservableQueue getQueue(@Nullable String queueName, String taskId) {
         try {
             return eventQueues.getQueue(queueName);
         } catch (IllegalArgumentException e) {

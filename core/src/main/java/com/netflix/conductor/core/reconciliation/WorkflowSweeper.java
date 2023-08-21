@@ -38,6 +38,7 @@ import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.core.config.SchedulerConfiguration.SWEEPER_EXECUTOR_NAME;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
+import javax.annotation.Nullable;
 
 
 @Component
@@ -47,7 +48,7 @@ public class WorkflowSweeper {
 
     private final ConductorProperties properties;
     private final WorkflowExecutor workflowExecutor;
-    private final WorkflowRepairService workflowRepairService;
+    @Nullable private final WorkflowRepairService workflowRepairService;
     private final QueueDAO queueDAO;
 
     private static final String CLASS_NAME = WorkflowSweeper.class.getSimpleName();

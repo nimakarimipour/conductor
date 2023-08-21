@@ -19,6 +19,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
+import javax.annotation.Nullable;
 
 /**
  * A container class that holds a mapping of system task types {@link

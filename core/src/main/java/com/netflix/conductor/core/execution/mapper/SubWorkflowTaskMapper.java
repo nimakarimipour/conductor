@@ -30,6 +30,8 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_SUB_WORKFLOW;
+import javax.annotation.Nullable;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Component
@@ -50,7 +52,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
         return TaskType.SUB_WORKFLOW.name();
     }
 
-     @SuppressWarnings("rawtypes")
+     @NullUnmarked @SuppressWarnings("rawtypes")
     @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
         LOGGER.debug("TaskMapperContext {} in SubWorkflowTaskMapper", taskMapperContext);

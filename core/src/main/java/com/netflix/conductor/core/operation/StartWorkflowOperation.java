@@ -35,6 +35,7 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
+import javax.annotation.Nullable;
 
 
 @Component
@@ -172,8 +173,8 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
      */
     private void validateWorkflow(
             WorkflowDef workflowDef,
-            Map<String, Object> workflowInput,
-            String externalStoragePath) {
+            @Nullable Map<String, Object> workflowInput,
+            @Nullable String externalStoragePath) {
         // Check if the input to the workflow is not null
         if (workflowInput == null && StringUtils.isBlank(externalStoragePath)) {
             LOGGER.error("The input for the workflow '{}' cannot be NULL", workflowDef.getName());

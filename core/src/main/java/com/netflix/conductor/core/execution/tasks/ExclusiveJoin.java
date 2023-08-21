@@ -25,6 +25,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_EXCLUSIVE_JOIN;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Component(TASK_TYPE_EXCLUSIVE_JOIN)
@@ -38,7 +39,7 @@ public class ExclusiveJoin extends WorkflowSystemTask {
         super(TASK_TYPE_EXCLUSIVE_JOIN);
     }
 
-     @Override
+     @NullUnmarked @Override
     @SuppressWarnings("unchecked")
     public boolean execute(
             WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {

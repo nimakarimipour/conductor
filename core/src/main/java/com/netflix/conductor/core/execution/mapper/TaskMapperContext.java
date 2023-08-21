@@ -20,21 +20,23 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.execution.DeciderService;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import javax.annotation.Nullable;
+import org.jspecify.annotations.NullUnmarked;
 
 
 /** Business Object class used for interaction between the DeciderService and Different Mappers */
 public class TaskMapperContext {
 
     private final WorkflowModel workflowModel;
-    private final TaskDef taskDefinition;
+    @Nullable private final TaskDef taskDefinition;
     private final WorkflowTask workflowTask;
     private final Map<String, Object> taskInput;
     private final int retryCount;
-    private final String retryTaskId;
+    @Nullable private final String retryTaskId;
     private final String taskId;
     private final DeciderService deciderService;
 
-    private TaskMapperContext(Builder builder) 
+    @NullUnmarked private TaskMapperContext(Builder builder) 
     {
         workflowModel = builder
                             .workflowModel;
@@ -79,7 +81,7 @@ public class TaskMapperContext {
         return workflowModel;
     }
 
-    public TaskDef getTaskDefinition() {
+    @Nullable public TaskDef getTaskDefinition() {
         return taskDefinition;
     }
 
@@ -91,7 +93,7 @@ public class TaskMapperContext {
         return retryCount;
     }
 
-    public String getRetryTaskId() {
+    @Nullable public String getRetryTaskId() {
         return retryTaskId;
     }
 
@@ -196,16 +198,16 @@ public class TaskMapperContext {
     /** {@code TaskMapperContext} builder static inner class. */
     public static final class Builder {
 
-         private WorkflowModel workflowModel;
-         private TaskDef taskDefinition;
-         private WorkflowTask workflowTask;
-         private Map<String, Object> taskInput;
+         @SuppressWarnings("NullAway.Init") private WorkflowModel workflowModel;
+         @Nullable private TaskDef taskDefinition;
+         @SuppressWarnings("NullAway.Init") private WorkflowTask workflowTask;
+         @SuppressWarnings("NullAway.Init") private Map<String, Object> taskInput;
         private int retryCount;
-         private String retryTaskId;
-         private String taskId;
-         private DeciderService deciderService;
+         @Nullable private String retryTaskId;
+         @Nullable private String taskId;
+         @SuppressWarnings("NullAway.Init") private DeciderService deciderService;
 
-         private Builder() {}
+         @NullUnmarked private Builder() {}
 
         /**
          * Sets the {@code workflowModel} and returns a reference to this Builder so that the
@@ -274,7 +276,7 @@ public class TaskMapperContext {
          * @param val the {@code retryTaskId} to set
          * @return a reference to this Builder
          */
-        public Builder withRetryTaskId(String val) {
+        public Builder withRetryTaskId(@Nullable String val) {
             retryTaskId = val;
             return this;
         }

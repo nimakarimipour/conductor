@@ -26,6 +26,8 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_INLINE;
+import javax.annotation.Nullable;
+import org.jspecify.annotations.NullUnmarked;
 
 
 /**
@@ -67,7 +69,7 @@ public class Inline extends WorkflowSystemTask {
         this.evaluators = evaluators;
     }
 
-     @Override
+     @NullUnmarked @Override
     public boolean execute(
             WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> taskInput = task.getInputData();
@@ -101,7 +103,7 @@ public class Inline extends WorkflowSystemTask {
         return true;
     }
 
-    private void checkEvaluatorType(String evaluatorType) {
+    private void checkEvaluatorType(@Nullable String evaluatorType) {
         if (StringUtils.isBlank(evaluatorType)) {
             LOGGER.error("Empty {} in INLINE task. ", QUERY_EVALUATOR_TYPE);
             throw new TerminateWorkflowException(
@@ -116,7 +118,7 @@ public class Inline extends WorkflowSystemTask {
         }
     }
 
-    private void checkExpression(String expression) {
+    private void checkExpression(@Nullable String expression) {
         if (StringUtils.isBlank(expression)) {
             LOGGER.error("Empty {} in INLINE task. ", QUERY_EXPRESSION_PARAMETER);
             throw new TerminateWorkflowException(
