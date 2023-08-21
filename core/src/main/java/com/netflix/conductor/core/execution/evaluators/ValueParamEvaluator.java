@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.core.exception.TerminateWorkflowException;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Component(ValueParamEvaluator.NAME)
@@ -27,7 +28,7 @@ public class ValueParamEvaluator implements Evaluator {
     public static final String NAME = "value-param";
     private static final Logger LOGGER = LoggerFactory.getLogger(ValueParamEvaluator.class);
 
-     @SuppressWarnings("unchecked")
+     @NullUnmarked @SuppressWarnings("unchecked")
     @Override
     public Object evaluate(String expression, Object input) {
         LOGGER.debug("ValueParam evaluator -- evaluating: {}", expression);

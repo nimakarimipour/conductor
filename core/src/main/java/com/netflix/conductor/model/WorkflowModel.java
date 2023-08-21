@@ -25,6 +25,7 @@ import com.netflix.conductor.core.utils.Utils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NullUnmarked;
 
 
 public class WorkflowModel {
@@ -58,21 +59,21 @@ public class WorkflowModel {
 
     private long endTime;
 
-     private String workflowId;
+     @SuppressWarnings("NullAway.Init") private String workflowId;
 
-     private String parentWorkflowId;
+     @SuppressWarnings("NullAway.Init") private String parentWorkflowId;
 
-     private String parentWorkflowTaskId;
+     @SuppressWarnings("NullAway.Init") private String parentWorkflowTaskId;
 
     private List<TaskModel> tasks = new LinkedList<>();
 
-     private String correlationId;
+     @SuppressWarnings("NullAway.Init") private String correlationId;
 
-     private String reRunFromWorkflowId;
+     @SuppressWarnings("NullAway.Init") private String reRunFromWorkflowId;
 
-     private String reasonForIncompletion;
+     @SuppressWarnings("NullAway.Init") private String reasonForIncompletion;
 
-     private String event;
+     @SuppressWarnings("NullAway.Init") private String event;
 
     private Map<String, String> taskToDomain = new HashMap<>();
 
@@ -82,11 +83,11 @@ public class WorkflowModel {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Set<String> failedTaskNames = new HashSet<>();
 
-     private WorkflowDef workflowDefinition;
+     @SuppressWarnings("NullAway.Init") private WorkflowDef workflowDefinition;
 
-     private String externalInputPayloadStoragePath;
+     @SuppressWarnings("NullAway.Init") private String externalInputPayloadStoragePath;
 
-     private String externalOutputPayloadStoragePath;
+     @SuppressWarnings("NullAway.Init") private String externalOutputPayloadStoragePath;
 
     private int priority;
 
@@ -94,20 +95,20 @@ public class WorkflowModel {
 
     private long lastRetriedTime;
 
-     private String ownerApp;
+     @SuppressWarnings("NullAway.Init") private String ownerApp;
 
-     private Long createTime;
+     @SuppressWarnings("NullAway.Init") private Long createTime;
 
-     private Long updatedTime;
+     @SuppressWarnings("NullAway.Init") private Long updatedTime;
 
-     private String createdBy;
+     @SuppressWarnings("NullAway.Init") private String createdBy;
 
-     private String updatedBy;
+     @SuppressWarnings("NullAway.Init") private String updatedBy;
 
     // Capture the failed taskId if the workflow execution failed because of task failure
-     private String failedTaskId;
+     @SuppressWarnings("NullAway.Init") private String failedTaskId;
 
-     private Status previousStatus;
+     @SuppressWarnings("NullAway.Init") private Status previousStatus;
 
     @JsonIgnore private Map<String, Object> input = new HashMap<>();
 
@@ -444,7 +445,7 @@ public class WorkflowModel {
         return String.format("%s.%s/%s", name, version, workflowId);
     }
 
-     public TaskModel getTaskByRefName(String refName) {
+     @NullUnmarked public TaskModel getTaskByRefName(String refName) {
         if (refName == null) {
             throw new RuntimeException(
                     "refName passed is null.  Check the workflow execution.  For dynamic tasks, make sure referenceTaskName is set to a not null value");

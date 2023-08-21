@@ -38,6 +38,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+import org.jspecify.annotations.NullUnmarked;
 
 
 /** Used to parse and resolve the JSONPath bindings in the workflow and task definitions. */
@@ -158,7 +159,7 @@ public class ParametersUtils {
         }
     }
 
-     public Map<String, Object> replace(Map<String, Object> input, Object json) {
+     @NullUnmarked public Map<String, Object> replace(Map<String, Object> input, Object json) {
         Object doc;
         if (json instanceof String) {
             doc = JsonPath.parse(json.toString());
@@ -171,7 +172,7 @@ public class ParametersUtils {
         return replace(input, documentContext, null);
     }
 
-     public Object replace(String paramString) {
+     @NullUnmarked public Object replace(String paramString) {
         Configuration option =
                 Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.parse(Collections.emptyMap(), option);

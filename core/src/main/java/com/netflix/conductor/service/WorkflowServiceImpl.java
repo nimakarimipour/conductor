@@ -34,6 +34,7 @@ import com.netflix.conductor.core.execution.StartWorkflowInput;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.core.operation.StartWorkflowOperation;
 import com.netflix.conductor.core.utils.Utils;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Audit
@@ -206,7 +207,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param endTime EndTime of the workflow
      * @return a list of workflow Ids.
      */
-     public List<String> getRunningWorkflows(
+     @NullUnmarked public List<String> getRunningWorkflows(
             String workflowName, Integer version, Long startTime, Long endTime) {
         if (Optional.ofNullable(startTime).orElse(0L) != 0
                 && Optional.ofNullable(endTime).orElse(0L) != 0) {

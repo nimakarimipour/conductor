@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.core.events.ScriptEvaluator;
 import com.netflix.conductor.core.exception.TerminateWorkflowException;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Component(JavascriptEvaluator.NAME)
@@ -28,7 +29,7 @@ public class JavascriptEvaluator implements Evaluator {
     public static final String NAME = "javascript";
     private static final Logger LOGGER = LoggerFactory.getLogger(JavascriptEvaluator.class);
 
-     @Override
+     @NullUnmarked @Override
     public Object evaluate(String expression, Object input) {
         LOGGER.debug("Javascript evaluator -- expression: {}", expression);
         try {

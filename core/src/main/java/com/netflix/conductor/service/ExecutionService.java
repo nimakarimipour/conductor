@@ -38,6 +38,7 @@ import com.netflix.conductor.core.utils.Utils;
 import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Trace
@@ -75,11 +76,11 @@ public class ExecutionService {
         this.systemTaskRegistry = systemTaskRegistry;
     }
 
-     public Task poll(String taskType, String workerId) {
+     @NullUnmarked public Task poll(String taskType, String workerId) {
         return poll(taskType, workerId, null);
     }
 
-     public Task poll(String taskType, String workerId, String domain) {
+     @NullUnmarked public Task poll(String taskType, String workerId, String domain) {
 
         List<Task> tasks = poll(taskType, workerId, domain, 1, 100);
         if (tasks.isEmpty()) {
@@ -88,11 +89,11 @@ public class ExecutionService {
         return tasks.get(0);
     }
 
-     public List<Task> poll(String taskType, String workerId, int count, int timeoutInMilliSecond) {
+     @NullUnmarked public List<Task> poll(String taskType, String workerId, int count, int timeoutInMilliSecond) {
         return poll(taskType, workerId, null, count, timeoutInMilliSecond);
     }
 
-     public List<Task> poll(
+     @NullUnmarked public List<Task> poll(
             String taskType, String workerId, String domain, int count, int timeoutInMilliSecond) {
         if (timeoutInMilliSecond > MAX_POLL_TIMEOUT_MS) {
             throw new IllegalArgumentException(
@@ -186,7 +187,7 @@ public class ExecutionService {
         return tasks;
     }
 
-     public Task getLastPollTask(String taskType, String workerId, String domain) {
+     @NullUnmarked public Task getLastPollTask(String taskType, String workerId, String domain) {
         List<Task> tasks = poll(taskType, workerId, domain, POLL_COUNT_ONE, POLLING_TIMEOUT_IN_MS);
         if (tasks.isEmpty()) {
             LOGGER.debug(
@@ -252,7 +253,7 @@ public class ExecutionService {
         return executionDAOFacade.getTask(taskId);
     }
 
-     public Task getPendingTaskForWorkflow(String taskReferenceName, String workflowId) {
+     @NullUnmarked public Task getPendingTaskForWorkflow(String taskReferenceName, String workflowId) {
         return executionDAOFacade.getTasksForWorkflow(workflowId).stream()
                 .filter(task -> !task.getStatus().isTerminal())
                 .filter(task -> task.getReferenceTaskName().equals(taskReferenceName))

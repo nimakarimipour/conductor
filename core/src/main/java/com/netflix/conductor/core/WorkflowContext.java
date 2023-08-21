@@ -11,6 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 package com.netflix.conductor.core;
+import org.jspecify.annotations.NullUnmarked;
 
 
 /** Store the authentication context, app or username or both */
@@ -23,7 +24,7 @@ public class WorkflowContext {
 
     private final String userName;
 
-     public WorkflowContext(String clientApp) {
+     @NullUnmarked public WorkflowContext(String clientApp) {
         this.clientApp = clientApp;
         this.userName = null;
     }

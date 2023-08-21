@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_START_WORKFLOW;
 import static com.netflix.conductor.model.TaskModel.Status.COMPLETED;
 import static com.netflix.conductor.model.TaskModel.Status.FAILED;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Component(TASK_TYPE_START_WORKFLOW)
@@ -58,7 +59,7 @@ public class StartWorkflow extends WorkflowSystemTask {
         this.startWorkflowOperation = startWorkflowOperation;
     }
 
-     @Override
+     @NullUnmarked @Override
     public void start(
             WorkflowModel workflow, TaskModel taskModel, WorkflowExecutor workflowExecutor) {
         StartWorkflowRequest request = getRequest(taskModel);
@@ -93,7 +94,7 @@ public class StartWorkflow extends WorkflowSystemTask {
         }
     }
 
-     private StartWorkflowRequest getRequest(TaskModel taskModel) {
+     @NullUnmarked private StartWorkflowRequest getRequest(TaskModel taskModel) {
         Map<String, Object> taskInput = taskModel.getInputData();
 
         StartWorkflowRequest startWorkflowRequest = null;

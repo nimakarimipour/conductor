@@ -53,6 +53,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
+import org.jspecify.annotations.NullUnmarked;
 
 
 /**
@@ -189,7 +190,7 @@ public class ExecutionDAOFacade {
      * @param includeTasks if true, fetches the {@link Task} data within the workflows
      * @return the list of {@link Workflow} executions matching the correlationId
      */
-     public List<Workflow> getWorkflowsByCorrelationId(
+     @NullUnmarked public List<Workflow> getWorkflowsByCorrelationId(
             String workflowName, String correlationId, boolean includeTasks) {
         if (!executionDAO.canSearchAcrossWorkflows()) {
             String query =
@@ -429,7 +430,7 @@ public class ExecutionDAOFacade {
         return taskModel;
     }
 
-     public Task getTask(String taskId) {
+     @NullUnmarked public Task getTask(String taskId) {
         TaskModel taskModel = getTaskFromDatastore(taskId);
         if (taskModel != null) {
             return taskModel.toTask();
@@ -523,7 +524,7 @@ public class ExecutionDAOFacade {
         return pollDataDAO.getAllPollData();
     }
 
-     public PollData getTaskPollDataByDomain(String taskName, String domain) {
+     @NullUnmarked public PollData getTaskPollDataByDomain(String taskName, String domain) {
         try {
             return pollDataDAO.getPollData(taskName, domain);
         } catch (Exception e) {

@@ -27,6 +27,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_HUMAN;
+import org.jspecify.annotations.NullUnmarked;
 
 
 /**
@@ -50,7 +51,7 @@ public class HumanTaskMapper implements TaskMapper {
         return TaskType.HUMAN.name();
     }
 
-     @Override
+     @NullUnmarked @Override
     public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
         WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();

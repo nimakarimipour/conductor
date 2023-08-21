@@ -32,6 +32,7 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_DO_WHILE;
+import org.jspecify.annotations.NullUnmarked;
 
 
 @Component(TASK_TYPE_DO_WHILE)
@@ -216,7 +217,7 @@ public class DoWhile extends WorkflowSystemTask {
         return true;
     }
 
-     @VisibleForTesting
+     @NullUnmarked @VisibleForTesting
     boolean evaluateCondition(WorkflowModel workflow, TaskModel task) throws ScriptException {
         TaskDef taskDefinition = task.getTaskDefinition().orElse(null);
         // Use paramUtils to compute the task input

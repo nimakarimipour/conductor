@@ -16,9 +16,9 @@ import java.util.Objects;
 
 public class Message {
 
-     private String payload;
-     private String id;
-     private String receipt;
+     @SuppressWarnings("NullAway.Init") private String payload;
+     @SuppressWarnings("NullAway.Init") private String id;
+     @SuppressWarnings("NullAway.Init") private String receipt;
     private int priority;
 
     public Message() {}

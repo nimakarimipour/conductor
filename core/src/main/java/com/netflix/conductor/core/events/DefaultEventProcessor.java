@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spotify.futures.CompletableFutures;
 
 import static com.netflix.conductor.core.utils.Utils.isTransientException;
+import org.jspecify.annotations.NullUnmarked;
 
 
 /**
@@ -306,7 +307,7 @@ public class DefaultEventProcessor {
         return eventExecution;
     }
 
-     private Object getPayloadObject(String payload) {
+     @NullUnmarked private Object getPayloadObject(String payload) {
         Object payloadObject = null;
         if (payload != null) {
             try {
