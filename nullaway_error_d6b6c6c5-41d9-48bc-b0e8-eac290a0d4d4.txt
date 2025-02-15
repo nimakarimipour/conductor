@@ -1,4 +1,0 @@
-Note: /home/nima/Developer/nullness-benchmarks/conductor/common/src/main/java/com/netflix/conductor/common/jackson/JsonProtoModule.java uses or overrides a deprecated API.
-Note: Recompile with -Xlint:deprecation for details.
-/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/events/queue/Message.java:24: error: [NullAway] initializer method does not guarantee @NonNull fields payload (line 19), id (line 20), receipt (line 21) are initialized along all control-flow paths (remember to check for exceptions or early returns).
-    public Message() {}
