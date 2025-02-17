@@ -34,6 +34,7 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import javax.annotation.Nullable;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 
 /**
  * A helper service that tries to keep ExecutionDAO and QueueDAO in sync, based on the task or
@@ -127,33 +128,33 @@ public class WorkflowRepairService {
      * @return true - if the task was queued for repair
      */
     @VisibleForTesting
-    boolean verifyAndRepairTask(TaskModel task) {
-        if (isTaskRepairable.test(task)) {
-            // Ensure QueueDAO contains this taskId
-            String taskQueueName = QueueUtils.getQueueName(task);
-            if (!queueDAO.containsMessage(taskQueueName, task.getTaskId())) {
-                queueDAO.push(taskQueueName, task.getTaskId(), task.getCallbackAfterSeconds());
-                LOGGER.info(
-                        "Task {} in workflow {} re-queued for repairs",
-                        task.getTaskId(),
-                        task.getWorkflowInstanceId());
-                Monitors.recordQueueMessageRepushFromRepairService(task.getTaskDefName());
-                return true;
+        boolean verifyAndRepairTask(TaskModel task) {
+            if (isTaskRepairable.test(task)) {
+                // Ensure QueueDAO contains this taskId
+                String taskQueueName = QueueUtils.getQueueName(task);
+                if (!queueDAO.containsMessage(taskQueueName, task.getTaskId())) {
+                    queueDAO.push(taskQueueName, task.getTaskId(), task.getCallbackAfterSeconds());
+                    LOGGER.info(
+                            "Task {} in workflow {} re-queued for repairs",
+                            task.getTaskId(),
+                            task.getWorkflowInstanceId());
+                    Monitors.recordQueueMessageRepushFromRepairService(task.getTaskDefName());
+                    return true;
+                }
+            } else if (Nullability.castToNonnull(task.getTaskType(), "reason...").equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
+                    && task.getStatus() == TaskModel.Status.IN_PROGRESS) {
+                WorkflowModel subWorkflow = executionDAO.getWorkflow(task.getSubWorkflowId(), false);
+                if (subWorkflow.getStatus().isTerminal()) {
+                    LOGGER.info(
+                            "Repairing sub workflow task {} for sub workflow {} in workflow {}",
+                            task.getTaskId(),
+                            task.getSubWorkflowId(),
+                            task.getWorkflowInstanceId());
+                    repairSubWorkflowTask(task, subWorkflow);
+                    return true;
+                }
             }
-        } else if (task.getTaskType().equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
-                && task.getStatus() == TaskModel.Status.IN_PROGRESS) {
-            WorkflowModel subWorkflow = executionDAO.getWorkflow(task.getSubWorkflowId(), false);
-            if (subWorkflow.getStatus().isTerminal()) {
-                LOGGER.info(
-                        "Repairing sub workflow task {} for sub workflow {} in workflow {}",
-                        task.getTaskId(),
-                        task.getSubWorkflowId(),
-                        task.getWorkflowInstanceId());
-                repairSubWorkflowTask(task, subWorkflow);
-                return true;
-            }
-        }
-        return false;
+            return false;
     }
 
     private boolean verifyAndRepairWorkflow(@Nullable String workflowId) {

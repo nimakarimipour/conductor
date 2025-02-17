@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
 import javax.annotation.Nullable;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 
 /**
  * Monitors and processes messages on the default event queues that Conductor listens on.
@@ -68,102 +69,102 @@ public class DefaultEventQueueProcessor {
     }
 
     private void startMonitor(Status status, ObservableQueue queue) {
-
-        queue.observe()
-                .subscribe(
-                        (Message msg) -> {
-                            try {
-                                LOGGER.debug("Got message {}", msg.getPayload());
-                                String payload = msg.getPayload();
-                                JsonNode payloadJSON = objectMapper.readTree(payload);
-                                String externalId = getValue("externalId", payloadJSON);
-                                if (externalId == null || "".equals(externalId)) {
-                                    LOGGER.error("No external Id found in the payload {}", payload);
+    
+            queue.observe()
+                    .subscribe(
+                            (Message msg) -> {
+                                try {
+                                    LOGGER.debug("Got message {}", msg.getPayload());
+                                    String payload = msg.getPayload();
+                                    JsonNode payloadJSON = objectMapper.readTree(payload);
+                                    String externalId = getValue("externalId", payloadJSON);
+                                    if (externalId == null || "".equals(externalId)) {
+                                        LOGGER.error("No external Id found in the payload {}", payload);
+                                        queue.ack(Collections.singletonList(msg));
+                                        return;
+                                    }
+    
+                                    JsonNode json = objectMapper.readTree(externalId);
+                                    String workflowId = getValue("workflowId", json);
+                                    String taskRefName = getValue("taskRefName", json);
+                                    String taskId = getValue("taskId", json);
+                                    if (workflowId == null || "".equals(workflowId)) {
+                                        // This is a bad message, we cannot process it
+                                        LOGGER.error(
+                                                "No workflow id found in the message. {}", payload);
+                                        queue.ack(Collections.singletonList(msg));
+                                        return;
+                                    }
+                                    WorkflowModel workflow =
+                                            workflowExecutor.getWorkflow(workflowId, true);
+                                    Optional<TaskModel> optionalTaskModel;
+                                    if (StringUtils.isNotEmpty(taskId)) {
+                                        optionalTaskModel =
+                                                workflow.getTasks().stream()
+                                                        .filter(
+                                                                task ->
+                                                                        !task.getStatus().isTerminal()
+                                                                                && task.getTaskId()
+                                                                                        .equals(taskId))
+                                                        .findFirst();
+                                    } else if (StringUtils.isEmpty(taskRefName)) {
+                                        LOGGER.error(
+                                                "No taskRefName found in the message. If there is only one WAIT task, will mark it as completed. {}",
+                                                payload);
+                                        optionalTaskModel =
+                                                workflow.getTasks().stream()
+                                                        .filter(
+                                                                task ->
+                                                                        !task.getStatus().isTerminal()
+                                                                                && Nullability.castToNonnull(task.getTaskType(), "reason...")
+                                                                                        .equals(
+                                                                                                TASK_TYPE_WAIT))
+                                                        .findFirst();
+                                    } else {
+                                        optionalTaskModel =
+                                                workflow.getTasks().stream()
+                                                        .filter(
+                                                                task ->
+                                                                        !task.getStatus().isTerminal()
+                                                                                && task.getReferenceTaskName()
+                                                                                        .equals(
+                                                                                                taskRefName))
+                                                        .findFirst();
+                                    }
+    
+                                    if (optionalTaskModel.isEmpty()) {
+                                        LOGGER.error(
+                                                "No matching tasks found to be marked as completed for workflow {}, taskRefName {}, taskId {}",
+                                                workflowId,
+                                                taskRefName,
+                                                taskId);
+                                        queue.ack(Collections.singletonList(msg));
+                                        return;
+                                    }
+    
+                                    Task task = optionalTaskModel.get().toTask();
+                                    task.setStatus(TaskModel.mapToTaskStatus(status));
+                                    task.getOutputData()
+                                            .putAll(objectMapper.convertValue(payloadJSON, _mapType));
+                                    workflowExecutor.updateTask(new TaskResult(task));
+    
+                                    List<String> failures = queue.ack(Collections.singletonList(msg));
+                                    if (!failures.isEmpty()) {
+                                        LOGGER.error("Not able to ack the messages {}", failures);
+                                    }
+                                } catch (JsonParseException e) {
+                                    LOGGER.error("Bad message? : {} ", msg, e);
                                     queue.ack(Collections.singletonList(msg));
-                                    return;
-                                }
-
-                                JsonNode json = objectMapper.readTree(externalId);
-                                String workflowId = getValue("workflowId", json);
-                                String taskRefName = getValue("taskRefName", json);
-                                String taskId = getValue("taskId", json);
-                                if (workflowId == null || "".equals(workflowId)) {
-                                    // This is a bad message, we cannot process it
+                                } catch (NotFoundException nfe) {
                                     LOGGER.error(
-                                            "No workflow id found in the message. {}", payload);
+                                            "Workflow ID specified is not valid for this environment");
                                     queue.ack(Collections.singletonList(msg));
-                                    return;
+                                } catch (Exception e) {
+                                    LOGGER.error("Error processing message: {}", msg, e);
                                 }
-                                WorkflowModel workflow =
-                                        workflowExecutor.getWorkflow(workflowId, true);
-                                Optional<TaskModel> optionalTaskModel;
-                                if (StringUtils.isNotEmpty(taskId)) {
-                                    optionalTaskModel =
-                                            workflow.getTasks().stream()
-                                                    .filter(
-                                                            task ->
-                                                                    !task.getStatus().isTerminal()
-                                                                            && task.getTaskId()
-                                                                                    .equals(taskId))
-                                                    .findFirst();
-                                } else if (StringUtils.isEmpty(taskRefName)) {
-                                    LOGGER.error(
-                                            "No taskRefName found in the message. If there is only one WAIT task, will mark it as completed. {}",
-                                            payload);
-                                    optionalTaskModel =
-                                            workflow.getTasks().stream()
-                                                    .filter(
-                                                            task ->
-                                                                    !task.getStatus().isTerminal()
-                                                                            && task.getTaskType()
-                                                                                    .equals(
-                                                                                            TASK_TYPE_WAIT))
-                                                    .findFirst();
-                                } else {
-                                    optionalTaskModel =
-                                            workflow.getTasks().stream()
-                                                    .filter(
-                                                            task ->
-                                                                    !task.getStatus().isTerminal()
-                                                                            && task.getReferenceTaskName()
-                                                                                    .equals(
-                                                                                            taskRefName))
-                                                    .findFirst();
-                                }
-
-                                if (optionalTaskModel.isEmpty()) {
-                                    LOGGER.error(
-                                            "No matching tasks found to be marked as completed for workflow {}, taskRefName {}, taskId {}",
-                                            workflowId,
-                                            taskRefName,
-                                            taskId);
-                                    queue.ack(Collections.singletonList(msg));
-                                    return;
-                                }
-
-                                Task task = optionalTaskModel.get().toTask();
-                                task.setStatus(TaskModel.mapToTaskStatus(status));
-                                task.getOutputData()
-                                        .putAll(objectMapper.convertValue(payloadJSON, _mapType));
-                                workflowExecutor.updateTask(new TaskResult(task));
-
-                                List<String> failures = queue.ack(Collections.singletonList(msg));
-                                if (!failures.isEmpty()) {
-                                    LOGGER.error("Not able to ack the messages {}", failures);
-                                }
-                            } catch (JsonParseException e) {
-                                LOGGER.error("Bad message? : {} ", msg, e);
-                                queue.ack(Collections.singletonList(msg));
-                            } catch (NotFoundException nfe) {
-                                LOGGER.error(
-                                        "Workflow ID specified is not valid for this environment");
-                                queue.ack(Collections.singletonList(msg));
-                            } catch (Exception e) {
-                                LOGGER.error("Error processing message: {}", msg, e);
-                            }
-                        },
-                        (Throwable t) -> LOGGER.error(t.getMessage(), t));
-        LOGGER.info("QueueListener::STARTED...listening for " + queue.getName());
+                            },
+                            (Throwable t) -> LOGGER.error(t.getMessage(), t));
+            LOGGER.info("QueueListener::STARTED...listening for " + queue.getName());
     }
 
     @Nullable private String getValue(String fieldName, JsonNode json) {

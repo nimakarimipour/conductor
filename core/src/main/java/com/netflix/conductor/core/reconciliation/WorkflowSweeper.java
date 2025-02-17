@@ -39,6 +39,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import static com.netflix.conductor.core.config.SchedulerConfiguration.SWEEPER_EXECUTOR_NAME;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import javax.annotation.Nullable;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 
 @Component
 public class WorkflowSweeper {
@@ -114,49 +115,50 @@ public class WorkflowSweeper {
     }
 
     @VisibleForTesting
-    void unack(WorkflowModel workflowModel, long workflowOffsetTimeout) {
-        long postponeDurationSeconds = 0;
-        for (TaskModel taskModel : workflowModel.getTasks()) {
-            if (taskModel.getStatus() == Status.IN_PROGRESS) {
-                if (taskModel.getTaskType().equals(TaskType.TASK_TYPE_WAIT)
-                        || taskModel.getTaskType().equals(TaskType.TASK_TYPE_HUMAN)) {
-                    postponeDurationSeconds =
-                            (taskModel.getWaitTimeout() != 0)
-                                    ? taskModel.getWaitTimeout() + 1
-                                    : workflowOffsetTimeout;
-                } else {
-                    postponeDurationSeconds =
-                            (taskModel.getResponseTimeoutSeconds() != 0)
-                                    ? taskModel.getResponseTimeoutSeconds() + 1
-                                    : workflowOffsetTimeout;
-                }
-                break;
-            } else if (taskModel.getStatus() == Status.SCHEDULED) {
-                Optional<TaskDef> taskDefinition = taskModel.getTaskDefinition();
-                if (taskDefinition.isPresent()) {
-                    TaskDef taskDef = taskDefinition.get();
-                    if (taskDef.getPollTimeoutSeconds() != null
-                            && taskDef.getPollTimeoutSeconds() != 0) {
-                        postponeDurationSeconds = taskDef.getPollTimeoutSeconds() + 1;
-                    } else {
-                        postponeDurationSeconds =
-                                (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                                        ? workflowModel.getWorkflowDefinition().getTimeoutSeconds()
-                                                + 1
-                                        : workflowOffsetTimeout;
-                    }
-                } else {
-                    postponeDurationSeconds =
-                            (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                                    ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1
-                                    : workflowOffsetTimeout;
-                }
-                break;
-            }
-        }
-        queueDAO.setUnackTimeout(
-                DECIDER_QUEUE, workflowModel.getWorkflowId(), postponeDurationSeconds * 1000);
-    }
+      void unack(WorkflowModel workflowModel, long workflowOffsetTimeout) {
+          long postponeDurationSeconds = 0;
+          for (TaskModel taskModel : workflowModel.getTasks()) {
+              if (taskModel.getStatus() == Status.IN_PROGRESS) {
+                  TaskType taskType = taskModel.getTaskType();
+                  if (taskType != null && (taskType.equals(TaskType.TASK_TYPE_WAIT)
+                          || taskType.equals(TaskType.TASK_TYPE_HUMAN))) {
+                      postponeDurationSeconds =
+                              (taskModel.getWaitTimeout() != 0)
+                                      ? taskModel.getWaitTimeout() + 1
+                                      : workflowOffsetTimeout;
+                  } else {
+                      postponeDurationSeconds =
+                              (taskModel.getResponseTimeoutSeconds() != 0)
+                                      ? taskModel.getResponseTimeoutSeconds() + 1
+                                      : workflowOffsetTimeout;
+                  }
+                  break;
+              } else if (taskModel.getStatus() == Status.SCHEDULED) {
+                  Optional<TaskDef> taskDefinition = taskModel.getTaskDefinition();
+                  if (taskDefinition.isPresent()) {
+                      TaskDef taskDef = taskDefinition.get();
+                      if (taskDef.getPollTimeoutSeconds() != null
+                              && taskDef.getPollTimeoutSeconds() != 0) {
+                          postponeDurationSeconds = taskDef.getPollTimeoutSeconds() + 1;
+                      } else {
+                          postponeDurationSeconds =
+                                  (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
+                                          ? workflowModel.getWorkflowDefinition().getTimeoutSeconds()
+                                                  + 1
+                                          : workflowOffsetTimeout;
+                      }
+                  } else {
+                      postponeDurationSeconds =
+                              (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
+                                      ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1
+                                      : workflowOffsetTimeout;
+                  }
+                  break;
+              }
+          }
+          queueDAO.setUnackTimeout(
+                  DECIDER_QUEUE, workflowModel.getWorkflowId(), postponeDurationSeconds * 1000);
+      }
 
     /**
      * jitter will be +- (1/3) workflowOffsetTimeout for example, if workflowOffsetTimeout is 45

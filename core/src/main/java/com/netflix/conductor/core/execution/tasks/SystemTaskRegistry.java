@@ -40,7 +40,7 @@ public class SystemTaskRegistry {
                                         WorkflowSystemTask::getTaskType, Function.identity()));
     }
 
-    public WorkflowSystemTask get(String taskType) {
+    public WorkflowSystemTask get(@Nullable String taskType) {
         return Optional.ofNullable(registry.get(taskType))
                 .orElseThrow(
                         () ->
@@ -48,7 +48,7 @@ public class SystemTaskRegistry {
                                         taskType + "not found in " + getClass().getSimpleName()));
     }
 
-    public boolean isSystemTask(String taskType) {
+    public boolean isSystemTask(@Nullable String taskType) {
         return registry.containsKey(taskType);
     }
 }
