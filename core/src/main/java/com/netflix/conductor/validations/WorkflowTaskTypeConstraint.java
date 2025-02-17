@@ -350,43 +350,44 @@ public @interface WorkflowTaskTypeConstraint {
         }
 
         private boolean isHttpTaskValid(
-                WorkflowTask workflowTask, ConstraintValidatorContext context) {
-            boolean valid = true;
-            boolean isInputParameterSet = false;
-            boolean isInputTemplateSet = false;
-
-            // Either http_request in WorkflowTask inputParam should be set or in inputTemplate
-            // Taskdef should be set
-            if (workflowTask.getInputParameters() != null
-                    && workflowTask.getInputParameters().containsKey("http_request")) {
-                isInputParameterSet = true;
-            }
-
-            TaskDef taskDef =
-                    Optional.ofNullable(workflowTask.getTaskDefinition())
-                            .orElse(
-                                    ValidationContext.getMetadataDAO()
-                                            .getTaskDef(workflowTask.getName()));
-
-            if (taskDef != null
-                    && taskDef.getInputTemplate() != null
-                    && taskDef.getInputTemplate().containsKey("http_request")) {
-                isInputTemplateSet = true;
-            }
-
-            if (!(isInputParameterSet || isInputTemplateSet)) {
-                String message =
-                        String.format(
-                                PARAM_REQUIRED_STRING_FORMAT,
-                                "inputParameters.http_request",
-                                TaskType.HTTP,
-                                workflowTask.getName());
-                context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
-                valid = false;
-            }
-
-            return valid;
-        }
+                        WorkflowTask workflowTask, ConstraintValidatorContext context) {
+                    boolean valid = true;
+                    boolean isInputParameterSet = false;
+                    boolean isInputTemplateSet = false;
+        
+                    // Either http_request in WorkflowTask inputParam should be set or in inputTemplate
+                    // Taskdef should be set
+                    if (workflowTask.getInputParameters() != null
+                            && workflowTask.getInputParameters().containsKey("http_request")) {
+                        isInputParameterSet = true;
+                    }
+        
+                    TaskDef taskDef =
+                            Optional.ofNullable(workflowTask.getTaskDefinition())
+                                    .orElseGet(() -> {
+                                        MetadataDAO metadataDAO = ValidationContext.getMetadataDAO();
+                                        return metadataDAO != null ? metadataDAO.getTaskDef(workflowTask.getName()) : null;
+                                    });
+        
+                    if (taskDef != null
+                            && taskDef.getInputTemplate() != null
+                            && taskDef.getInputTemplate().containsKey("http_request")) {
+                        isInputTemplateSet = true;
+                    }
+        
+                    if (!(isInputParameterSet || isInputTemplateSet)) {
+                        String message =
+                                String.format(
+                                        PARAM_REQUIRED_STRING_FORMAT,
+                                        "inputParameters.http_request",
+                                        TaskType.HTTP,
+                                        workflowTask.getName());
+                        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
+                        valid = false;
+                    }
+        
+                    return valid;
+          }
 
         private boolean isForkJoinTaskValid(
                 WorkflowTask workflowTask, ConstraintValidatorContext context) {
@@ -429,43 +430,43 @@ public @interface WorkflowTaskTypeConstraint {
         }
 
         private boolean isKafkaPublishTaskValid(
-                WorkflowTask workflowTask, ConstraintValidatorContext context) {
-            boolean valid = true;
-            boolean isInputParameterSet = false;
-            boolean isInputTemplateSet = false;
-
-            // Either kafka_request in WorkflowTask inputParam should be set or in inputTemplate
-            // Taskdef should be set
-            if (workflowTask.getInputParameters() != null
-                    && workflowTask.getInputParameters().containsKey("kafka_request")) {
-                isInputParameterSet = true;
-            }
-
-            TaskDef taskDef =
-                    Optional.ofNullable(workflowTask.getTaskDefinition())
-                            .orElse(
-                                    ValidationContext.getMetadataDAO()
-                                            .getTaskDef(workflowTask.getName()));
-
-            if (taskDef != null
-                    && taskDef.getInputTemplate() != null
-                    && taskDef.getInputTemplate().containsKey("kafka_request")) {
-                isInputTemplateSet = true;
-            }
-
-            if (!(isInputParameterSet || isInputTemplateSet)) {
-                String message =
-                        String.format(
-                                PARAM_REQUIRED_STRING_FORMAT,
-                                "inputParameters.kafka_request",
-                                TaskType.KAFKA_PUBLISH,
-                                workflowTask.getName());
-                context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
-                valid = false;
-            }
-
-            return valid;
-        }
+                        WorkflowTask workflowTask, ConstraintValidatorContext context) {
+                    boolean valid = true;
+                    boolean isInputParameterSet = false;
+                    boolean isInputTemplateSet = false;
+        
+                    // Either kafka_request in WorkflowTask inputParam should be set or in inputTemplate
+                    // Taskdef should be set
+                    if (workflowTask.getInputParameters() != null
+                            && workflowTask.getInputParameters().containsKey("kafka_request")) {
+                        isInputParameterSet = true;
+                    }
+        
+                    MetadataDAO metadataDAO = ValidationContext.getMetadataDAO();
+                    TaskDef taskDef =
+                            Optional.ofNullable(workflowTask.getTaskDefinition())
+                                    .orElse(
+                                            metadataDAO != null ? metadataDAO.getTaskDef(workflowTask.getName()) : null);
+        
+                    if (taskDef != null
+                            && taskDef.getInputTemplate() != null
+                            && taskDef.getInputTemplate().containsKey("kafka_request")) {
+                        isInputTemplateSet = true;
+                    }
+        
+                    if (!(isInputParameterSet || isInputTemplateSet)) {
+                        String message =
+                                String.format(
+                                        PARAM_REQUIRED_STRING_FORMAT,
+                                        "inputParameters.kafka_request",
+                                        TaskType.KAFKA_PUBLISH,
+                                        workflowTask.getName());
+                        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
+                        valid = false;
+                    }
+        
+                    return valid;
+          }
 
         private boolean isSubWorkflowTaskValid(
                 WorkflowTask workflowTask, ConstraintValidatorContext context) {
@@ -484,42 +485,43 @@ public @interface WorkflowTaskTypeConstraint {
         }
 
         private boolean isJSONJQTransformTaskValid(
-                WorkflowTask workflowTask, ConstraintValidatorContext context) {
-            boolean valid = true;
-            boolean isInputParameterSet = false;
-            boolean isInputTemplateSet = false;
-
-            // Either queryExpression in WorkflowTask inputParam should be set or in inputTemplate
-            // Taskdef should be set
-            if (workflowTask.getInputParameters() != null
-                    && workflowTask.getInputParameters().containsKey("queryExpression")) {
-                isInputParameterSet = true;
-            }
-
-            TaskDef taskDef =
-                    Optional.ofNullable(workflowTask.getTaskDefinition())
-                            .orElse(
-                                    ValidationContext.getMetadataDAO()
-                                            .getTaskDef(workflowTask.getName()));
-
-            if (taskDef != null
-                    && taskDef.getInputTemplate() != null
-                    && taskDef.getInputTemplate().containsKey("queryExpression")) {
-                isInputTemplateSet = true;
-            }
-
-            if (!(isInputParameterSet || isInputTemplateSet)) {
-                String message =
-                        String.format(
-                                PARAM_REQUIRED_STRING_FORMAT,
-                                "inputParameters.queryExpression",
-                                TaskType.JSON_JQ_TRANSFORM,
-                                workflowTask.getName());
-                context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
-                valid = false;
-            }
-
-            return valid;
-        }
+                        WorkflowTask workflowTask, ConstraintValidatorContext context) {
+                    boolean valid = true;
+                    boolean isInputParameterSet = false;
+                    boolean isInputTemplateSet = false;
+        
+                    // Either queryExpression in WorkflowTask inputParam should be set or in inputTemplate
+                    // Taskdef should be set
+                    if (workflowTask.getInputParameters() != null
+                            && workflowTask.getInputParameters().containsKey("queryExpression")) {
+                        isInputParameterSet = true;
+                    }
+        
+                    MetadataDAO metadataDAO = ValidationContext.getMetadataDAO();
+                    TaskDef taskDef = null;
+                    if (metadataDAO != null) {
+                        taskDef = Optional.ofNullable(workflowTask.getTaskDefinition())
+                                    .orElse(metadataDAO.getTaskDef(workflowTask.getName()));
+                    }
+        
+                    if (taskDef != null
+                            && taskDef.getInputTemplate() != null
+                            && taskDef.getInputTemplate().containsKey("queryExpression")) {
+                        isInputTemplateSet = true;
+                    }
+        
+                    if (!(isInputParameterSet || isInputTemplateSet)) {
+                        String message =
+                                String.format(
+                                        PARAM_REQUIRED_STRING_FORMAT,
+                                        "inputParameters.queryExpression",
+                                        TaskType.JSON_JQ_TRANSFORM,
+                                        workflowTask.getName());
+                        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
+                        valid = false;
+                    }
+        
+                    return valid;
+          }
     }
 }
