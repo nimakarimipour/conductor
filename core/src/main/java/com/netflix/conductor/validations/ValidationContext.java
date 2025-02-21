@@ -22,13 +22,13 @@ import javax.annotation.Nullable;
  */
 public class ValidationContext {
 
-    @Nullable private static MetadataDAO metadataDAO;
+  @Nullable private static MetadataDAO metadataDAO;
 
-    public static void initialize(MetadataDAO metadataDAO) {
-        ValidationContext.metadataDAO = metadataDAO;
-    }
+  public static void initialize(MetadataDAO metadataDAO) {
+    ValidationContext.metadataDAO = metadataDAO;
+  }
 
-    public static MetadataDAO getMetadataDAO() {
-        return metadataDAO;
-    }
+  public static MetadataDAO getMetadataDAO() {
+    return metadataDAO;
+  }
 }

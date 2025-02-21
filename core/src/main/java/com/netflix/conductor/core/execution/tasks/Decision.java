@@ -12,13 +12,12 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
-import org.springframework.stereotype.Component;
+import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_DECISION;
 
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
-import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_DECISION;
+import org.springframework.stereotype.Component;
 
 /**
  * @deprecated {@link Decision} is deprecated. Use {@link Switch} task for condition evaluation
@@ -29,14 +28,14 @@ import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_DEC
 @Component(TASK_TYPE_DECISION)
 public class Decision extends WorkflowSystemTask {
 
-    public Decision() {
-        super(TASK_TYPE_DECISION);
-    }
+  public Decision() {
+    super(TASK_TYPE_DECISION);
+  }
 
-    @Override
-    public boolean execute(
-            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
-        task.setStatus(TaskModel.Status.COMPLETED);
-        return true;
-    }
+  @Override
+  public boolean execute(
+      WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+    task.setStatus(TaskModel.Status.COMPLETED);
+    return true;
+  }
 }

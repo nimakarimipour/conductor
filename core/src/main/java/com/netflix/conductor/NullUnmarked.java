@@ -1,4 +1,3 @@
 package com.netflix.conductor;
 
-public @interface NullUnmarked {
-}
+public @interface NullUnmarked {}

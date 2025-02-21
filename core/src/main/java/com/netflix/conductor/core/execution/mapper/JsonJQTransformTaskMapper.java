@@ -12,14 +12,6 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
@@ -27,46 +19,52 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JsonJQTransformTaskMapper implements TaskMapper {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(JsonJQTransformTaskMapper.class);
-    private final ParametersUtils parametersUtils;
-    private final MetadataDAO metadataDAO;
+  public static final Logger LOGGER = LoggerFactory.getLogger(JsonJQTransformTaskMapper.class);
+  private final ParametersUtils parametersUtils;
+  private final MetadataDAO metadataDAO;
 
-    public JsonJQTransformTaskMapper(ParametersUtils parametersUtils, MetadataDAO metadataDAO) {
-        this.parametersUtils = parametersUtils;
-        this.metadataDAO = metadataDAO;
-    }
+  public JsonJQTransformTaskMapper(ParametersUtils parametersUtils, MetadataDAO metadataDAO) {
+    this.parametersUtils = parametersUtils;
+    this.metadataDAO = metadataDAO;
+  }
 
-    @Override
-    public String getTaskType() {
-        return TaskType.JSON_JQ_TRANSFORM.name();
-    }
+  @Override
+  public String getTaskType() {
+    return TaskType.JSON_JQ_TRANSFORM.name();
+  }
 
-    @Override
-    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+  @Override
+  public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
-        LOGGER.debug("TaskMapperContext {} in JsonJQTransformTaskMapper", taskMapperContext);
+    LOGGER.debug("TaskMapperContext {} in JsonJQTransformTaskMapper", taskMapperContext);
 
-        WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
-        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
-        String taskId = taskMapperContext.getTaskId();
+    WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
+    WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+    String taskId = taskMapperContext.getTaskId();
 
-        TaskDef taskDefinition =
-                Optional.ofNullable(taskMapperContext.getTaskDefinition())
-                        .orElseGet(() -> metadataDAO.getTaskDef(workflowTask.getName()));
+    TaskDef taskDefinition =
+        Optional.ofNullable(taskMapperContext.getTaskDefinition())
+            .orElseGet(() -> metadataDAO.getTaskDef(workflowTask.getName()));
 
-        Map<String, Object> taskInput =
-                parametersUtils.getTaskInputV2(
-                        workflowTask.getInputParameters(), workflowModel, taskId, taskDefinition);
+    Map<String, Object> taskInput =
+        parametersUtils.getTaskInputV2(
+            workflowTask.getInputParameters(), workflowModel, taskId, taskDefinition);
 
-        TaskModel jsonJQTransformTask = taskMapperContext.createTaskModel();
-        jsonJQTransformTask.setStartTime(System.currentTimeMillis());
-        jsonJQTransformTask.setInputData(taskInput);
-        jsonJQTransformTask.setStatus(TaskModel.Status.IN_PROGRESS);
+    TaskModel jsonJQTransformTask = taskMapperContext.createTaskModel();
+    jsonJQTransformTask.setStartTime(System.currentTimeMillis());
+    jsonJQTransformTask.setInputData(taskInput);
+    jsonJQTransformTask.setStatus(TaskModel.Status.IN_PROGRESS);
 
-        return List.of(jsonJQTransformTask);
-    }
+    return List.of(jsonJQTransformTask);
+  }
 }

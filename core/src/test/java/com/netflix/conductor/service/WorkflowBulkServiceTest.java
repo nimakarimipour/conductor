@@ -12,13 +12,18 @@
  */
 package com.netflix.conductor.service;
 
+import static com.netflix.conductor.TestUtils.getConstraintViolationMessages;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import com.netflix.conductor.core.execution.WorkflowExecutor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
 import javax.validation.ConstraintViolationException;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,121 +32,112 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.netflix.conductor.core.execution.WorkflowExecutor;
-
-import static com.netflix.conductor.TestUtils.getConstraintViolationMessages;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 @SuppressWarnings("SpringJavaAutowiredMembersInspection")
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 public class WorkflowBulkServiceTest {
 
-    @TestConfiguration
-    static class TestWorkflowBulkConfiguration {
+  @TestConfiguration
+  static class TestWorkflowBulkConfiguration {
 
-        @Bean
-        WorkflowExecutor workflowExecutor() {
-            return mock(WorkflowExecutor.class);
-        }
-
-        @Bean
-        public WorkflowBulkService workflowBulkService(WorkflowExecutor workflowExecutor) {
-            return new WorkflowBulkServiceImpl(workflowExecutor);
-        }
+    @Bean
+    WorkflowExecutor workflowExecutor() {
+      return mock(WorkflowExecutor.class);
     }
 
-    @Autowired private WorkflowExecutor workflowExecutor;
-
-    @Autowired private WorkflowBulkService workflowBulkService;
-
-    @Test(expected = ConstraintViolationException.class)
-    public void testPauseWorkflowNull() {
-        try {
-            workflowBulkService.pauseWorkflow(null);
-        } catch (ConstraintViolationException ex) {
-            assertEquals(1, ex.getConstraintViolations().size());
-            Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
-            assertTrue(messages.contains("WorkflowIds list cannot be null."));
-            throw ex;
-        }
+    @Bean
+    public WorkflowBulkService workflowBulkService(WorkflowExecutor workflowExecutor) {
+      return new WorkflowBulkServiceImpl(workflowExecutor);
     }
+  }
 
-    @Test(expected = ConstraintViolationException.class)
-    public void testPauseWorkflowWithInvalidListSize() {
-        try {
-            List<String> list = new ArrayList<>(1001);
-            for (int i = 0; i < 1002; i++) {
-                list.add("test");
-            }
-            workflowBulkService.pauseWorkflow(list);
-        } catch (ConstraintViolationException ex) {
-            assertEquals(1, ex.getConstraintViolations().size());
-            Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
-            assertTrue(
-                    messages.contains(
-                            "Cannot process more than 1000 workflows. Please use multiple requests."));
-            throw ex;
-        }
-    }
+  @Autowired private WorkflowExecutor workflowExecutor;
 
-    @Test(expected = ConstraintViolationException.class)
-    public void testResumeWorkflowNull() {
-        try {
-            workflowBulkService.resumeWorkflow(null);
-        } catch (ConstraintViolationException ex) {
-            assertEquals(1, ex.getConstraintViolations().size());
-            Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
-            assertTrue(messages.contains("WorkflowIds list cannot be null."));
-            throw ex;
-        }
-    }
+  @Autowired private WorkflowBulkService workflowBulkService;
 
-    @Test(expected = ConstraintViolationException.class)
-    public void testRestartWorkflowNull() {
-        try {
-            workflowBulkService.restart(null, false);
-        } catch (ConstraintViolationException ex) {
-            assertEquals(1, ex.getConstraintViolations().size());
-            Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
-            assertTrue(messages.contains("WorkflowIds list cannot be null."));
-            throw ex;
-        }
+  @Test(expected = ConstraintViolationException.class)
+  public void testPauseWorkflowNull() {
+    try {
+      workflowBulkService.pauseWorkflow(null);
+    } catch (ConstraintViolationException ex) {
+      assertEquals(1, ex.getConstraintViolations().size());
+      Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
+      assertTrue(messages.contains("WorkflowIds list cannot be null."));
+      throw ex;
     }
+  }
 
-    @Test(expected = ConstraintViolationException.class)
-    public void testRetryWorkflowNull() {
-        try {
-            workflowBulkService.retry(null);
-        } catch (ConstraintViolationException ex) {
-            assertEquals(1, ex.getConstraintViolations().size());
-            Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
-            assertTrue(messages.contains("WorkflowIds list cannot be null."));
-            throw ex;
-        }
+  @Test(expected = ConstraintViolationException.class)
+  public void testPauseWorkflowWithInvalidListSize() {
+    try {
+      List<String> list = new ArrayList<>(1001);
+      for (int i = 0; i < 1002; i++) {
+        list.add("test");
+      }
+      workflowBulkService.pauseWorkflow(list);
+    } catch (ConstraintViolationException ex) {
+      assertEquals(1, ex.getConstraintViolations().size());
+      Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
+      assertTrue(
+          messages.contains(
+              "Cannot process more than 1000 workflows. Please use multiple requests."));
+      throw ex;
     }
+  }
 
-    @Test
-    public void testRetryWorkflowSuccessful() {
-        // When
-        workflowBulkService.retry(Collections.singletonList("anyId"));
-        // Then
-        verify(workflowExecutor).retry("anyId", false);
+  @Test(expected = ConstraintViolationException.class)
+  public void testResumeWorkflowNull() {
+    try {
+      workflowBulkService.resumeWorkflow(null);
+    } catch (ConstraintViolationException ex) {
+      assertEquals(1, ex.getConstraintViolations().size());
+      Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
+      assertTrue(messages.contains("WorkflowIds list cannot be null."));
+      throw ex;
     }
+  }
 
-    @Test(expected = ConstraintViolationException.class)
-    public void testTerminateNull() {
-        try {
-            workflowBulkService.terminate(null, null);
-        } catch (ConstraintViolationException ex) {
-            assertEquals(1, ex.getConstraintViolations().size());
-            Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
-            assertTrue(messages.contains("WorkflowIds list cannot be null."));
-            throw ex;
-        }
+  @Test(expected = ConstraintViolationException.class)
+  public void testRestartWorkflowNull() {
+    try {
+      workflowBulkService.restart(null, false);
+    } catch (ConstraintViolationException ex) {
+      assertEquals(1, ex.getConstraintViolations().size());
+      Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
+      assertTrue(messages.contains("WorkflowIds list cannot be null."));
+      throw ex;
     }
+  }
+
+  @Test(expected = ConstraintViolationException.class)
+  public void testRetryWorkflowNull() {
+    try {
+      workflowBulkService.retry(null);
+    } catch (ConstraintViolationException ex) {
+      assertEquals(1, ex.getConstraintViolations().size());
+      Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
+      assertTrue(messages.contains("WorkflowIds list cannot be null."));
+      throw ex;
+    }
+  }
+
+  @Test
+  public void testRetryWorkflowSuccessful() {
+    // When
+    workflowBulkService.retry(Collections.singletonList("anyId"));
+    // Then
+    verify(workflowExecutor).retry("anyId", false);
+  }
+
+  @Test(expected = ConstraintViolationException.class)
+  public void testTerminateNull() {
+    try {
+      workflowBulkService.terminate(null, null);
+    } catch (ConstraintViolationException ex) {
+      assertEquals(1, ex.getConstraintViolations().size());
+      Set<String> messages = getConstraintViolationMessages(ex.getConstraintViolations());
+      assertTrue(messages.contains("WorkflowIds list cannot be null."));
+      throw ex;
+    }
+  }
 }

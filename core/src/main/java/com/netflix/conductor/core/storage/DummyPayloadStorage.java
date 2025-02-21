@@ -12,10 +12,9 @@
  */
 package com.netflix.conductor.core.storage;
 
-import java.io.InputStream;
-
 import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage;
+import java.io.InputStream;
 import javax.annotation.Nullable;
 
 /**
@@ -24,17 +23,19 @@ import javax.annotation.Nullable;
  */
 public class DummyPayloadStorage implements ExternalPayloadStorage {
 
-    @Nullable @Override
-    public ExternalStorageLocation getLocation(
-            Operation operation, PayloadType payloadType, String path) {
-        return null;
-    }
+  @Nullable
+  @Override
+  public ExternalStorageLocation getLocation(
+      Operation operation, PayloadType payloadType, String path) {
+    return null;
+  }
 
-    @Override
-    public void upload(String path, InputStream payload, long payloadSize) {}
+  @Override
+  public void upload(String path, InputStream payload, long payloadSize) {}
 
-    @Nullable @Override
-    public InputStream download(String path) {
-        return null;
-    }
+  @Nullable
+  @Override
+  public InputStream download(String path) {
+    return null;
+  }
 }

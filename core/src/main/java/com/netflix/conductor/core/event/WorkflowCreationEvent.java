@@ -12,19 +12,18 @@
  */
 package com.netflix.conductor.core.event;
 
-import java.io.Serializable;
-
 import com.netflix.conductor.core.execution.StartWorkflowInput;
+import java.io.Serializable;
 
 public class WorkflowCreationEvent implements Serializable {
 
-    private final StartWorkflowInput startWorkflowInput;
+  private final StartWorkflowInput startWorkflowInput;
 
-    public WorkflowCreationEvent(StartWorkflowInput startWorkflowInput) {
-        this.startWorkflowInput = startWorkflowInput;
-    }
+  public WorkflowCreationEvent(StartWorkflowInput startWorkflowInput) {
+    this.startWorkflowInput = startWorkflowInput;
+  }
 
-    public StartWorkflowInput getStartWorkflowInput() {
-        return startWorkflowInput;
-    }
+  public StartWorkflowInput getStartWorkflowInput() {
+    return startWorkflowInput;
+  }
 }

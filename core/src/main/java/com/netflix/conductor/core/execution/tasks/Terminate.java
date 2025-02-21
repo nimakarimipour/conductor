@@ -12,19 +12,17 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
+import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_TERMINATE;
+import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.COMPLETED;
+import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.FAILED;
 
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
-import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_TERMINATE;
-import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.COMPLETED;
-import static com.netflix.conductor.common.run.Workflow.WorkflowStatus.FAILED;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nullable;
+import org.springframework.stereotype.Component;
 
 /**
  * Task that can terminate a workflow with a given status and modify the workflow's output with a
@@ -59,56 +57,56 @@ import javax.annotation.Nullable;
 @Component(TASK_TYPE_TERMINATE)
 public class Terminate extends WorkflowSystemTask {
 
-    private static final String TERMINATION_STATUS_PARAMETER = "terminationStatus";
-    private static final String TERMINATION_REASON_PARAMETER = "terminationReason";
-    private static final String TERMINATION_WORKFLOW_OUTPUT = "workflowOutput";
+  private static final String TERMINATION_STATUS_PARAMETER = "terminationStatus";
+  private static final String TERMINATION_REASON_PARAMETER = "terminationReason";
+  private static final String TERMINATION_WORKFLOW_OUTPUT = "workflowOutput";
 
-    public Terminate() {
-        super(TASK_TYPE_TERMINATE);
+  public Terminate() {
+    super(TASK_TYPE_TERMINATE);
+  }
+
+  @Override
+  public boolean execute(
+      WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+    String returnStatus = (String) task.getInputData().get(TERMINATION_STATUS_PARAMETER);
+
+    if (validateInputStatus(returnStatus)) {
+      task.setOutputData(getInputFromParam(task.getInputData()));
+      task.setStatus(TaskModel.Status.COMPLETED);
+      return true;
     }
+    task.setReasonForIncompletion("given termination status is not valid");
+    task.setStatus(TaskModel.Status.FAILED);
+    return false;
+  }
 
-    @Override
-    public boolean execute(
-            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
-        String returnStatus = (String) task.getInputData().get(TERMINATION_STATUS_PARAMETER);
+  public static String getTerminationStatusParameter() {
+    return TERMINATION_STATUS_PARAMETER;
+  }
 
-        if (validateInputStatus(returnStatus)) {
-            task.setOutputData(getInputFromParam(task.getInputData()));
-            task.setStatus(TaskModel.Status.COMPLETED);
-            return true;
-        }
-        task.setReasonForIncompletion("given termination status is not valid");
-        task.setStatus(TaskModel.Status.FAILED);
-        return false;
+  public static String getTerminationReasonParameter() {
+    return TERMINATION_REASON_PARAMETER;
+  }
+
+  public static String getTerminationWorkflowOutputParameter() {
+    return TERMINATION_WORKFLOW_OUTPUT;
+  }
+
+  public static Boolean validateInputStatus(@Nullable String status) {
+    return COMPLETED.name().equals(status) || FAILED.name().equals(status);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> getInputFromParam(Map<String, Object> taskInput) {
+    HashMap<String, Object> output = new HashMap<>();
+    if (taskInput.get(TERMINATION_WORKFLOW_OUTPUT) == null) {
+      return output;
     }
-
-    public static String getTerminationStatusParameter() {
-        return TERMINATION_STATUS_PARAMETER;
+    if (taskInput.get(TERMINATION_WORKFLOW_OUTPUT) instanceof HashMap) {
+      output.putAll((HashMap<String, Object>) taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
+      return output;
     }
-
-    public static String getTerminationReasonParameter() {
-        return TERMINATION_REASON_PARAMETER;
-    }
-
-    public static String getTerminationWorkflowOutputParameter() {
-        return TERMINATION_WORKFLOW_OUTPUT;
-    }
-
-    public static Boolean validateInputStatus(@Nullable String status) {
-        return COMPLETED.name().equals(status) || FAILED.name().equals(status);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> getInputFromParam(Map<String, Object> taskInput) {
-        HashMap<String, Object> output = new HashMap<>();
-        if (taskInput.get(TERMINATION_WORKFLOW_OUTPUT) == null) {
-            return output;
-        }
-        if (taskInput.get(TERMINATION_WORKFLOW_OUTPUT) instanceof HashMap) {
-            output.putAll((HashMap<String, Object>) taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
-            return output;
-        }
-        output.put("output", taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
-        return output;
-    }
+    output.put("output", taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
+    return output;
+  }
 }

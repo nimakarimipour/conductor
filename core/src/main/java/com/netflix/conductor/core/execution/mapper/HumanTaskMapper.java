@@ -12,12 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_HUMAN;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
@@ -25,8 +20,11 @@ import com.netflix.conductor.core.execution.tasks.Human;
 import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
-import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_HUMAN;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * An implementation of {@link TaskMapper} to map a {@link WorkflowTask} of type {@link
@@ -36,37 +34,34 @@ import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_HUM
 @Component
 public class HumanTaskMapper implements TaskMapper {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(HumanTaskMapper.class);
+  public static final Logger LOGGER = LoggerFactory.getLogger(HumanTaskMapper.class);
 
-    private final ParametersUtils parametersUtils;
+  private final ParametersUtils parametersUtils;
 
-    public HumanTaskMapper(ParametersUtils parametersUtils) {
-        this.parametersUtils = parametersUtils;
-    }
+  public HumanTaskMapper(ParametersUtils parametersUtils) {
+    this.parametersUtils = parametersUtils;
+  }
 
-    @Override
-    public String getTaskType() {
-        return TaskType.HUMAN.name();
-    }
+  @Override
+  public String getTaskType() {
+    return TaskType.HUMAN.name();
+  }
 
-    @Override
-    public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
+  @Override
+  public List<TaskModel> getMappedTasks(TaskMapperContext taskMapperContext) {
 
-        WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
-        String taskId = taskMapperContext.getTaskId();
+    WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
+    String taskId = taskMapperContext.getTaskId();
 
-        Map<String, Object> humanTaskInput =
-                parametersUtils.getTaskInputV2(
-                        taskMapperContext.getWorkflowTask().getInputParameters(),
-                        workflowModel,
-                        taskId,
-                        null);
+    Map<String, Object> humanTaskInput =
+        parametersUtils.getTaskInputV2(
+            taskMapperContext.getWorkflowTask().getInputParameters(), workflowModel, taskId, null);
 
-        TaskModel humanTask = taskMapperContext.createTaskModel();
-        humanTask.setTaskType(TASK_TYPE_HUMAN);
-        humanTask.setInputData(humanTaskInput);
-        humanTask.setStartTime(System.currentTimeMillis());
-        humanTask.setStatus(TaskModel.Status.IN_PROGRESS);
-        return List.of(humanTask);
-    }
+    TaskModel humanTask = taskMapperContext.createTaskModel();
+    humanTask.setTaskType(TASK_TYPE_HUMAN);
+    humanTask.setInputData(humanTaskInput);
+    humanTask.setStartTime(System.currentTimeMillis());
+    humanTask.setStatus(TaskModel.Status.IN_PROGRESS);
+    return List.of(humanTask);
+  }
 }

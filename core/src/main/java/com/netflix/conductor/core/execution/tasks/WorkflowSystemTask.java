@@ -12,102 +12,96 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
-import java.util.Optional;
-
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import java.util.Optional;
 
 public abstract class WorkflowSystemTask {
 
-    private final String taskType;
+  private final String taskType;
 
-    public WorkflowSystemTask(String taskType) {
-        this.taskType = taskType;
+  public WorkflowSystemTask(String taskType) {
+    this.taskType = taskType;
+  }
+
+  /**
+   * Start the task execution.
+   *
+   * <p>Called only once, and first, when the task status is SCHEDULED.
+   *
+   * @param workflow Workflow for which the task is being started
+   * @param task Instance of the Task
+   * @param workflowExecutor Workflow Executor
+   */
+  public void start(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+    // Do nothing unless overridden by the task implementation
+  }
+
+  /**
+   * "Execute" the task.
+   *
+   * <p>Called after {@link #start(WorkflowModel, TaskModel, WorkflowExecutor)}, if the task status
+   * is not terminal. Can be called more than once.
+   *
+   * @param workflow Workflow for which the task is being started
+   * @param task Instance of the Task
+   * @param workflowExecutor Workflow Executor
+   * @return true, if the execution has changed the task status. return false otherwise.
+   */
+  public boolean execute(
+      WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+    return false;
+  }
+
+  /**
+   * Cancel task execution
+   *
+   * @param workflow Workflow for which the task is being started
+   * @param task Instance of the Task
+   * @param workflowExecutor Workflow Executor
+   */
+  public void cancel(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {}
+
+  /** @return True if the task is supposed to be started asynchronously using internal queues. */
+  public boolean isAsync() {
+    return false;
+  }
+
+  /**
+   * @return True to keep task in 'IN_PROGRESS' state, and 'COMPLETE' later by an external message.
+   */
+  public boolean isAsyncComplete(TaskModel task) {
+    if (task.getInputData().containsKey("asyncComplete")) {
+      return Optional.ofNullable(task.getInputData().get("asyncComplete"))
+          .map(result -> (Boolean) result)
+          .orElse(false);
+    } else {
+      return Optional.ofNullable(task.getWorkflowTask())
+          .map(WorkflowTask::isAsyncComplete)
+          .orElse(false);
     }
+  }
 
-    /**
-     * Start the task execution.
-     *
-     * <p>Called only once, and first, when the task status is SCHEDULED.
-     *
-     * @param workflow Workflow for which the task is being started
-     * @param task Instance of the Task
-     * @param workflowExecutor Workflow Executor
-     */
-    public void start(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
-        // Do nothing unless overridden by the task implementation
-    }
+  /** @return name of the system task */
+  public String getTaskType() {
+    return taskType;
+  }
 
-    /**
-     * "Execute" the task.
-     *
-     * <p>Called after {@link #start(WorkflowModel, TaskModel, WorkflowExecutor)}, if the task
-     * status is not terminal. Can be called more than once.
-     *
-     * @param workflow Workflow for which the task is being started
-     * @param task Instance of the Task
-     * @param workflowExecutor Workflow Executor
-     * @return true, if the execution has changed the task status. return false otherwise.
-     */
-    public boolean execute(
-            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
-        return false;
-    }
+  /**
+   * Default to true for retrieving tasks when retrieving workflow data. Some cases (e.g.
+   * subworkflows) might not need the tasks at all, and by setting this to false in that case, you
+   * can get a solid performance gain.
+   *
+   * @return true for retrieving tasks when getting workflow
+   */
+  public boolean isTaskRetrievalRequired() {
+    return true;
+  }
 
-    /**
-     * Cancel task execution
-     *
-     * @param workflow Workflow for which the task is being started
-     * @param task Instance of the Task
-     * @param workflowExecutor Workflow Executor
-     */
-    public void cancel(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {}
-
-    /**
-     * @return True if the task is supposed to be started asynchronously using internal queues.
-     */
-    public boolean isAsync() {
-        return false;
-    }
-
-    /**
-     * @return True to keep task in 'IN_PROGRESS' state, and 'COMPLETE' later by an external
-     *     message.
-     */
-    public boolean isAsyncComplete(TaskModel task) {
-        if (task.getInputData().containsKey("asyncComplete")) {
-            return Optional.ofNullable(task.getInputData().get("asyncComplete"))
-                    .map(result -> (Boolean) result)
-                    .orElse(false);
-        } else {
-            return Optional.ofNullable(task.getWorkflowTask())
-                    .map(WorkflowTask::isAsyncComplete)
-                    .orElse(false);
-        }
-    }
-
-    /**
-     * @return name of the system task
-     */
-    public String getTaskType() {
-        return taskType;
-    }
-
-    /**
-     * Default to true for retrieving tasks when retrieving workflow data. Some cases (e.g.
-     * subworkflows) might not need the tasks at all, and by setting this to false in that case, you
-     * can get a solid performance gain.
-     *
-     * @return true for retrieving tasks when getting workflow
-     */
-    public boolean isTaskRetrievalRequired() {
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return taskType;
-    }
+  @Override
+  public String toString() {
+    return taskType;
+  }
 }

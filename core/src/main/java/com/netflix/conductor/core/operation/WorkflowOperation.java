@@ -14,5 +14,5 @@ package com.netflix.conductor.core.operation;
 
 public interface WorkflowOperation<T, R> {
 
-    R execute(T input);
+  R execute(T input);
 }

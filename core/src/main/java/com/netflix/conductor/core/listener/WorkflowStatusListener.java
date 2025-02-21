@@ -17,27 +17,27 @@ import com.netflix.conductor.model.WorkflowModel;
 /** Listener for the completed and terminated workflows */
 public interface WorkflowStatusListener {
 
-    default void onWorkflowCompletedIfEnabled(WorkflowModel workflow) {
-        if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
-            onWorkflowCompleted(workflow);
-        }
+  default void onWorkflowCompletedIfEnabled(WorkflowModel workflow) {
+    if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
+      onWorkflowCompleted(workflow);
     }
+  }
 
-    default void onWorkflowTerminatedIfEnabled(WorkflowModel workflow) {
-        if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
-            onWorkflowTerminated(workflow);
-        }
+  default void onWorkflowTerminatedIfEnabled(WorkflowModel workflow) {
+    if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
+      onWorkflowTerminated(workflow);
     }
+  }
 
-    default void onWorkflowFinalizedIfEnabled(WorkflowModel workflow) {
-        if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
-            onWorkflowFinalized(workflow);
-        }
+  default void onWorkflowFinalizedIfEnabled(WorkflowModel workflow) {
+    if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
+      onWorkflowFinalized(workflow);
     }
+  }
 
-    void onWorkflowCompleted(WorkflowModel workflow);
+  void onWorkflowCompleted(WorkflowModel workflow);
 
-    void onWorkflowTerminated(WorkflowModel workflow);
+  void onWorkflowTerminated(WorkflowModel workflow);
 
-    default void onWorkflowFinalized(WorkflowModel workflow) {}
+  default void onWorkflowFinalized(WorkflowModel workflow) {}
 }

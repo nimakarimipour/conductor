@@ -12,10 +12,9 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
@@ -27,89 +26,86 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
 
 public class InlineTaskMapperTest {
 
-    private ParametersUtils parametersUtils;
-    private MetadataDAO metadataDAO;
+  private ParametersUtils parametersUtils;
+  private MetadataDAO metadataDAO;
 
-    @Before
-    public void setUp() {
-        parametersUtils = mock(ParametersUtils.class);
-        metadataDAO = mock(MetadataDAO.class);
-    }
+  @Before
+  public void setUp() {
+    parametersUtils = mock(ParametersUtils.class);
+    metadataDAO = mock(MetadataDAO.class);
+  }
 
-    @Test
-    public void getMappedTasks() {
+  @Test
+  public void getMappedTasks() {
 
-        WorkflowTask workflowTask = new WorkflowTask();
-        workflowTask.setName("inline_task");
-        workflowTask.setType(TaskType.INLINE.name());
-        workflowTask.setTaskDefinition(new TaskDef("inline_task"));
-        workflowTask.setEvaluatorType(JavascriptEvaluator.NAME);
-        workflowTask.setExpression(
-                "function scriptFun() {if ($.input.a==1){return {testValue: true}} else{return "
-                        + "{testValue: false} }}; scriptFun();");
+    WorkflowTask workflowTask = new WorkflowTask();
+    workflowTask.setName("inline_task");
+    workflowTask.setType(TaskType.INLINE.name());
+    workflowTask.setTaskDefinition(new TaskDef("inline_task"));
+    workflowTask.setEvaluatorType(JavascriptEvaluator.NAME);
+    workflowTask.setExpression(
+        "function scriptFun() {if ($.input.a==1){return {testValue: true}} else{return "
+            + "{testValue: false} }}; scriptFun();");
 
-        String taskId = new IDGenerator().generate();
+    String taskId = new IDGenerator().generate();
 
-        WorkflowDef workflowDef = new WorkflowDef();
-        WorkflowModel workflow = new WorkflowModel();
-        workflow.setWorkflowDefinition(workflowDef);
+    WorkflowDef workflowDef = new WorkflowDef();
+    WorkflowModel workflow = new WorkflowModel();
+    workflow.setWorkflowDefinition(workflowDef);
 
-        TaskMapperContext taskMapperContext =
-                TaskMapperContext.newBuilder()
-                        .withWorkflowModel(workflow)
-                        .withTaskDefinition(new TaskDef())
-                        .withWorkflowTask(workflowTask)
-                        .withRetryCount(0)
-                        .withTaskId(taskId)
-                        .build();
+    TaskMapperContext taskMapperContext =
+        TaskMapperContext.newBuilder()
+            .withWorkflowModel(workflow)
+            .withTaskDefinition(new TaskDef())
+            .withWorkflowTask(workflowTask)
+            .withRetryCount(0)
+            .withTaskId(taskId)
+            .build();
 
-        List<TaskModel> mappedTasks =
-                new InlineTaskMapper(parametersUtils, metadataDAO)
-                        .getMappedTasks(taskMapperContext);
+    List<TaskModel> mappedTasks =
+        new InlineTaskMapper(parametersUtils, metadataDAO).getMappedTasks(taskMapperContext);
 
-        assertEquals(1, mappedTasks.size());
-        assertNotNull(mappedTasks);
-        assertEquals(TaskType.INLINE.name(), mappedTasks.get(0).getTaskType());
-    }
+    assertEquals(1, mappedTasks.size());
+    assertNotNull(mappedTasks);
+    assertEquals(TaskType.INLINE.name(), mappedTasks.get(0).getTaskType());
+  }
 
-    @Test
-    public void getMappedTasks_WithoutTaskDef() {
+  @Test
+  public void getMappedTasks_WithoutTaskDef() {
 
-        WorkflowTask workflowTask = new WorkflowTask();
-        workflowTask.setType(TaskType.INLINE.name());
-        workflowTask.setEvaluatorType(JavascriptEvaluator.NAME);
-        workflowTask.setExpression(
-                "function scriptFun() {if ($.input.a==1){return {testValue: true}} else{return "
-                        + "{testValue: false} }}; scriptFun();");
+    WorkflowTask workflowTask = new WorkflowTask();
+    workflowTask.setType(TaskType.INLINE.name());
+    workflowTask.setEvaluatorType(JavascriptEvaluator.NAME);
+    workflowTask.setExpression(
+        "function scriptFun() {if ($.input.a==1){return {testValue: true}} else{return "
+            + "{testValue: false} }}; scriptFun();");
 
-        String taskId = new IDGenerator().generate();
+    String taskId = new IDGenerator().generate();
 
-        WorkflowDef workflowDef = new WorkflowDef();
-        WorkflowModel workflow = new WorkflowModel();
-        workflow.setWorkflowDefinition(workflowDef);
+    WorkflowDef workflowDef = new WorkflowDef();
+    WorkflowModel workflow = new WorkflowModel();
+    workflow.setWorkflowDefinition(workflowDef);
 
-        TaskMapperContext taskMapperContext =
-                TaskMapperContext.newBuilder()
-                        .withWorkflowModel(workflow)
-                        .withTaskDefinition(null)
-                        .withWorkflowTask(workflowTask)
-                        .withRetryCount(0)
-                        .withTaskId(taskId)
-                        .build();
+    TaskMapperContext taskMapperContext =
+        TaskMapperContext.newBuilder()
+            .withWorkflowModel(workflow)
+            .withTaskDefinition(null)
+            .withWorkflowTask(workflowTask)
+            .withRetryCount(0)
+            .withTaskId(taskId)
+            .build();
 
-        List<TaskModel> mappedTasks =
-                new InlineTaskMapper(parametersUtils, metadataDAO)
-                        .getMappedTasks(taskMapperContext);
+    List<TaskModel> mappedTasks =
+        new InlineTaskMapper(parametersUtils, metadataDAO).getMappedTasks(taskMapperContext);
 
-        assertEquals(1, mappedTasks.size());
-        assertNotNull(mappedTasks);
-        assertEquals(TaskType.INLINE.name(), mappedTasks.get(0).getTaskType());
-    }
+    assertEquals(1, mappedTasks.size());
+    assertNotNull(mappedTasks);
+    assertEquals(TaskType.INLINE.name(), mappedTasks.get(0).getTaskType());
+  }
 }

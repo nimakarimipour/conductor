@@ -12,19 +12,16 @@
  */
 package com.netflix.conductor.core.events.queue;
 
+import com.netflix.conductor.core.config.ConductorProperties;
+import com.netflix.conductor.core.events.EventQueueProvider;
+import com.netflix.conductor.dao.QueueDAO;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
-import com.netflix.conductor.core.config.ConductorProperties;
-import com.netflix.conductor.core.events.EventQueueProvider;
-import com.netflix.conductor.dao.QueueDAO;
-
 import rx.Scheduler;
 
 /**
@@ -37,34 +34,33 @@ import rx.Scheduler;
  */
 @Component
 @ConditionalOnProperty(
-        name = "conductor.event-queues.default.enabled",
-        havingValue = "true",
-        matchIfMissing = true)
+    name = "conductor.event-queues.default.enabled",
+    havingValue = "true",
+    matchIfMissing = true)
 public class ConductorEventQueueProvider implements EventQueueProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConductorEventQueueProvider.class);
-    private final Map<String, ObservableQueue> queues = new ConcurrentHashMap<>();
-    private final QueueDAO queueDAO;
-    private final ConductorProperties properties;
-    private final Scheduler scheduler;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConductorEventQueueProvider.class);
+  private final Map<String, ObservableQueue> queues = new ConcurrentHashMap<>();
+  private final QueueDAO queueDAO;
+  private final ConductorProperties properties;
+  private final Scheduler scheduler;
 
-    public ConductorEventQueueProvider(
-            QueueDAO queueDAO, ConductorProperties properties, Scheduler scheduler) {
-        this.queueDAO = queueDAO;
-        this.properties = properties;
-        this.scheduler = scheduler;
-    }
+  public ConductorEventQueueProvider(
+      QueueDAO queueDAO, ConductorProperties properties, Scheduler scheduler) {
+    this.queueDAO = queueDAO;
+    this.properties = properties;
+    this.scheduler = scheduler;
+  }
 
-    @Override
-    public String getQueueType() {
-        return "conductor";
-    }
+  @Override
+  public String getQueueType() {
+    return "conductor";
+  }
 
-    @Override
-    @NonNull
-    public ObservableQueue getQueue(String queueURI) {
-        return queues.computeIfAbsent(
-                queueURI,
-                q -> new ConductorObservableQueue(queueURI, queueDAO, properties, scheduler));
-    }
+  @Override
+  @NonNull
+  public ObservableQueue getQueue(String queueURI) {
+    return queues.computeIfAbsent(
+        queueURI, q -> new ConductorObservableQueue(queueURI, queueDAO, properties, scheduler));
+  }
 }

@@ -12,596 +12,601 @@
  */
 package com.netflix.conductor.model;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-
-import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.core.utils.Utils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import com.netflix.conductor.common.run.Workflow;
+import com.netflix.conductor.core.utils.Utils;
+import java.util.*;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 
 public class WorkflowModel {
 
-    public enum Status {
-        RUNNING(false, false),
-        COMPLETED(true, true),
-        FAILED(true, false),
-        TIMED_OUT(true, false),
-        TERMINATED(true, false),
-        PAUSED(false, true);
-
-        private final boolean terminal;
-        private final boolean successful;
-
-        Status(boolean terminal, boolean successful) {
-            this.terminal = terminal;
-            this.successful = successful;
-        }
-
-        public boolean isTerminal() {
-            return terminal;
-        }
-
-        public boolean isSuccessful() {
-            return successful;
-        }
-    }
-
-    private Status status = Status.RUNNING;
-
-    private long endTime;
-
-    @Nullable private String workflowId;
-
-    @Nullable private String parentWorkflowId;
-
-    @Nullable private String parentWorkflowTaskId;
-
-    private List<TaskModel> tasks = new LinkedList<>();
-
-    @Nullable private String correlationId;
-
-    @Nullable private String reRunFromWorkflowId;
-
-    @Nullable private String reasonForIncompletion;
-
-    @Nullable private String event;
-
-    @Nullable private Map<String, String> taskToDomain = new HashMap<>();
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private Set<String> failedReferenceTaskNames = new HashSet<>();
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private Set<String> failedTaskNames = new HashSet<>();
-
-    private WorkflowDef workflowDefinition;
-
-    @Nullable private String externalInputPayloadStoragePath;
-
-    @Nullable private String externalOutputPayloadStoragePath;
-
-    private int priority;
-
-    private Map<String, Object> variables = new HashMap<>();
-
-    private long lastRetriedTime;
-
-    @Nullable private String ownerApp;
-
-    @Nullable private Long createTime;
-
-    @Nullable private Long updatedTime;
-
-    @Nullable private String createdBy;
-
-    @Nullable private String updatedBy;
-
-    // Capture the failed taskId if the workflow execution failed because of task failure
-    @Nullable private String failedTaskId;
-
-    @Nullable private Status previousStatus;
-
-    @JsonIgnore private Map<String, Object> input = new HashMap<>();
-
-    @JsonIgnore private Map<String, Object> output = new HashMap<>();
-
-    @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
-
-    @JsonIgnore private Map<String, Object> outputPayload = new HashMap<>();
-
-    @Nullable public Status getPreviousStatus() {
-        return previousStatus;
-    }
-
-    public void setPreviousStatus(Status status) {
-        this.previousStatus = status;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        // update previous status if current status changed
-        if (this.status != status) {
-            setPreviousStatus(this.status);
-        }
-        this.status = status;
-    }
-
-    public long getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
-
-    @Nullable public String getWorkflowId() {
-        return workflowId;
-    }
-
-    public void setWorkflowId(String workflowId) {
-        this.workflowId = workflowId;
-    }
-
-    @Nullable public String getParentWorkflowId() {
-        return parentWorkflowId;
-    }
-
-    public void setParentWorkflowId(@Nullable String parentWorkflowId) {
-        this.parentWorkflowId = parentWorkflowId;
-    }
-
-    @Nullable public String getParentWorkflowTaskId() {
-        return parentWorkflowTaskId;
-    }
-
-    public void setParentWorkflowTaskId(@Nullable String parentWorkflowTaskId) {
-        this.parentWorkflowTaskId = parentWorkflowTaskId;
-    }
-
-    public List<TaskModel> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<TaskModel> tasks) {
-        this.tasks = tasks;
-    }
-
-    @JsonIgnore
-    public Map<String, Object> getInput() {
-        if (!inputPayload.isEmpty() && !input.isEmpty()) {
-            input.putAll(inputPayload);
-            inputPayload = new HashMap<>();
-            return input;
-        } else if (inputPayload.isEmpty()) {
-            return input;
-        } else {
-            return inputPayload;
-        }
-    }
-
-    @JsonIgnore
-    public void setInput(Map<String, Object> input) {
-        if (input == null) {
-            input = new HashMap<>();
-        }
-        this.input = input;
-    }
-
-    @JsonIgnore
-    public Map<String, Object> getOutput() {
-        if (!outputPayload.isEmpty() && !output.isEmpty()) {
-            output.putAll(outputPayload);
-            outputPayload = new HashMap<>();
-            return output;
-        } else if (outputPayload.isEmpty()) {
-            return output;
-        } else {
-            return outputPayload;
-        }
-    }
-
-    @JsonIgnore
-    public void setOutput(@Nullable Map<String, Object> output) {
-        if (output == null) {
-            output = new HashMap<>();
-        }
-        this.output = output;
-    }
-
-    /**
-     * @deprecated Used only for JSON serialization and deserialization.
-     */
-    @Deprecated
-    @JsonProperty("input")
-    public Map<String, Object> getRawInput() {
-        return input;
-    }
-
-    /**
-     * @deprecated Used only for JSON serialization and deserialization.
-     */
-    @Deprecated
-    @JsonProperty("input")
-    public void setRawInput(Map<String, Object> input) {
-        setInput(input);
-    }
-
-    /**
-     * @deprecated Used only for JSON serialization and deserialization.
-     */
-    @Deprecated
-    @JsonProperty("output")
-    public Map<String, Object> getRawOutput() {
-        return output;
-    }
-
-    /**
-     * @deprecated Used only for JSON serialization and deserialization.
-     */
-    @Deprecated
-    @JsonProperty("output")
-    public void setRawOutput(Map<String, Object> output) {
-        setOutput(output);
-    }
-
-    @Nullable public String getCorrelationId() {
-        return correlationId;
-    }
-
-    public void setCorrelationId(@Nullable String correlationId) {
-        this.correlationId = correlationId;
-    }
-
-    @Nullable public String getReRunFromWorkflowId() {
-        return reRunFromWorkflowId;
-    }
-
-    public void setReRunFromWorkflowId(String reRunFromWorkflowId) {
-        this.reRunFromWorkflowId = reRunFromWorkflowId;
-    }
-
-    @Nullable public String getReasonForIncompletion() {
-        return reasonForIncompletion;
-    }
-
-    public void setReasonForIncompletion(@Nullable String reasonForIncompletion) {
-        this.reasonForIncompletion = reasonForIncompletion;
-    }
-
-    @Nullable public String getEvent() {
-        return event;
-    }
-
-    public void setEvent(@Nullable String event) {
-        this.event = event;
-    }
-
-    @Nullable public Map<String, String> getTaskToDomain() {
-        return taskToDomain;
-    }
-
-    public void setTaskToDomain(@Nullable Map<String, String> taskToDomain) {
-        this.taskToDomain = taskToDomain;
-    }
-
-    public Set<String> getFailedReferenceTaskNames() {
-        return failedReferenceTaskNames;
-    }
-
-    public void setFailedReferenceTaskNames(Set<String> failedReferenceTaskNames) {
-        this.failedReferenceTaskNames = failedReferenceTaskNames;
-    }
-
-    public Set<String> getFailedTaskNames() {
-        return failedTaskNames;
-    }
-
-    public void setFailedTaskNames(Set<String> failedTaskNames) {
-        this.failedTaskNames = failedTaskNames;
-    }
-
-    public WorkflowDef getWorkflowDefinition() {
-        return workflowDefinition;
-    }
-
-    public void setWorkflowDefinition(WorkflowDef workflowDefinition) {
-        this.workflowDefinition = workflowDefinition;
-    }
-
-    @Nullable public String getExternalInputPayloadStoragePath() {
-        return externalInputPayloadStoragePath;
-    }
+  public enum Status {
+    RUNNING(false, false),
+    COMPLETED(true, true),
+    FAILED(true, false),
+    TIMED_OUT(true, false),
+    TERMINATED(true, false),
+    PAUSED(false, true);
 
-    public void setExternalInputPayloadStoragePath(@Nullable String externalInputPayloadStoragePath) {
-        this.externalInputPayloadStoragePath = externalInputPayloadStoragePath;
-    }
+    private final boolean terminal;
+    private final boolean successful;
 
-    @Nullable public String getExternalOutputPayloadStoragePath() {
-        return externalOutputPayloadStoragePath;
+    Status(boolean terminal, boolean successful) {
+      this.terminal = terminal;
+      this.successful = successful;
     }
 
-    public void setExternalOutputPayloadStoragePath(@Nullable String externalOutputPayloadStoragePath) {
-        this.externalOutputPayloadStoragePath = externalOutputPayloadStoragePath;
+    public boolean isTerminal() {
+      return terminal;
     }
 
-    public int getPriority() {
-        return priority;
+    public boolean isSuccessful() {
+      return successful;
     }
+  }
 
-    public void setPriority(int priority) {
-        if (priority < 0 || priority > 99) {
-            throw new IllegalArgumentException("priority MUST be between 0 and 99 (inclusive)");
-        }
-        this.priority = priority;
-    }
+  private Status status = Status.RUNNING;
 
-    public Map<String, Object> getVariables() {
-        return variables;
-    }
+  private long endTime;
 
-    public void setVariables(Map<String, Object> variables) {
-        this.variables = variables;
-    }
+  @Nullable private String workflowId;
 
-    public long getLastRetriedTime() {
-        return lastRetriedTime;
-    }
+  @Nullable private String parentWorkflowId;
 
-    public void setLastRetriedTime(long lastRetriedTime) {
-        this.lastRetriedTime = lastRetriedTime;
-    }
+  @Nullable private String parentWorkflowTaskId;
 
-    @Nullable public String getOwnerApp() {
-        return ownerApp;
-    }
+  private List<TaskModel> tasks = new LinkedList<>();
 
-    public void setOwnerApp(String ownerApp) {
-        this.ownerApp = ownerApp;
-    }
+  @Nullable private String correlationId;
 
-    public Long getCreateTime() {
-        return createTime;
-    }
+  @Nullable private String reRunFromWorkflowId;
 
-    public void setCreateTime(Long createTime) {
-        this.createTime = createTime;
-    }
+  @Nullable private String reasonForIncompletion;
 
-    @Nullable public Long getUpdatedTime() {
-        return updatedTime;
-    }
+  @Nullable private String event;
 
-    public void setUpdatedTime(@Nullable Long updatedTime) {
-        this.updatedTime = updatedTime;
-    }
+  @Nullable private Map<String, String> taskToDomain = new HashMap<>();
 
-    @Nullable public String getCreatedBy() {
-        return createdBy;
-    }
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private Set<String> failedReferenceTaskNames = new HashSet<>();
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private Set<String> failedTaskNames = new HashSet<>();
 
-    @Nullable public String getUpdatedBy() {
-        return updatedBy;
-    }
+  private WorkflowDef workflowDefinition;
 
-    public void setUpdatedBy(@Nullable String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
+  @Nullable private String externalInputPayloadStoragePath;
 
-    @Nullable public String getFailedTaskId() {
-        return failedTaskId;
-    }
+  @Nullable private String externalOutputPayloadStoragePath;
 
-    public void setFailedTaskId(@Nullable String failedTaskId) {
-        this.failedTaskId = failedTaskId;
-    }
+  private int priority;
 
-    /**
-     * Convenience method for accessing the workflow definition name.
-     *
-     * @return the workflow definition name.
-     */
-    public String getWorkflowName() {
-        Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
-        return workflowDefinition.getName();
-    }
+  private Map<String, Object> variables = new HashMap<>();
 
-    /**
-     * Convenience method for accessing the workflow definition version.
-     *
-     * @return the workflow definition version.
-     */
-    public int getWorkflowVersion() {
-        Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
-        return workflowDefinition.getVersion();
-    }
+  private long lastRetriedTime;
 
-    public boolean hasParent() {
-        return StringUtils.isNotEmpty(parentWorkflowId);
-    }
+  @Nullable private String ownerApp;
 
-    /**
-     * A string representation of all relevant fields that identify this workflow. Intended for use
-     * in log and other system generated messages.
-     */
-    public String toShortString() {
-        String name = workflowDefinition != null ? workflowDefinition.getName() : null;
-        Integer version = workflowDefinition != null ? workflowDefinition.getVersion() : null;
-        return String.format("%s.%s/%s", name, version, workflowId);
-    }
+  @Nullable private Long createTime;
 
-    @Nullable public TaskModel getTaskByRefName(String refName) {
-        if (refName == null) {
-            throw new RuntimeException(
-                    "refName passed is null.  Check the workflow execution.  For dynamic tasks, make sure referenceTaskName is set to a not null value");
-        }
-        LinkedList<TaskModel> found = new LinkedList<>();
-        for (TaskModel task : tasks) {
-            if (task.getReferenceTaskName() == null) {
-                throw new RuntimeException(
-                        "Task "
-                                + task.getTaskDefName()
-                                + ", seq="
-                                + task.getSeq()
-                                + " does not have reference name specified.");
-            }
-            if (task.getReferenceTaskName().equals(refName)) {
-                found.add(task);
-            }
-        }
-        if (found.isEmpty()) {
-            return null;
-        }
-        return found.getLast();
-    }
+  @Nullable private Long updatedTime;
 
-    public void externalizeInput(String path) {
-        this.inputPayload = this.input;
-        this.input = new HashMap<>();
-        this.externalInputPayloadStoragePath = path;
-    }
+  @Nullable private String createdBy;
 
-    public void externalizeOutput(String path) {
-        this.outputPayload = this.output;
-        this.output = new HashMap<>();
-        this.externalOutputPayloadStoragePath = path;
-    }
+  @Nullable private String updatedBy;
 
-    public void internalizeInput(Map<String, Object> data) {
-        this.input = new HashMap<>();
-        this.inputPayload = data;
-    }
+  // Capture the failed taskId if the workflow execution failed because of task failure
+  @Nullable private String failedTaskId;
 
-    public void internalizeOutput(Map<String, Object> data) {
-        this.output = new HashMap<>();
-        this.outputPayload = data;
-    }
+  @Nullable private Status previousStatus;
 
-    @Override
-    public String toString() {
-        String name = workflowDefinition != null ? workflowDefinition.getName() : null;
-        Integer version = workflowDefinition != null ? workflowDefinition.getVersion() : null;
-        return String.format("%s.%s/%s.%s", name, version, workflowId, status);
-    }
+  @JsonIgnore private Map<String, Object> input = new HashMap<>();
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        WorkflowModel that = (WorkflowModel) o;
-        return getEndTime() == that.getEndTime()
-                && getPriority() == that.getPriority()
-                && getLastRetriedTime() == that.getLastRetriedTime()
-                && getStatus() == that.getStatus()
-                && Objects.equals(getWorkflowId(), that.getWorkflowId())
-                && Objects.equals(getParentWorkflowId(), that.getParentWorkflowId())
-                && Objects.equals(getParentWorkflowTaskId(), that.getParentWorkflowTaskId())
-                && Objects.equals(getTasks(), that.getTasks())
-                && Objects.equals(getInput(), that.getInput())
-                && Objects.equals(output, that.output)
-                && Objects.equals(outputPayload, that.outputPayload)
-                && Objects.equals(getCorrelationId(), that.getCorrelationId())
-                && Objects.equals(getReRunFromWorkflowId(), that.getReRunFromWorkflowId())
-                && Objects.equals(getReasonForIncompletion(), that.getReasonForIncompletion())
-                && Objects.equals(getEvent(), that.getEvent())
-                && Objects.equals(getTaskToDomain(), that.getTaskToDomain())
-                && Objects.equals(getFailedReferenceTaskNames(), that.getFailedReferenceTaskNames())
-                && Objects.equals(getFailedTaskNames(), that.getFailedTaskNames())
-                && Objects.equals(getWorkflowDefinition(), that.getWorkflowDefinition())
-                && Objects.equals(
-                        getExternalInputPayloadStoragePath(),
-                        that.getExternalInputPayloadStoragePath())
-                && Objects.equals(
-                        getExternalOutputPayloadStoragePath(),
-                        that.getExternalOutputPayloadStoragePath())
-                && Objects.equals(getVariables(), that.getVariables())
-                && Objects.equals(getOwnerApp(), that.getOwnerApp())
-                && Objects.equals(getCreateTime(), that.getCreateTime())
-                && Objects.equals(getUpdatedTime(), that.getUpdatedTime())
-                && Objects.equals(getCreatedBy(), that.getCreatedBy())
-                && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
-    }
+  @JsonIgnore private Map<String, Object> output = new HashMap<>();
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(
-                getStatus(),
-                getEndTime(),
-                getWorkflowId(),
-                getParentWorkflowId(),
-                getParentWorkflowTaskId(),
-                getTasks(),
-                getInput(),
-                output,
-                outputPayload,
-                getCorrelationId(),
-                getReRunFromWorkflowId(),
-                getReasonForIncompletion(),
-                getEvent(),
-                getTaskToDomain(),
-                getFailedReferenceTaskNames(),
-                getFailedTaskNames(),
-                getWorkflowDefinition(),
-                getExternalInputPayloadStoragePath(),
-                getExternalOutputPayloadStoragePath(),
-                getPriority(),
-                getVariables(),
-                getLastRetriedTime(),
-                getOwnerApp(),
-                getCreateTime(),
-                getUpdatedTime(),
-                getCreatedBy(),
-                getUpdatedBy());
-    }
+  @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
 
-    public Workflow toWorkflow() {
-        Workflow workflow = new Workflow();
-        BeanUtils.copyProperties(this, workflow);
-        workflow.setStatus(Workflow.WorkflowStatus.valueOf(this.status.name()));
-        workflow.setTasks(tasks.stream().map(TaskModel::toTask).collect(Collectors.toList()));
-        workflow.setUpdateTime(this.updatedTime);
-
-        // ensure that input/output is properly represented
-        if (externalInputPayloadStoragePath != null) {
-            workflow.setInput(new HashMap<>());
-        }
-        if (externalOutputPayloadStoragePath != null) {
-            workflow.setOutput(new HashMap<>());
-        }
-        return workflow;
-    }
+  @JsonIgnore private Map<String, Object> outputPayload = new HashMap<>();
 
-    public void addInput(String key, Object value) {
-        this.input.put(key, value);
-    }
+  @Nullable
+  public Status getPreviousStatus() {
+    return previousStatus;
+  }
 
-    public void addInput(Map<String, Object> inputData) {
-        if (inputData != null) {
-            this.input.putAll(inputData);
-        }
-    }
+  public void setPreviousStatus(Status status) {
+    this.previousStatus = status;
+  }
 
-    public void addOutput(String key, Object value) {
-        this.output.put(key, value);
-    }
+  public Status getStatus() {
+    return status;
+  }
 
-    public void addOutput(Map<String, Object> outputData) {
-        if (outputData != null) {
-            this.output.putAll(outputData);
-        }
-    }
+  public void setStatus(Status status) {
+    // update previous status if current status changed
+    if (this.status != status) {
+      setPreviousStatus(this.status);
+    }
+    this.status = status;
+  }
+
+  public long getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(long endTime) {
+    this.endTime = endTime;
+  }
+
+  @Nullable
+  public String getWorkflowId() {
+    return workflowId;
+  }
+
+  public void setWorkflowId(String workflowId) {
+    this.workflowId = workflowId;
+  }
+
+  @Nullable
+  public String getParentWorkflowId() {
+    return parentWorkflowId;
+  }
+
+  public void setParentWorkflowId(@Nullable String parentWorkflowId) {
+    this.parentWorkflowId = parentWorkflowId;
+  }
+
+  @Nullable
+  public String getParentWorkflowTaskId() {
+    return parentWorkflowTaskId;
+  }
+
+  public void setParentWorkflowTaskId(@Nullable String parentWorkflowTaskId) {
+    this.parentWorkflowTaskId = parentWorkflowTaskId;
+  }
+
+  public List<TaskModel> getTasks() {
+    return tasks;
+  }
+
+  public void setTasks(List<TaskModel> tasks) {
+    this.tasks = tasks;
+  }
+
+  @JsonIgnore
+  public Map<String, Object> getInput() {
+    if (!inputPayload.isEmpty() && !input.isEmpty()) {
+      input.putAll(inputPayload);
+      inputPayload = new HashMap<>();
+      return input;
+    } else if (inputPayload.isEmpty()) {
+      return input;
+    } else {
+      return inputPayload;
+    }
+  }
+
+  @JsonIgnore
+  public void setInput(Map<String, Object> input) {
+    if (input == null) {
+      input = new HashMap<>();
+    }
+    this.input = input;
+  }
+
+  @JsonIgnore
+  public Map<String, Object> getOutput() {
+    if (!outputPayload.isEmpty() && !output.isEmpty()) {
+      output.putAll(outputPayload);
+      outputPayload = new HashMap<>();
+      return output;
+    } else if (outputPayload.isEmpty()) {
+      return output;
+    } else {
+      return outputPayload;
+    }
+  }
+
+  @JsonIgnore
+  public void setOutput(@Nullable Map<String, Object> output) {
+    if (output == null) {
+      output = new HashMap<>();
+    }
+    this.output = output;
+  }
+
+  /** @deprecated Used only for JSON serialization and deserialization. */
+  @Deprecated
+  @JsonProperty("input")
+  public Map<String, Object> getRawInput() {
+    return input;
+  }
+
+  /** @deprecated Used only for JSON serialization and deserialization. */
+  @Deprecated
+  @JsonProperty("input")
+  public void setRawInput(Map<String, Object> input) {
+    setInput(input);
+  }
+
+  /** @deprecated Used only for JSON serialization and deserialization. */
+  @Deprecated
+  @JsonProperty("output")
+  public Map<String, Object> getRawOutput() {
+    return output;
+  }
+
+  /** @deprecated Used only for JSON serialization and deserialization. */
+  @Deprecated
+  @JsonProperty("output")
+  public void setRawOutput(Map<String, Object> output) {
+    setOutput(output);
+  }
+
+  @Nullable
+  public String getCorrelationId() {
+    return correlationId;
+  }
+
+  public void setCorrelationId(@Nullable String correlationId) {
+    this.correlationId = correlationId;
+  }
+
+  @Nullable
+  public String getReRunFromWorkflowId() {
+    return reRunFromWorkflowId;
+  }
+
+  public void setReRunFromWorkflowId(String reRunFromWorkflowId) {
+    this.reRunFromWorkflowId = reRunFromWorkflowId;
+  }
+
+  @Nullable
+  public String getReasonForIncompletion() {
+    return reasonForIncompletion;
+  }
+
+  public void setReasonForIncompletion(@Nullable String reasonForIncompletion) {
+    this.reasonForIncompletion = reasonForIncompletion;
+  }
+
+  @Nullable
+  public String getEvent() {
+    return event;
+  }
+
+  public void setEvent(@Nullable String event) {
+    this.event = event;
+  }
+
+  @Nullable
+  public Map<String, String> getTaskToDomain() {
+    return taskToDomain;
+  }
+
+  public void setTaskToDomain(@Nullable Map<String, String> taskToDomain) {
+    this.taskToDomain = taskToDomain;
+  }
+
+  public Set<String> getFailedReferenceTaskNames() {
+    return failedReferenceTaskNames;
+  }
+
+  public void setFailedReferenceTaskNames(Set<String> failedReferenceTaskNames) {
+    this.failedReferenceTaskNames = failedReferenceTaskNames;
+  }
+
+  public Set<String> getFailedTaskNames() {
+    return failedTaskNames;
+  }
+
+  public void setFailedTaskNames(Set<String> failedTaskNames) {
+    this.failedTaskNames = failedTaskNames;
+  }
+
+  public WorkflowDef getWorkflowDefinition() {
+    return workflowDefinition;
+  }
+
+  public void setWorkflowDefinition(WorkflowDef workflowDefinition) {
+    this.workflowDefinition = workflowDefinition;
+  }
+
+  @Nullable
+  public String getExternalInputPayloadStoragePath() {
+    return externalInputPayloadStoragePath;
+  }
+
+  public void setExternalInputPayloadStoragePath(@Nullable String externalInputPayloadStoragePath) {
+    this.externalInputPayloadStoragePath = externalInputPayloadStoragePath;
+  }
+
+  @Nullable
+  public String getExternalOutputPayloadStoragePath() {
+    return externalOutputPayloadStoragePath;
+  }
+
+  public void setExternalOutputPayloadStoragePath(
+      @Nullable String externalOutputPayloadStoragePath) {
+    this.externalOutputPayloadStoragePath = externalOutputPayloadStoragePath;
+  }
+
+  public int getPriority() {
+    return priority;
+  }
+
+  public void setPriority(int priority) {
+    if (priority < 0 || priority > 99) {
+      throw new IllegalArgumentException("priority MUST be between 0 and 99 (inclusive)");
+    }
+    this.priority = priority;
+  }
+
+  public Map<String, Object> getVariables() {
+    return variables;
+  }
+
+  public void setVariables(Map<String, Object> variables) {
+    this.variables = variables;
+  }
+
+  public long getLastRetriedTime() {
+    return lastRetriedTime;
+  }
+
+  public void setLastRetriedTime(long lastRetriedTime) {
+    this.lastRetriedTime = lastRetriedTime;
+  }
+
+  @Nullable
+  public String getOwnerApp() {
+    return ownerApp;
+  }
+
+  public void setOwnerApp(String ownerApp) {
+    this.ownerApp = ownerApp;
+  }
+
+  public Long getCreateTime() {
+    return createTime;
+  }
+
+  public void setCreateTime(Long createTime) {
+    this.createTime = createTime;
+  }
+
+  @Nullable
+  public Long getUpdatedTime() {
+    return updatedTime;
+  }
+
+  public void setUpdatedTime(@Nullable Long updatedTime) {
+    this.updatedTime = updatedTime;
+  }
+
+  @Nullable
+  public String getCreatedBy() {
+    return createdBy;
+  }
+
+  public void setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+  }
+
+  @Nullable
+  public String getUpdatedBy() {
+    return updatedBy;
+  }
+
+  public void setUpdatedBy(@Nullable String updatedBy) {
+    this.updatedBy = updatedBy;
+  }
+
+  @Nullable
+  public String getFailedTaskId() {
+    return failedTaskId;
+  }
+
+  public void setFailedTaskId(@Nullable String failedTaskId) {
+    this.failedTaskId = failedTaskId;
+  }
+
+  /**
+   * Convenience method for accessing the workflow definition name.
+   *
+   * @return the workflow definition name.
+   */
+  public String getWorkflowName() {
+    Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
+    return workflowDefinition.getName();
+  }
+
+  /**
+   * Convenience method for accessing the workflow definition version.
+   *
+   * @return the workflow definition version.
+   */
+  public int getWorkflowVersion() {
+    Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
+    return workflowDefinition.getVersion();
+  }
+
+  public boolean hasParent() {
+    return StringUtils.isNotEmpty(parentWorkflowId);
+  }
+
+  /**
+   * A string representation of all relevant fields that identify this workflow. Intended for use in
+   * log and other system generated messages.
+   */
+  public String toShortString() {
+    String name = workflowDefinition != null ? workflowDefinition.getName() : null;
+    Integer version = workflowDefinition != null ? workflowDefinition.getVersion() : null;
+    return String.format("%s.%s/%s", name, version, workflowId);
+  }
+
+  @Nullable
+  public TaskModel getTaskByRefName(String refName) {
+    if (refName == null) {
+      throw new RuntimeException(
+          "refName passed is null.  Check the workflow execution.  For dynamic tasks, make sure referenceTaskName is set to a not null value");
+    }
+    LinkedList<TaskModel> found = new LinkedList<>();
+    for (TaskModel task : tasks) {
+      if (task.getReferenceTaskName() == null) {
+        throw new RuntimeException(
+            "Task "
+                + task.getTaskDefName()
+                + ", seq="
+                + task.getSeq()
+                + " does not have reference name specified.");
+      }
+      if (task.getReferenceTaskName().equals(refName)) {
+        found.add(task);
+      }
+    }
+    if (found.isEmpty()) {
+      return null;
+    }
+    return found.getLast();
+  }
+
+  public void externalizeInput(String path) {
+    this.inputPayload = this.input;
+    this.input = new HashMap<>();
+    this.externalInputPayloadStoragePath = path;
+  }
+
+  public void externalizeOutput(String path) {
+    this.outputPayload = this.output;
+    this.output = new HashMap<>();
+    this.externalOutputPayloadStoragePath = path;
+  }
+
+  public void internalizeInput(Map<String, Object> data) {
+    this.input = new HashMap<>();
+    this.inputPayload = data;
+  }
+
+  public void internalizeOutput(Map<String, Object> data) {
+    this.output = new HashMap<>();
+    this.outputPayload = data;
+  }
+
+  @Override
+  public String toString() {
+    String name = workflowDefinition != null ? workflowDefinition.getName() : null;
+    Integer version = workflowDefinition != null ? workflowDefinition.getVersion() : null;
+    return String.format("%s.%s/%s.%s", name, version, workflowId, status);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    WorkflowModel that = (WorkflowModel) o;
+    return getEndTime() == that.getEndTime()
+        && getPriority() == that.getPriority()
+        && getLastRetriedTime() == that.getLastRetriedTime()
+        && getStatus() == that.getStatus()
+        && Objects.equals(getWorkflowId(), that.getWorkflowId())
+        && Objects.equals(getParentWorkflowId(), that.getParentWorkflowId())
+        && Objects.equals(getParentWorkflowTaskId(), that.getParentWorkflowTaskId())
+        && Objects.equals(getTasks(), that.getTasks())
+        && Objects.equals(getInput(), that.getInput())
+        && Objects.equals(output, that.output)
+        && Objects.equals(outputPayload, that.outputPayload)
+        && Objects.equals(getCorrelationId(), that.getCorrelationId())
+        && Objects.equals(getReRunFromWorkflowId(), that.getReRunFromWorkflowId())
+        && Objects.equals(getReasonForIncompletion(), that.getReasonForIncompletion())
+        && Objects.equals(getEvent(), that.getEvent())
+        && Objects.equals(getTaskToDomain(), that.getTaskToDomain())
+        && Objects.equals(getFailedReferenceTaskNames(), that.getFailedReferenceTaskNames())
+        && Objects.equals(getFailedTaskNames(), that.getFailedTaskNames())
+        && Objects.equals(getWorkflowDefinition(), that.getWorkflowDefinition())
+        && Objects.equals(
+            getExternalInputPayloadStoragePath(), that.getExternalInputPayloadStoragePath())
+        && Objects.equals(
+            getExternalOutputPayloadStoragePath(), that.getExternalOutputPayloadStoragePath())
+        && Objects.equals(getVariables(), that.getVariables())
+        && Objects.equals(getOwnerApp(), that.getOwnerApp())
+        && Objects.equals(getCreateTime(), that.getCreateTime())
+        && Objects.equals(getUpdatedTime(), that.getUpdatedTime())
+        && Objects.equals(getCreatedBy(), that.getCreatedBy())
+        && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        getStatus(),
+        getEndTime(),
+        getWorkflowId(),
+        getParentWorkflowId(),
+        getParentWorkflowTaskId(),
+        getTasks(),
+        getInput(),
+        output,
+        outputPayload,
+        getCorrelationId(),
+        getReRunFromWorkflowId(),
+        getReasonForIncompletion(),
+        getEvent(),
+        getTaskToDomain(),
+        getFailedReferenceTaskNames(),
+        getFailedTaskNames(),
+        getWorkflowDefinition(),
+        getExternalInputPayloadStoragePath(),
+        getExternalOutputPayloadStoragePath(),
+        getPriority(),
+        getVariables(),
+        getLastRetriedTime(),
+        getOwnerApp(),
+        getCreateTime(),
+        getUpdatedTime(),
+        getCreatedBy(),
+        getUpdatedBy());
+  }
+
+  public Workflow toWorkflow() {
+    Workflow workflow = new Workflow();
+    BeanUtils.copyProperties(this, workflow);
+    workflow.setStatus(Workflow.WorkflowStatus.valueOf(this.status.name()));
+    workflow.setTasks(tasks.stream().map(TaskModel::toTask).collect(Collectors.toList()));
+    workflow.setUpdateTime(this.updatedTime);
+
+    // ensure that input/output is properly represented
+    if (externalInputPayloadStoragePath != null) {
+      workflow.setInput(new HashMap<>());
+    }
+    if (externalOutputPayloadStoragePath != null) {
+      workflow.setOutput(new HashMap<>());
+    }
+    return workflow;
+  }
+
+  public void addInput(String key, Object value) {
+    this.input.put(key, value);
+  }
+
+  public void addInput(Map<String, Object> inputData) {
+    if (inputData != null) {
+      this.input.putAll(inputData);
+    }
+  }
+
+  public void addOutput(String key, Object value) {
+    this.output.put(key, value);
+  }
+
+  public void addOutput(Map<String, Object> outputData) {
+    if (outputData != null) {
+      this.output.putAll(outputData);
+    }
+  }
 }

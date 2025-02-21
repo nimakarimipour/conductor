@@ -12,16 +12,10 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.common.config.TestObjectMapperConfiguration;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
@@ -32,11 +26,14 @@ import com.netflix.conductor.core.events.queue.ObservableQueue;
 import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Tests the {@link Event#computeQueueName(WorkflowModel, TaskModel)} and {@link
@@ -46,132 +43,131 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 public class EventQueueResolutionTest {
 
-    private WorkflowDef testWorkflowDefinition;
-    private EventQueues eventQueues;
-    private ParametersUtils parametersUtils;
+  private WorkflowDef testWorkflowDefinition;
+  private EventQueues eventQueues;
+  private ParametersUtils parametersUtils;
 
-    @Autowired private ObjectMapper objectMapper;
+  @Autowired private ObjectMapper objectMapper;
 
-    @Before
-    public void setup() {
-        Map<String, EventQueueProvider> providers = new HashMap<>();
-        providers.put("sqs", new MockQueueProvider("sqs"));
-        providers.put("conductor", new MockQueueProvider("conductor"));
+  @Before
+  public void setup() {
+    Map<String, EventQueueProvider> providers = new HashMap<>();
+    providers.put("sqs", new MockQueueProvider("sqs"));
+    providers.put("conductor", new MockQueueProvider("conductor"));
 
-        parametersUtils = new ParametersUtils(objectMapper);
-        eventQueues = new EventQueues(providers, parametersUtils);
+    parametersUtils = new ParametersUtils(objectMapper);
+    eventQueues = new EventQueues(providers, parametersUtils);
 
-        testWorkflowDefinition = new WorkflowDef();
-        testWorkflowDefinition.setName("testWorkflow");
-        testWorkflowDefinition.setVersion(2);
-    }
+    testWorkflowDefinition = new WorkflowDef();
+    testWorkflowDefinition.setName("testWorkflow");
+    testWorkflowDefinition.setVersion(2);
+  }
 
-    @Test
-    public void testSinkParam() {
-        String sink = "sqs:queue_name";
+  @Test
+  public void testSinkParam() {
+    String sink = "sqs:queue_name";
 
-        WorkflowDef def = new WorkflowDef();
-        def.setName("wf0");
+    WorkflowDef def = new WorkflowDef();
+    def.setName("wf0");
 
-        WorkflowModel workflow = new WorkflowModel();
-        workflow.setWorkflowDefinition(def);
+    WorkflowModel workflow = new WorkflowModel();
+    workflow.setWorkflowDefinition(def);
 
-        TaskModel task1 = new TaskModel();
-        task1.setReferenceTaskName("t1");
-        task1.addOutput("q", "t1_queue");
-        workflow.getTasks().add(task1);
+    TaskModel task1 = new TaskModel();
+    task1.setReferenceTaskName("t1");
+    task1.addOutput("q", "t1_queue");
+    workflow.getTasks().add(task1);
 
-        TaskModel task2 = new TaskModel();
-        task2.setReferenceTaskName("t2");
-        task2.addOutput("q", "task2_queue");
-        workflow.getTasks().add(task2);
+    TaskModel task2 = new TaskModel();
+    task2.setReferenceTaskName("t2");
+    task2.addOutput("q", "task2_queue");
+    workflow.getTasks().add(task2);
 
-        TaskModel task = new TaskModel();
-        task.setReferenceTaskName("event");
-        task.getInputData().put("sink", sink);
-        task.setTaskType(TaskType.EVENT.name());
-        workflow.getTasks().add(task);
+    TaskModel task = new TaskModel();
+    task.setReferenceTaskName("event");
+    task.getInputData().put("sink", sink);
+    task.setTaskType(TaskType.EVENT.name());
+    workflow.getTasks().add(task);
 
-        Event event = new Event(eventQueues, parametersUtils, objectMapper);
-        String queueName = event.computeQueueName(workflow, task);
-        ObservableQueue queue = event.getQueue(queueName, task.getTaskId());
-        assertNotNull(task.getReasonForIncompletion(), queue);
-        assertEquals("queue_name", queue.getName());
-        assertEquals("sqs", queue.getType());
+    Event event = new Event(eventQueues, parametersUtils, objectMapper);
+    String queueName = event.computeQueueName(workflow, task);
+    ObservableQueue queue = event.getQueue(queueName, task.getTaskId());
+    assertNotNull(task.getReasonForIncompletion(), queue);
+    assertEquals("queue_name", queue.getName());
+    assertEquals("sqs", queue.getType());
 
-        sink = "sqs:${t1.output.q}";
-        task.getInputData().put("sink", sink);
-        queueName = event.computeQueueName(workflow, task);
-        queue = event.getQueue(queueName, task.getTaskId());
-        assertNotNull(queue);
-        assertEquals("t1_queue", queue.getName());
-        assertEquals("sqs", queue.getType());
+    sink = "sqs:${t1.output.q}";
+    task.getInputData().put("sink", sink);
+    queueName = event.computeQueueName(workflow, task);
+    queue = event.getQueue(queueName, task.getTaskId());
+    assertNotNull(queue);
+    assertEquals("t1_queue", queue.getName());
+    assertEquals("sqs", queue.getType());
 
-        sink = "sqs:${t2.output.q}";
-        task.getInputData().put("sink", sink);
-        queueName = event.computeQueueName(workflow, task);
-        queue = event.getQueue(queueName, task.getTaskId());
-        assertNotNull(queue);
-        assertEquals("task2_queue", queue.getName());
-        assertEquals("sqs", queue.getType());
+    sink = "sqs:${t2.output.q}";
+    task.getInputData().put("sink", sink);
+    queueName = event.computeQueueName(workflow, task);
+    queue = event.getQueue(queueName, task.getTaskId());
+    assertNotNull(queue);
+    assertEquals("task2_queue", queue.getName());
+    assertEquals("sqs", queue.getType());
 
-        sink = "conductor";
-        task.getInputData().put("sink", sink);
-        queueName = event.computeQueueName(workflow, task);
-        queue = event.getQueue(queueName, task.getTaskId());
-        assertNotNull(queue);
-        assertEquals(
-                workflow.getWorkflowName() + ":" + task.getReferenceTaskName(), queue.getName());
-        assertEquals("conductor", queue.getType());
+    sink = "conductor";
+    task.getInputData().put("sink", sink);
+    queueName = event.computeQueueName(workflow, task);
+    queue = event.getQueue(queueName, task.getTaskId());
+    assertNotNull(queue);
+    assertEquals(workflow.getWorkflowName() + ":" + task.getReferenceTaskName(), queue.getName());
+    assertEquals("conductor", queue.getType());
 
-        sink = "sqs:static_value";
-        task.getInputData().put("sink", sink);
-        queueName = event.computeQueueName(workflow, task);
-        queue = event.getQueue(queueName, task.getTaskId());
-        assertNotNull(queue);
-        assertEquals("static_value", queue.getName());
-        assertEquals("sqs", queue.getType());
-    }
+    sink = "sqs:static_value";
+    task.getInputData().put("sink", sink);
+    queueName = event.computeQueueName(workflow, task);
+    queue = event.getQueue(queueName, task.getTaskId());
+    assertNotNull(queue);
+    assertEquals("static_value", queue.getName());
+    assertEquals("sqs", queue.getType());
+  }
 
-    @Test
-    public void testDynamicSinks() {
-        Event event = new Event(eventQueues, parametersUtils, objectMapper);
-        WorkflowModel workflow = new WorkflowModel();
-        workflow.setWorkflowDefinition(testWorkflowDefinition);
+  @Test
+  public void testDynamicSinks() {
+    Event event = new Event(eventQueues, parametersUtils, objectMapper);
+    WorkflowModel workflow = new WorkflowModel();
+    workflow.setWorkflowDefinition(testWorkflowDefinition);
 
-        TaskModel task = new TaskModel();
-        task.setReferenceTaskName("task0");
-        task.setTaskId("task_id_0");
-        task.setStatus(TaskModel.Status.IN_PROGRESS);
-        task.getInputData().put("sink", "conductor:some_arbitary_queue");
+    TaskModel task = new TaskModel();
+    task.setReferenceTaskName("task0");
+    task.setTaskId("task_id_0");
+    task.setStatus(TaskModel.Status.IN_PROGRESS);
+    task.getInputData().put("sink", "conductor:some_arbitary_queue");
 
-        String queueName = event.computeQueueName(workflow, task);
-        ObservableQueue queue = event.getQueue(queueName, task.getTaskId());
-        assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
-        assertNotNull(queue);
-        assertEquals("testWorkflow:some_arbitary_queue", queue.getName());
-        assertEquals("testWorkflow:some_arbitary_queue", queue.getURI());
-        assertEquals("conductor", queue.getType());
+    String queueName = event.computeQueueName(workflow, task);
+    ObservableQueue queue = event.getQueue(queueName, task.getTaskId());
+    assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
+    assertNotNull(queue);
+    assertEquals("testWorkflow:some_arbitary_queue", queue.getName());
+    assertEquals("testWorkflow:some_arbitary_queue", queue.getURI());
+    assertEquals("conductor", queue.getType());
 
-        task.getInputData().put("sink", "conductor");
-        queueName = event.computeQueueName(workflow, task);
-        queue = event.getQueue(queueName, task.getTaskId());
-        assertEquals(
-                "not in progress: " + task.getReasonForIncompletion(),
-                TaskModel.Status.IN_PROGRESS,
-                task.getStatus());
-        assertNotNull(queue);
-        assertEquals("testWorkflow:task0", queue.getName());
+    task.getInputData().put("sink", "conductor");
+    queueName = event.computeQueueName(workflow, task);
+    queue = event.getQueue(queueName, task.getTaskId());
+    assertEquals(
+        "not in progress: " + task.getReasonForIncompletion(),
+        TaskModel.Status.IN_PROGRESS,
+        task.getStatus());
+    assertNotNull(queue);
+    assertEquals("testWorkflow:task0", queue.getName());
 
-        task.getInputData().put("sink", "sqs:my_sqs_queue_name");
-        queueName = event.computeQueueName(workflow, task);
-        queue = event.getQueue(queueName, task.getTaskId());
-        assertEquals(
-                "not in progress: " + task.getReasonForIncompletion(),
-                TaskModel.Status.IN_PROGRESS,
-                task.getStatus());
-        assertNotNull(queue);
-        assertEquals("my_sqs_queue_name", queue.getName());
-        assertEquals("sqs", queue.getType());
-    }
+    task.getInputData().put("sink", "sqs:my_sqs_queue_name");
+    queueName = event.computeQueueName(workflow, task);
+    queue = event.getQueue(queueName, task.getTaskId());
+    assertEquals(
+        "not in progress: " + task.getReasonForIncompletion(),
+        TaskModel.Status.IN_PROGRESS,
+        task.getStatus());
+    assertNotNull(queue);
+    assertEquals("my_sqs_queue_name", queue.getName());
+    assertEquals("sqs", queue.getType());
+  }
 }

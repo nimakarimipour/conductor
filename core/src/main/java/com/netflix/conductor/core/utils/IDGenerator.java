@@ -13,15 +13,14 @@
 package com.netflix.conductor.core.utils;
 
 import java.util.UUID;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(
-        name = "conductor.id.generator",
-        havingValue = "default",
-        matchIfMissing = true)
+    name = "conductor.id.generator",
+    havingValue = "default",
+    matchIfMissing = true)
 /**
  * ID Generator used by Conductor Note on overriding the ID Generator: The default ID generator uses
  * UUID v4 as the ID format. By overriding this class it is possible to use different scheme for ID
@@ -32,9 +31,9 @@ import org.springframework.stereotype.Component;
  */
 public class IDGenerator {
 
-    public IDGenerator() {}
+  public IDGenerator() {}
 
-    public String generate() {
-        return UUID.randomUUID().toString();
-    }
+  public String generate() {
+    return UUID.randomUUID().toString();
+  }
 }

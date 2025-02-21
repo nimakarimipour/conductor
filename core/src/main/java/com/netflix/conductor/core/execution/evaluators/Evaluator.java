@@ -11,16 +11,18 @@
  * specific language governing permissions and limitations under the License.
  */
 package com.netflix.conductor.core.execution.evaluators;
+
 import javax.annotation.Nullable;
 
 public interface Evaluator {
-    /**
-     * Evaluate the expression using the inputs provided, if required. Evaluation of the expression
-     * depends on the type of the evaluator.
-     *
-     * @param expression Expression to be evaluated.
-     * @param input Input object to the evaluator to help evaluate the expression.
-     * @return Return the evaluation result.
-     */
-    @Nullable Object evaluate(@Nullable String expression, @Nullable Object input);
+  /**
+   * Evaluate the expression using the inputs provided, if required. Evaluation of the expression
+   * depends on the type of the evaluator.
+   *
+   * @param expression Expression to be evaluated.
+   * @param input Input object to the evaluator to help evaluate the expression.
+   * @return Return the evaluation result.
+   */
+  @Nullable
+  Object evaluate(@Nullable String expression, @Nullable Object input);
 }

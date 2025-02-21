@@ -17,109 +17,101 @@ import javax.annotation.Nullable;
 
 public class Message {
 
-    @Nullable private String payload;
-    @Nullable private String id;
-    @Nullable private String receipt;
-    private int priority;
+  @Nullable private String payload;
+  @Nullable private String id;
+  @Nullable private String receipt;
+  private int priority;
 
-    public Message() {}
+  public Message() {}
 
-    public Message(String id, @Nullable String payload, @Nullable String receipt) {
-        this.payload = payload;
-        this.id = id;
-        this.receipt = receipt;
+  public Message(String id, @Nullable String payload, @Nullable String receipt) {
+    this.payload = payload;
+    this.id = id;
+    this.receipt = receipt;
+  }
+
+  public Message(String id, String payload, String receipt, int priority) {
+    this.payload = payload;
+    this.id = id;
+    this.receipt = receipt;
+    this.priority = priority;
+  }
+
+  /** @return the payload */
+  @Nullable
+  public String getPayload() {
+    return payload;
+  }
+
+  /** @param payload the payload to set */
+  public void setPayload(String payload) {
+    this.payload = payload;
+  }
+
+  /** @return the id */
+  @Nullable
+  public String getId() {
+    return id;
+  }
+
+  /** @param id the id to set */
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  /** @return Receipt attached to the message */
+  @Nullable
+  public String getReceipt() {
+    return receipt;
+  }
+
+  /** @param receipt Receipt attached to the message */
+  public void setReceipt(String receipt) {
+    this.receipt = receipt;
+  }
+
+  /**
+   * Gets the message priority
+   *
+   * @return priority of message.
+   */
+  public int getPriority() {
+    return priority;
+  }
+
+  /**
+   * Sets the message priority (between 0 and 99). Higher priority message is retrieved ahead of
+   * lower priority ones.
+   *
+   * @param priority the priority of message (between 0 and 99)
+   */
+  public void setPriority(int priority) {
+    this.priority = priority;
+  }
+
+  @Nullable
+  @Override
+  public String toString() {
+    return id;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-
-    public Message(String id, String payload, String receipt, int priority) {
-        this.payload = payload;
-        this.id = id;
-        this.receipt = receipt;
-        this.priority = priority;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    Message message = (Message) o;
+    return Objects.equals(payload, message.payload)
+        && Objects.equals(id, message.id)
+        && Objects.equals(priority, message.priority)
+        && Objects.equals(receipt, message.receipt);
+  }
 
-    /**
-     * @return the payload
-     */
-    @Nullable public String getPayload() {
-        return payload;
-    }
-
-    /**
-     * @param payload the payload to set
-     */
-    public void setPayload(String payload) {
-        this.payload = payload;
-    }
-
-    /**
-     * @return the id
-     */
-    @Nullable public String getId() {
-        return id;
-    }
-
-    /**
-     * @param id the id to set
-     */
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    /**
-     * @return Receipt attached to the message
-     */
-    @Nullable public String getReceipt() {
-        return receipt;
-    }
-
-    /**
-     * @param receipt Receipt attached to the message
-     */
-    public void setReceipt(String receipt) {
-        this.receipt = receipt;
-    }
-
-    /**
-     * Gets the message priority
-     *
-     * @return priority of message.
-     */
-    public int getPriority() {
-        return priority;
-    }
-
-    /**
-     * Sets the message priority (between 0 and 99). Higher priority message is retrieved ahead of
-     * lower priority ones.
-     *
-     * @param priority the priority of message (between 0 and 99)
-     */
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
-    @Nullable @Override
-    public String toString() {
-        return id;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Message message = (Message) o;
-        return Objects.equals(payload, message.payload)
-                && Objects.equals(id, message.id)
-                && Objects.equals(priority, message.priority)
-                && Objects.equals(receipt, message.receipt);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(payload, id, receipt, priority);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(payload, id, receipt, priority);
+  }
 }

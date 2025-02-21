@@ -12,98 +12,96 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import static org.junit.Assert.*;
+
+import com.netflix.conductor.model.TaskModel;
+import com.netflix.conductor.model.WorkflowModel;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 
-import com.netflix.conductor.model.TaskModel;
-import com.netflix.conductor.model.WorkflowModel;
-
-import static org.junit.Assert.*;
-
 public class TestWait {
 
-    private final Wait wait = new Wait();
+  private final Wait wait = new Wait();
 
-    @Test
-    public void testWaitForever() {
+  @Test
+  public void testWaitForever() {
 
-        TaskModel task = new TaskModel();
-        task.setStatus(TaskModel.Status.SCHEDULED);
-        WorkflowModel model = new WorkflowModel();
+    TaskModel task = new TaskModel();
+    task.setStatus(TaskModel.Status.SCHEDULED);
+    WorkflowModel model = new WorkflowModel();
 
-        wait.start(model, task, null);
-        assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
-        assertTrue(task.getOutputData().isEmpty());
+    wait.start(model, task, null);
+    assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
+    assertTrue(task.getOutputData().isEmpty());
+  }
+
+  @Test
+  public void testWaitUntil() throws ParseException {
+    String dateFormat = "yyyy-MM-dd HH:mm";
+
+    WorkflowModel model = new WorkflowModel();
+
+    TaskModel task = new TaskModel();
+    task.setStatus(TaskModel.Status.SCHEDULED);
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+    LocalDateTime now = LocalDateTime.now();
+    String formatted = formatter.format(now);
+    System.out.println(formatted);
+
+    task.getInputData().put(Wait.UNTIL_INPUT, formatted);
+    Date parsed = DateUtils.parseDate(formatted, dateFormat);
+
+    wait.start(model, task, null);
+    assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
+    assertEquals(parsed.getTime(), task.getWaitTimeout());
+
+    // Execute runs when checking if the task has completed
+    boolean updated = wait.execute(model, task, null);
+    assertTrue(updated);
+    assertEquals(TaskModel.Status.COMPLETED, task.getStatus());
+  }
+
+  @Test
+  public void testWaitDuration() throws ParseException {
+    WorkflowModel model = new WorkflowModel();
+
+    TaskModel task = new TaskModel();
+    task.setStatus(TaskModel.Status.SCHEDULED);
+
+    task.getInputData().put(Wait.DURATION_INPUT, "1s");
+    wait.start(model, task, null);
+    long now = System.currentTimeMillis();
+
+    assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
+    assertEquals(now + 1000, task.getWaitTimeout());
+
+    try {
+      Thread.sleep(2_000);
+    } catch (InterruptedException e) {
     }
 
-    @Test
-    public void testWaitUntil() throws ParseException {
-        String dateFormat = "yyyy-MM-dd HH:mm";
+    // Execute runs when checking if the task has completed
+    boolean updated = wait.execute(model, task, null);
+    assertTrue(updated);
+    assertEquals(TaskModel.Status.COMPLETED, task.getStatus());
+  }
 
-        WorkflowModel model = new WorkflowModel();
+  @Test
+  public void testInvalidWaitConfig() throws ParseException {
+    WorkflowModel model = new WorkflowModel();
 
-        TaskModel task = new TaskModel();
-        task.setStatus(TaskModel.Status.SCHEDULED);
+    TaskModel task = new TaskModel();
+    task.setStatus(TaskModel.Status.SCHEDULED);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
-        LocalDateTime now = LocalDateTime.now();
-        String formatted = formatter.format(now);
-        System.out.println(formatted);
-
-        task.getInputData().put(Wait.UNTIL_INPUT, formatted);
-        Date parsed = DateUtils.parseDate(formatted, dateFormat);
-
-        wait.start(model, task, null);
-        assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
-        assertEquals(parsed.getTime(), task.getWaitTimeout());
-
-        // Execute runs when checking if the task has completed
-        boolean updated = wait.execute(model, task, null);
-        assertTrue(updated);
-        assertEquals(TaskModel.Status.COMPLETED, task.getStatus());
-    }
-
-    @Test
-    public void testWaitDuration() throws ParseException {
-        WorkflowModel model = new WorkflowModel();
-
-        TaskModel task = new TaskModel();
-        task.setStatus(TaskModel.Status.SCHEDULED);
-
-        task.getInputData().put(Wait.DURATION_INPUT, "1s");
-        wait.start(model, task, null);
-        long now = System.currentTimeMillis();
-
-        assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
-        assertEquals(now + 1000, task.getWaitTimeout());
-
-        try {
-            Thread.sleep(2_000);
-        } catch (InterruptedException e) {
-        }
-
-        // Execute runs when checking if the task has completed
-        boolean updated = wait.execute(model, task, null);
-        assertTrue(updated);
-        assertEquals(TaskModel.Status.COMPLETED, task.getStatus());
-    }
-
-    @Test
-    public void testInvalidWaitConfig() throws ParseException {
-        WorkflowModel model = new WorkflowModel();
-
-        TaskModel task = new TaskModel();
-        task.setStatus(TaskModel.Status.SCHEDULED);
-
-        task.getInputData().put(Wait.DURATION_INPUT, "1s");
-        task.getInputData().put(Wait.UNTIL_INPUT, "2022-12-12");
-        wait.start(model, task, null);
-        assertEquals(TaskModel.Status.FAILED_WITH_TERMINAL_ERROR, task.getStatus());
-        assertTrue(!task.getReasonForIncompletion().isEmpty());
-    }
+    task.getInputData().put(Wait.DURATION_INPUT, "1s");
+    task.getInputData().put(Wait.UNTIL_INPUT, "2022-12-12");
+    wait.start(model, task, null);
+    assertEquals(TaskModel.Status.FAILED_WITH_TERMINAL_ERROR, task.getStatus());
+    assertTrue(!task.getReasonForIncompletion().isEmpty());
+  }
 }

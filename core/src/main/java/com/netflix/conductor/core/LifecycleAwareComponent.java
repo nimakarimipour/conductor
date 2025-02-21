@@ -18,30 +18,30 @@ import org.springframework.context.SmartLifecycle;
 
 public abstract class LifecycleAwareComponent implements SmartLifecycle {
 
-    private volatile boolean running = false;
+  private volatile boolean running = false;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleAwareComponent.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleAwareComponent.class);
 
-    @Override
-    public final void start() {
-        running = true;
-        LOGGER.info("{} started.", getClass().getSimpleName());
-        doStart();
-    }
+  @Override
+  public final void start() {
+    running = true;
+    LOGGER.info("{} started.", getClass().getSimpleName());
+    doStart();
+  }
 
-    @Override
-    public final void stop() {
-        running = false;
-        LOGGER.info("{} stopped.", getClass().getSimpleName());
-        doStop();
-    }
+  @Override
+  public final void stop() {
+    running = false;
+    LOGGER.info("{} stopped.", getClass().getSimpleName());
+    doStop();
+  }
 
-    @Override
-    public final boolean isRunning() {
-        return running;
-    }
+  @Override
+  public final boolean isRunning() {
+    return running;
+  }
 
-    public void doStart() {}
+  public void doStart() {}
 
-    public void doStop() {}
+  public void doStop() {}
 }

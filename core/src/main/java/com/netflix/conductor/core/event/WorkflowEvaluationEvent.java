@@ -12,19 +12,18 @@
  */
 package com.netflix.conductor.core.event;
 
-import java.io.Serializable;
-
 import com.netflix.conductor.model.WorkflowModel;
+import java.io.Serializable;
 
 public final class WorkflowEvaluationEvent implements Serializable {
 
-    private final WorkflowModel workflowModel;
+  private final WorkflowModel workflowModel;
 
-    public WorkflowEvaluationEvent(WorkflowModel workflowModel) {
-        this.workflowModel = workflowModel;
-    }
+  public WorkflowEvaluationEvent(WorkflowModel workflowModel) {
+    this.workflowModel = workflowModel;
+  }
 
-    public WorkflowModel getWorkflowModel() {
-        return workflowModel;
-    }
+  public WorkflowModel getWorkflowModel() {
+    return workflowModel;
+  }
 }

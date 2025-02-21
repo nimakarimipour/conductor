@@ -1,4 +1,3 @@
 package com.netflix.conductor;
 
-public @interface Initializer {
-}
+public @interface Initializer {}

@@ -12,10 +12,6 @@
  */
 package com.netflix.conductor.core.index;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.tasks.TaskExecLog;
 import com.netflix.conductor.common.run.SearchResult;
@@ -23,6 +19,9 @@ import com.netflix.conductor.common.run.TaskSummary;
 import com.netflix.conductor.common.run.WorkflowSummary;
 import com.netflix.conductor.core.events.queue.Message;
 import com.netflix.conductor.dao.IndexDAO;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
 /**
@@ -31,117 +30,119 @@ import javax.annotation.Nullable;
  */
 public class NoopIndexDAO implements IndexDAO {
 
-    @Override
-    public void setup() {}
+  @Override
+  public void setup() {}
 
-    @Override
-    public void indexWorkflow(WorkflowSummary workflowSummary) {}
+  @Override
+  public void indexWorkflow(WorkflowSummary workflowSummary) {}
 
-    @Override
-    public CompletableFuture<Void> asyncIndexWorkflow(WorkflowSummary workflowSummary) {
-        return CompletableFuture.completedFuture(null);
-    }
+  @Override
+  public CompletableFuture<Void> asyncIndexWorkflow(WorkflowSummary workflowSummary) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-    @Override
-    public void indexTask(TaskSummary taskSummary) {}
+  @Override
+  public void indexTask(TaskSummary taskSummary) {}
 
-    @Override
-    public CompletableFuture<Void> asyncIndexTask(TaskSummary taskSummary) {
-        return CompletableFuture.completedFuture(null);
-    }
+  @Override
+  public CompletableFuture<Void> asyncIndexTask(TaskSummary taskSummary) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-    @Override
-    public SearchResult<String> searchWorkflows(
-            String query, String freeText, int start, int count, @Nullable List<String> sort) {
-        return new SearchResult<>(0, Collections.emptyList());
-    }
+  @Override
+  public SearchResult<String> searchWorkflows(
+      String query, String freeText, int start, int count, @Nullable List<String> sort) {
+    return new SearchResult<>(0, Collections.emptyList());
+  }
 
-    @Override
-    public SearchResult<WorkflowSummary> searchWorkflowSummary(
-            String query, String freeText, int start, int count, List<String> sort) {
-        return new SearchResult<>(0, Collections.emptyList());
-    }
+  @Override
+  public SearchResult<WorkflowSummary> searchWorkflowSummary(
+      String query, String freeText, int start, int count, List<String> sort) {
+    return new SearchResult<>(0, Collections.emptyList());
+  }
 
-    @Override
-    public SearchResult<String> searchTasks(
-            String query, String freeText, int start, int count, List<String> sort) {
-        return new SearchResult<>(0, Collections.emptyList());
-    }
+  @Override
+  public SearchResult<String> searchTasks(
+      String query, String freeText, int start, int count, List<String> sort) {
+    return new SearchResult<>(0, Collections.emptyList());
+  }
 
-    @Override
-    public SearchResult<TaskSummary> searchTaskSummary(
-            String query, String freeText, int start, int count, List<String> sort) {
-        return new SearchResult<>(0, Collections.emptyList());
-    }
+  @Override
+  public SearchResult<TaskSummary> searchTaskSummary(
+      String query, String freeText, int start, int count, List<String> sort) {
+    return new SearchResult<>(0, Collections.emptyList());
+  }
 
-    @Override
-    public void removeWorkflow(String workflowId) {}
+  @Override
+  public void removeWorkflow(String workflowId) {}
 
-    @Override
-    public CompletableFuture<Void> asyncRemoveWorkflow(@Nullable String workflowId) {
-        return CompletableFuture.completedFuture(null);
-    }
+  @Override
+  public CompletableFuture<Void> asyncRemoveWorkflow(@Nullable String workflowId) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-    @Override
-    public void updateWorkflow(@Nullable String workflowInstanceId, String[] keys, Object[] values) {}
+  @Override
+  public void updateWorkflow(@Nullable String workflowInstanceId, String[] keys, Object[] values) {}
 
-    @Override
-    public CompletableFuture<Void> asyncUpdateWorkflow(
-            String workflowInstanceId, String[] keys, Object[] values) {
-        return CompletableFuture.completedFuture(null);
-    }
+  @Override
+  public CompletableFuture<Void> asyncUpdateWorkflow(
+      String workflowInstanceId, String[] keys, Object[] values) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-    @Nullable @Override
-    public String get(@Nullable String workflowInstanceId, String key) {
-        return null;
-    }
+  @Nullable
+  @Override
+  public String get(@Nullable String workflowInstanceId, String key) {
+    return null;
+  }
 
-    @Override
-    public void addTaskExecutionLogs(List<TaskExecLog> logs) {}
+  @Override
+  public void addTaskExecutionLogs(List<TaskExecLog> logs) {}
 
-    @Override
-    public CompletableFuture<Void> asyncAddTaskExecutionLogs(List<TaskExecLog> logs) {
-        return CompletableFuture.completedFuture(null);
-    }
+  @Override
+  public CompletableFuture<Void> asyncAddTaskExecutionLogs(List<TaskExecLog> logs) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-    @Override
-    public List<TaskExecLog> getTaskExecutionLogs(String taskId) {
-        return Collections.emptyList();
-    }
+  @Override
+  public List<TaskExecLog> getTaskExecutionLogs(String taskId) {
+    return Collections.emptyList();
+  }
 
-    @Override
-    public void addEventExecution(EventExecution eventExecution) {}
+  @Override
+  public void addEventExecution(EventExecution eventExecution) {}
 
-    @Override
-    public List<EventExecution> getEventExecutions(String event) {
-        return Collections.emptyList();
-    }
+  @Override
+  public List<EventExecution> getEventExecutions(String event) {
+    return Collections.emptyList();
+  }
 
-    @Nullable @Override
-    public CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution) {
-        return null;
-    }
+  @Nullable
+  @Override
+  public CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution) {
+    return null;
+  }
 
-    @Override
-    public void addMessage(String queue, Message msg) {}
+  @Override
+  public void addMessage(String queue, Message msg) {}
 
-    @Override
-    public CompletableFuture<Void> asyncAddMessage(String queue, Message message) {
-        return CompletableFuture.completedFuture(null);
-    }
+  @Override
+  public CompletableFuture<Void> asyncAddMessage(String queue, Message message) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-    @Override
-    public List<Message> getMessages(String queue) {
-        return Collections.emptyList();
-    }
+  @Override
+  public List<Message> getMessages(String queue) {
+    return Collections.emptyList();
+  }
 
-    @Override
-    public List<String> searchArchivableWorkflows(String indexName, long archiveTtlDays) {
-        return Collections.emptyList();
-    }
+  @Override
+  public List<String> searchArchivableWorkflows(String indexName, long archiveTtlDays) {
+    return Collections.emptyList();
+  }
 
-    @Override
-    public long getWorkflowCount(String query, String freeText) {
-        return 0;
-    }
+  @Override
+  public long getWorkflowCount(String query, String freeText) {
+    return 0;
+  }
 }

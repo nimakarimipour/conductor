@@ -12,13 +12,12 @@
  */
 package com.netflix.conductor.core.events;
 
-import java.util.Map;
-
 import com.netflix.conductor.common.metadata.events.EventHandler;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 public interface ActionProcessor {
 
-    Map<String, Object> execute(
-            EventHandler.Action action, @Nullable Object payloadObject, String event, String messageId);
+  Map<String, Object> execute(
+      EventHandler.Action action, @Nullable Object payloadObject, String event, String messageId);
 }
