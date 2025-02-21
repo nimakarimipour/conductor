@@ -113,7 +113,7 @@ public class MetadataMapperService {
     return workflowDefinition;
   }
 
-  private void populateWorkflowTaskWithDefinition(@Nullable WorkflowTask workflowTask) {
+  private void populateWorkflowTaskWithDefinition(WorkflowTask workflowTask) {
     Utils.checkNotNull(workflowTask, "WorkflowTask cannot be null");
     if (shouldPopulateTaskDefinition(workflowTask)) {
       workflowTask.setTaskDefinition(metadataDAO.getTaskDef(workflowTask.getName()));
