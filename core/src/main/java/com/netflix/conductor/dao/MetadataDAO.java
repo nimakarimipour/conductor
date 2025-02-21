@@ -34,7 +34,7 @@ public interface MetadataDAO {
    * @param name Name of the task
    * @return Task Definition
    */
-  TaskDef getTaskDef(@Nullable String name);
+  TaskDef getTaskDef(String name);
 
   /** @return All the task definitions */
   List<TaskDef> getAllTaskDefs();
