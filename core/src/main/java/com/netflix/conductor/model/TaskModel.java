@@ -210,6 +210,7 @@ public class TaskModel {
     return inputData;
   }
 
+  @Nullable
   public String getReferenceTaskName() {
     return referenceTaskName;
   }
