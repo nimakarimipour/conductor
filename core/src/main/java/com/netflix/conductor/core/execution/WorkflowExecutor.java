@@ -1301,7 +1301,7 @@ public class WorkflowExecutor {
    */
   @Nullable
   @VisibleForTesting
-  String getActiveDomain(String taskType, String[] domains) {
+  String getActiveDomain(@Nullable String taskType, String[] domains) {
     if (domains == null || domains.length == 0) {
       return null;
     }

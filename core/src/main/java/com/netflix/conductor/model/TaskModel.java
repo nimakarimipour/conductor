@@ -64,7 +64,7 @@ public class TaskModel {
     }
   }
 
-  private String taskType;
+  @Nullable private String taskType;
 
   private Status status;
 
@@ -159,6 +159,7 @@ public class TaskModel {
 
   @JsonIgnore private Map<String, Object> outputData = new HashMap<>();
 
+  @Nullable
   public String getTaskType() {
     return taskType;
   }
@@ -251,6 +252,7 @@ public class TaskModel {
     this.pollCount = pollCount;
   }
 
+  @Nullable
   public String getTaskDefName() {
     if (taskDefName == null || "".equals(taskDefName)) {
       taskDefName = taskType;
