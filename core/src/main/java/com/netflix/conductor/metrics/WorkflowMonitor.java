@@ -23,7 +23,6 @@ import com.netflix.conductor.service.MetadataService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,8 +46,8 @@ public class WorkflowMonitor {
   private final int metadataRefreshInterval;
   private final Set<WorkflowSystemTask> asyncSystemTasks;
 
-  @Nullable private List<TaskDef> taskDefs;
-  @Nullable private List<WorkflowDef> workflowDefs;
+  private List<TaskDef> taskDefs;
+  private List<WorkflowDef> workflowDefs;
   private int refreshCounter = 0;
 
   public WorkflowMonitor(
@@ -77,29 +76,25 @@ public class WorkflowMonitor {
         refreshCounter = metadataRefreshInterval;
       }
 
-      if (workflowDefs != null) {
-        workflowDefs.forEach(
-            workflowDef -> {
-              String name = workflowDef.getName();
-              String version = String.valueOf(workflowDef.getVersion());
-              String ownerApp = workflowDef.getOwnerApp();
-              long count = executionDAOFacade.getPendingWorkflowCount(name);
-              Monitors.recordRunningWorkflows(count, name, version, ownerApp);
-            });
-      }
+      workflowDefs.forEach(
+          workflowDef -> {
+            String name = workflowDef.getName();
+            String version = String.valueOf(workflowDef.getVersion());
+            String ownerApp = workflowDef.getOwnerApp();
+            long count = executionDAOFacade.getPendingWorkflowCount(name);
+            Monitors.recordRunningWorkflows(count, name, version, ownerApp);
+          });
 
-      if (taskDefs != null) {
-        taskDefs.forEach(
-            taskDef -> {
-              long size = queueDAO.getSize(taskDef.getName());
-              long inProgressCount = executionDAOFacade.getInProgressTaskCount(taskDef.getName());
-              Monitors.recordQueueDepth(taskDef.getName(), size, taskDef.getOwnerApp());
-              if (taskDef.concurrencyLimit() > 0) {
-                Monitors.recordTaskInProgress(
-                    taskDef.getName(), inProgressCount, taskDef.getOwnerApp());
-              }
-            });
-      }
+      taskDefs.forEach(
+          taskDef -> {
+            long size = queueDAO.getSize(taskDef.getName());
+            long inProgressCount = executionDAOFacade.getInProgressTaskCount(taskDef.getName());
+            Monitors.recordQueueDepth(taskDef.getName(), size, taskDef.getOwnerApp());
+            if (taskDef.concurrencyLimit() > 0) {
+              Monitors.recordTaskInProgress(
+                  taskDef.getName(), inProgressCount, taskDef.getOwnerApp());
+            }
+          });
 
       asyncSystemTasks.forEach(
           workflowSystemTask -> {
