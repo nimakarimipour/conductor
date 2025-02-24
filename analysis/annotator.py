@@ -37,7 +37,7 @@ def run_annotator():
     # commands += ['--disable-parallel-processing']
     # Uncomment to suppress remaining errors
     # commands += ["--suppress-remaining-errors", "org.jspecify.annotations.NullUnmarked"]
-    print(commands)
+    # print(commands)
 
     subprocess.call(commands)
 
