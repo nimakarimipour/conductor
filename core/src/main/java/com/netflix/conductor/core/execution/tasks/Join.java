@@ -54,7 +54,14 @@ public class Join extends WorkflowSystemTask {
         break;
       }
       TaskModel.Status taskStatus = forkedTask.getStatus();
-      hasFailures = !taskStatus.isSuccessful() && !forkedTask.getWorkflowTask().isOptional();
+
+      // Use Optional to handle the nullable getWorkflowTask
+      hasFailures =
+          !taskStatus.isSuccessful()
+              && Optional.ofNullable(forkedTask.getWorkflowTask())
+                  .map(wt -> !wt.isOptional())
+                  .orElse(false);
+
       if (hasFailures) {
         failureReason.append(forkedTask.getReasonForIncompletion()).append(" ");
       }
@@ -70,7 +77,9 @@ public class Join extends WorkflowSystemTask {
       }
 
       // check for optional task failures
-      if (forkedTask.getWorkflowTask().isOptional()
+      if (Optional.ofNullable(forkedTask.getWorkflowTask())
+              .map(WorkflowTask::isOptional)
+              .orElse(false)
           && taskStatus == TaskModel.Status.COMPLETED_WITH_ERRORS) {
         optionalTaskFailures
             .append(String.format("%s/%s", forkedTask.getTaskDefName(), forkedTask.getTaskId()))
