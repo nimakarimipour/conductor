@@ -1454,7 +1454,7 @@ public class WorkflowExecutor {
   }
 
   private boolean rerunWF(
-      String workflowId,
+      @Nullable String workflowId,
       String taskId,
       Map<String, Object> taskInput,
       @Nullable Map<String, Object> workflowInput,
