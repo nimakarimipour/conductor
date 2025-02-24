@@ -1504,7 +1504,7 @@ public class WorkflowExecutor {
     // Now iterate through the tasks and find the "specific" task
     TaskModel rerunFromTask = null;
     for (TaskModel task : workflow.getTasks()) {
-      if (taskId.equals(task.getTaskId())) { // Use taskId.equals to prevent NullPointerException
+      if (task.getTaskId().equals(taskId)) {
         rerunFromTask = task;
         break;
       }
