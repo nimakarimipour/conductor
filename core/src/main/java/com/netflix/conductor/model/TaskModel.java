@@ -365,7 +365,7 @@ public class TaskModel {
     return taskId;
   }
 
-  public void setTaskId(String taskId) {
+  public void setTaskId(@Nullable String taskId) {
     this.taskId = taskId;
   }
 
