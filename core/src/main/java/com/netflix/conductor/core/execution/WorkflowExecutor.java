@@ -271,9 +271,7 @@ public class WorkflowExecutor {
       // update parent's sub workflow task
       TaskModel subWorkflowTask =
           executionDAOFacade.getTaskModel(workflow.getParentWorkflowTaskId());
-      if (Optional.ofNullable(subWorkflowTask.getWorkflowTask())
-          .map(WorkflowTask::isOptional)
-          .orElse(false)) {
+      if (subWorkflowTask.getWorkflowTask().isOptional()) {
         // break out
         LOGGER.info("Sub workflow task {} is optional, skip updating parents", subWorkflowTask);
         break;
@@ -418,17 +416,12 @@ public class WorkflowExecutor {
     taskToBeRetried.setSeq(0);
 
     // perform parameter replacement for retried task
-    Optional<WorkflowTask> optionalWorkflowTask =
-        Optional.ofNullable(taskToBeRetried.getWorkflowTask());
     Map<String, Object> taskInput =
         parametersUtils.getTaskInput(
-            optionalWorkflowTask
-                .map(WorkflowTask::getInputParameters)
-                .orElse(Collections.emptyMap()),
+            taskToBeRetried.getWorkflowTask().getInputParameters(),
             workflow,
-            optionalWorkflowTask.map(WorkflowTask::getTaskDefinition).orElse(null),
+            taskToBeRetried.getWorkflowTask().getTaskDefinition(),
             taskToBeRetried.getTaskId());
-
     taskToBeRetried.getInputData().putAll(taskInput);
 
     task.setRetried(true);
@@ -439,7 +432,7 @@ public class WorkflowExecutor {
   }
 
   private void endExecution(WorkflowModel workflow, @Nullable TaskModel terminateTask) {
-    if (terminateTask != null && terminateTask.getWorkflowTask() != null) {
+    if (terminateTask != null) {
       String terminationStatus =
           (String)
               terminateTask
@@ -1601,19 +1594,12 @@ public class WorkflowExecutor {
   public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
     // Schedule only first loop over task. Rest will be taken care in Decider Service when this
     // task will get completed.
-    Optional<WorkflowTask> optionalWorkflowTask = Optional.ofNullable(loopTask.getWorkflowTask());
-
     List<TaskModel> scheduledLoopOverTasks =
-        optionalWorkflowTask
-            .map(
-                workflowTask ->
-                    deciderService.getTasksToBeScheduled(
-                        workflow,
-                        workflowTask.getLoopOver().get(0),
-                        loopTask.getRetryCount(),
-                        null))
-            .orElse(Collections.emptyList());
-
+        deciderService.getTasksToBeScheduled(
+            workflow,
+            loopTask.getWorkflowTask().getLoopOver().get(0),
+            loopTask.getRetryCount(),
+            null);
     setTaskDomains(scheduledLoopOverTasks, workflow);
     scheduledLoopOverTasks.forEach(
         t -> {
@@ -1629,17 +1615,13 @@ public class WorkflowExecutor {
     return task.getTaskDefinition()
         .orElseGet(
             () ->
-                Optional.ofNullable(task.getWorkflowTask())
-                    .map(WorkflowTask::getName)
-                    .flatMap(name -> Optional.ofNullable(metadataDAO.getTaskDef(name)))
+                Optional.ofNullable(metadataDAO.getTaskDef(task.getWorkflowTask().getName()))
                     .orElseThrow(
                         () -> {
                           String reason =
                               String.format(
                                   "Invalid task specified. Cannot find task by name %s in the task definitions",
-                                  task.getWorkflowTask() != null
-                                      ? task.getWorkflowTask().getName()
-                                      : "unknown");
+                                  task.getWorkflowTask().getName());
                           return new TerminateWorkflowException(reason);
                         }));
   }
