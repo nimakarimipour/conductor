@@ -64,7 +64,7 @@ public class TaskModel {
     }
   }
 
-  @Nullable private String taskType;
+  private String taskType;
 
   private Status status;
 
