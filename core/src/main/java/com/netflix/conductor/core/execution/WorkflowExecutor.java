@@ -1199,13 +1199,12 @@ public class WorkflowExecutor {
       throw new IllegalStateException(errorMsg);
     }
 
-    // If the task is already started then it cannot be skipped
+    // If the task is already started the again it cannot be skipped
     workflow
         .getTasks()
         .forEach(
             task -> {
-              String refTaskName = task.getReferenceTaskName();
-              if (refTaskName != null && refTaskName.equals(taskReferenceName)) {
+              if (task.getReferenceTaskName().equals(taskReferenceName)) {
                 String errorMsg =
                     String.format(
                         "The task referenced %s has already been processed, cannot be skipped",

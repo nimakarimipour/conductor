@@ -461,9 +461,7 @@ public class DeciderService {
       String nextTaskReferenceName = taskToSchedule.getTaskReferenceName();
       if (workflow.getTasks().stream()
           .anyMatch(
-              runningTask ->
-                  runningTask.getReferenceTaskName() != null
-                      && runningTask.getReferenceTaskName().equals(nextTaskReferenceName))) {
+              runningTask -> runningTask.getReferenceTaskName().equals(nextTaskReferenceName))) {
         return Collections.emptyList();
       }
     }
