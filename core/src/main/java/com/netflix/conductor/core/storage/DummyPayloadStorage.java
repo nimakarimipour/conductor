@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  */
 public class DummyPayloadStorage implements ExternalPayloadStorage {
 
-     @Override
+     @Nullable @Override
     public ExternalStorageLocation getLocation(
             Operation operation, PayloadType payloadType, String path) {
         return null;
@@ -33,7 +33,7 @@ public class DummyPayloadStorage implements ExternalPayloadStorage {
     @Override
     public void upload(String path, InputStream payload, long payloadSize) {}
 
-     @Override
+     @Nullable @Override
     public InputStream download(String path) {
         return null;
     }

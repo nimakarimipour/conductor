@@ -259,7 +259,7 @@ public class DefaultEventProcessor {
      *     completed/failed with non-transient error the input event execution, if the execution
      *     failed due to transient error
      */
-    protected EventExecution execute(EventExecution eventExecution, Action action,  Object payload) {
+    protected EventExecution execute(EventExecution eventExecution, Action action,  @Nullable Object payload) {
         try {
             LOGGER.debug(
                     "Executing action: {} for event: {} with messageId: {} with payload: {}",
@@ -306,7 +306,7 @@ public class DefaultEventProcessor {
         return eventExecution;
     }
 
-     private Object getPayloadObject( String payload) {
+     @Nullable private Object getPayloadObject( @Nullable String payload) {
         Object payloadObject = null;
         if (payload != null) {
             try {

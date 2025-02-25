@@ -191,7 +191,7 @@ public class AsyncSystemTaskExecutor {
         }
     }
 
-     private TaskModel loadTaskQuietly(String taskId) {
+     @Nullable private TaskModel loadTaskQuietly(String taskId) {
         try {
             return executionDAOFacade.getTaskModel(taskId);
         } catch (Exception e) {

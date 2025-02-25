@@ -62,7 +62,7 @@ public class Monitors {
      * @param name
      * @param additionalTags
      */
-    private static void counter(String className, String name,  String... additionalTags) {
+    private static void counter(String className, String name,  @Nullable String... additionalTags) {
         getCounter(className, name, additionalTags).increment();
     }
 
@@ -77,7 +77,7 @@ public class Monitors {
      * @param additionalTags
      */
     private static void gauge(
-            String className, String name, long measurement,  String... additionalTags) {
+            String className, String name, long measurement,  @Nullable String... additionalTags) {
         getGauge(className, name, additionalTags).set(measurement);
     }
 
@@ -200,7 +200,7 @@ public class Monitors {
         recordTaskPollError(taskType, NO_DOMAIN, exception);
     }
 
-    public static void recordTaskPollError(String taskType,  String domain, String exception) {
+    public static void recordTaskPollError(String taskType,  @Nullable String domain, String exception) {
         counter(
                 classQualifier,
                 "task_poll_error",
@@ -280,7 +280,7 @@ public class Monitors {
         counter(classQualifier, "task_response_timeout", "taskType", taskType);
     }
 
-    public static void recordTaskPendingTime(String taskType,  String workflowType, long duration) {
+    public static void recordTaskPendingTime(String taskType,  @Nullable String workflowType, long duration) {
         gauge(
                 classQualifier,
                 "task_pending_time",
@@ -292,7 +292,7 @@ public class Monitors {
     }
 
     public static void recordWorkflowTermination(
-            String workflowType, WorkflowModel.Status status,  String ownerApp) {
+            String workflowType, WorkflowModel.Status status,  @Nullable String ownerApp) {
         counter(
                 classQualifier,
                 "workflow_failure",
@@ -305,7 +305,7 @@ public class Monitors {
     }
 
     public static void recordWorkflowStartSuccess(
-            String workflowType, String version,  String ownerApp) {
+            String workflowType, String version,  @Nullable String ownerApp) {
         counter(
                 classQualifier,
                 "workflow_start_success",
@@ -363,7 +363,7 @@ public class Monitors {
                 taskType);
     }
 
-    public static void recordTaskExtendLeaseError(String taskType,  String workflowType) {
+    public static void recordTaskExtendLeaseError(String taskType,  @Nullable String workflowType) {
         counter(
                 classQualifier,
                 "task_extendLease_error",
@@ -384,7 +384,7 @@ public class Monitors {
     }
 
     public static void recordWorkflowCompletion(
-            String workflowType, long duration,  String ownerApp) {
+            String workflowType, long duration,  @Nullable String ownerApp) {
         getTimer(
                         classQualifier,
                         "workflow_execution",

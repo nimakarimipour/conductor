@@ -20,5 +20,5 @@ import javax.annotation.Nullable;
 public interface ActionProcessor {
 
     Map<String, Object> execute(
-            EventHandler.Action action,  Object payloadObject, String event, String messageId);
+            EventHandler.Action action,  @Nullable Object payloadObject, String event, String messageId);
 }
