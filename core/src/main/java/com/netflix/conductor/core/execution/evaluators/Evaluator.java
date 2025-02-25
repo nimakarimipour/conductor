@@ -22,5 +22,5 @@ public interface Evaluator {
      * @param input Input object to the evaluator to help evaluate the expression.
      * @return Return the evaluation result.
      */
-    @Nullable Object evaluate(@Nullable String expression, @Nullable Object input);
+     Object evaluate( String expression,  Object input);
 }

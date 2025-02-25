@@ -120,7 +120,7 @@ public class Event extends WorkflowSystemTask {
         queue.ack(List.of(message));
     }
 
-    @Nullable @VisibleForTesting
+     @VisibleForTesting
     String computeQueueName(WorkflowModel workflow, TaskModel task) {
         String sinkValueRaw = (String) task.getInputData().get("sink");
         Map<String, Object> input = new HashMap<>();
@@ -153,7 +153,7 @@ public class Event extends WorkflowSystemTask {
     }
 
     @VisibleForTesting
-    ObservableQueue getQueue(@Nullable String queueName, String taskId) {
+    ObservableQueue getQueue( String queueName, String taskId) {
         try {
             return eventQueues.getQueue(queueName);
         } catch (IllegalArgumentException e) {

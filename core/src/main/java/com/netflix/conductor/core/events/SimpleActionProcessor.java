@@ -61,7 +61,7 @@ public class SimpleActionProcessor implements ActionProcessor {
     }
 
     public Map<String, Object> execute(
-            Action action, @Nullable Object payloadObject, String event, String messageId) {
+            Action action,  Object payloadObject, String event, String messageId) {
 
         LOGGER.debug(
                 "Executing action: {} for event: {} with messageId:{}",
@@ -102,7 +102,7 @@ public class SimpleActionProcessor implements ActionProcessor {
 
     private Map<String, Object> completeTask(
             Action action,
-            @Nullable Object payload,
+             Object payload,
             TaskDetails taskDetails,
             TaskModel.Status status,
             String event,
@@ -193,7 +193,7 @@ public class SimpleActionProcessor implements ActionProcessor {
     }
 
     private Map<String, Object> startWorkflow(
-            Action action, @Nullable Object payload, String event, String messageId) {
+            Action action,  Object payload, String event, String messageId) {
         StartWorkflow params = action.getStart_workflow();
         Map<String, Object> output = new HashMap<>();
         try {

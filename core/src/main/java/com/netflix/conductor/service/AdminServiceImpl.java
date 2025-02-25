@@ -39,9 +39,9 @@ public class AdminServiceImpl implements AdminService {
     private final ConductorProperties properties;
     private final ExecutionService executionService;
     private final QueueDAO queueDAO;
-    @Nullable private final WorkflowRepairService workflowRepairService;
-    @Nullable private final EventQueueManager eventQueueManager;
-    @Nullable private final BuildProperties buildProperties;
+     private final WorkflowRepairService workflowRepairService;
+     private final EventQueueManager eventQueueManager;
+     private final BuildProperties buildProperties;
 
     public AdminServiceImpl(
             ConductorProperties properties,

@@ -21,18 +21,18 @@ import javax.annotation.Nullable;
 public class TerminateWorkflowException extends RuntimeException {
 
     private final WorkflowModel.Status workflowStatus;
-    @Nullable private final TaskModel task;
+     private final TaskModel task;
 
-    public TerminateWorkflowException(@Nullable String reason) {
+    public TerminateWorkflowException( String reason) {
         this(reason, FAILED);
     }
 
-    public TerminateWorkflowException(@Nullable String reason, WorkflowModel.Status workflowStatus) {
+    public TerminateWorkflowException( String reason, WorkflowModel.Status workflowStatus) {
         this(reason, workflowStatus, null);
     }
 
     public TerminateWorkflowException(
-            @Nullable String reason, WorkflowModel.Status workflowStatus, @Nullable TaskModel task) {
+             String reason, WorkflowModel.Status workflowStatus,  TaskModel task) {
         super(reason);
         this.workflowStatus = workflowStatus;
         this.task = task;
@@ -42,7 +42,7 @@ public class TerminateWorkflowException extends RuntimeException {
         return workflowStatus;
     }
 
-    @Nullable public TaskModel getTask() {
+     public TaskModel getTask() {
         return task;
     }
 }

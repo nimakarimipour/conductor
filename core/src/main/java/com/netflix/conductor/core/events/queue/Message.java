@@ -17,14 +17,14 @@ import javax.annotation.Nullable;
 
 public class Message {
 
-    @Nullable private String payload;
-    @Nullable private String id;
-    @Nullable private String receipt;
+     private String payload;
+     private String id;
+     private String receipt;
     private int priority;
 
     public Message() {}
 
-    public Message(String id, @Nullable String payload, @Nullable String receipt) {
+    public Message(String id,  String payload,  String receipt) {
         this.payload = payload;
         this.id = id;
         this.receipt = receipt;
@@ -40,7 +40,7 @@ public class Message {
     /**
      * @return the payload
      */
-    @Nullable public String getPayload() {
+     public String getPayload() {
         return payload;
     }
 
@@ -54,7 +54,7 @@ public class Message {
     /**
      * @return the id
      */
-    @Nullable public String getId() {
+     public String getId() {
         return id;
     }
 
@@ -68,7 +68,7 @@ public class Message {
     /**
      * @return Receipt attached to the message
      */
-    @Nullable public String getReceipt() {
+     public String getReceipt() {
         return receipt;
     }
 
@@ -98,7 +98,7 @@ public class Message {
         this.priority = priority;
     }
 
-    @Nullable @Override
+     @Override
     public String toString() {
         return id;
     }

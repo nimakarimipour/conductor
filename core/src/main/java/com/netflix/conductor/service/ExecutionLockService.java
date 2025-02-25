@@ -52,15 +52,15 @@ public class ExecutionLockService {
      * @param lockId
      * @return
      */
-    public boolean acquireLock(@Nullable String lockId) {
+    public boolean acquireLock( String lockId) {
         return acquireLock(lockId, lockTimeToTry, lockLeaseTime);
     }
 
-    public boolean acquireLock(@Nullable String lockId, long timeToTryMs) {
+    public boolean acquireLock( String lockId, long timeToTryMs) {
         return acquireLock(lockId, timeToTryMs, lockLeaseTime);
     }
 
-    public boolean acquireLock(@Nullable String lockId, long timeToTryMs, long leaseTimeMs) {
+    public boolean acquireLock( String lockId, long timeToTryMs, long leaseTimeMs) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             if (!lock.acquireLock(lockId, timeToTryMs, leaseTimeMs, TimeUnit.MILLISECONDS)) {
                 LOGGER.debug(
@@ -93,7 +93,7 @@ public class ExecutionLockService {
         }
     }
 
-    public void releaseLock(@Nullable String lockId) {
+    public void releaseLock( String lockId) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             lock.releaseLock(lockId);
             LOGGER.debug(
@@ -103,7 +103,7 @@ public class ExecutionLockService {
         }
     }
 
-    public void deleteLock(@Nullable String lockId) {
+    public void deleteLock( String lockId) {
         if (properties.isWorkflowExecutionLockEnabled()) {
             lock.deleteLock(lockId);
             LOGGER.debug("Thread {} deleted lockId {}.", Thread.currentThread().getId(), lockId);

@@ -172,8 +172,8 @@ public class StartWorkflowOperation implements WorkflowOperation<StartWorkflowIn
      */
     private void validateWorkflow(
             WorkflowDef workflowDef,
-            @Nullable Map<String, Object> workflowInput,
-            @Nullable String externalStoragePath) {
+             Map<String, Object> workflowInput,
+             String externalStoragePath) {
         // Check if the input to the workflow is not null
         if (workflowInput == null && StringUtils.isBlank(externalStoragePath)) {
             LOGGER.error("The input for the workflow '{}' cannot be NULL", workflowDef.getName());

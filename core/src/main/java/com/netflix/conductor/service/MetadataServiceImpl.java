@@ -142,7 +142,7 @@ public class MetadataServiceImpl implements MetadataService {
      * @param version Optional. Version. If null, then retrieves the latest
      * @return Workflow definition
      */
-    public WorkflowDef getWorkflowDef(String name, @Nullable Integer version) {
+    public WorkflowDef getWorkflowDef(String name,  Integer version) {
         Optional<WorkflowDef> workflowDef;
         if (version == null) {
             workflowDef = metadataDAO.getLatestWorkflowDef(name);

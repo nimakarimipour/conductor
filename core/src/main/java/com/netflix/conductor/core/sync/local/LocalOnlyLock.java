@@ -59,7 +59,7 @@ public class LocalOnlyLock implements Lock {
     }
 
     @Override
-    public boolean acquireLock(@Nullable String lockId, long timeToTry, TimeUnit unit) {
+    public boolean acquireLock( String lockId, long timeToTry, TimeUnit unit) {
         try {
             LOGGER.trace("Locking {} with timeout {} {}", lockId, timeToTry, unit);
             return LOCKIDTOSEMAPHOREMAP.get(lockId).tryAcquire(timeToTry, unit);
@@ -70,7 +70,7 @@ public class LocalOnlyLock implements Lock {
     }
 
     @Override
-    public boolean acquireLock(@Nullable String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
+    public boolean acquireLock( String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
         LOGGER.trace(
                 "Locking {} with timeout {} {} for {} {}",
                 lockId,
@@ -87,7 +87,7 @@ public class LocalOnlyLock implements Lock {
         return false;
     }
 
-    private void removeLeaseExpirationJob(@Nullable String lockId) {
+    private void removeLeaseExpirationJob( String lockId) {
         ScheduledFuture<?> schedFuture = SCHEDULEDFUTURES.get(lockId);
         if (schedFuture != null && schedFuture.cancel(false)) {
             SCHEDULEDFUTURES.remove(lockId);
@@ -96,7 +96,7 @@ public class LocalOnlyLock implements Lock {
     }
 
     @Override
-    public void releaseLock(@Nullable String lockId) {
+    public void releaseLock( String lockId) {
         // Synchronized to prevent race condition between semaphore check and actual release
         // The check is here to prevent semaphore getting above 1
         // e.g. in case when lease runs out but release is also called
@@ -110,7 +110,7 @@ public class LocalOnlyLock implements Lock {
     }
 
     @Override
-    public void deleteLock(@Nullable String lockId) {
+    public void deleteLock( String lockId) {
         LOGGER.trace("Deleting {}", lockId);
         LOCKIDTOSEMAPHOREMAP.invalidate(lockId);
     }

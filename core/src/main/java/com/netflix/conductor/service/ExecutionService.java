@@ -75,11 +75,11 @@ public class ExecutionService {
         this.systemTaskRegistry = systemTaskRegistry;
     }
 
-    @Nullable public Task poll(String taskType, String workerId) {
+     public Task poll(String taskType, String workerId) {
         return poll(taskType, workerId, null);
     }
 
-    @Nullable public Task poll(String taskType, String workerId, @Nullable String domain) {
+     public Task poll(String taskType, String workerId,  String domain) {
 
         List<Task> tasks = poll(taskType, workerId, domain, 1, 100);
         if (tasks.isEmpty()) {
@@ -93,7 +93,7 @@ public class ExecutionService {
     }
 
     public List<Task> poll(
-            String taskType, String workerId, @Nullable String domain, int count, int timeoutInMilliSecond) {
+            String taskType, String workerId,  String domain, int count, int timeoutInMilliSecond) {
         if (timeoutInMilliSecond > MAX_POLL_TIMEOUT_MS) {
             throw new IllegalArgumentException(
                     "Long Poll Timeout value cannot be more than 5 seconds");
@@ -186,7 +186,7 @@ public class ExecutionService {
         return tasks;
     }
 
-    @Nullable public Task getLastPollTask(String taskType, String workerId, String domain) {
+     public Task getLastPollTask(String taskType, String workerId, String domain) {
         List<Task> tasks = poll(taskType, workerId, domain, POLL_COUNT_ONE, POLLING_TIMEOUT_IN_MS);
         if (tasks.isEmpty()) {
             LOGGER.debug(
@@ -248,11 +248,11 @@ public class ExecutionService {
         return executionDAOFacade.getTasksByName(taskType, startKey, count);
     }
 
-    @Nullable public Task getTask(String taskId) {
+     public Task getTask(String taskId) {
         return executionDAOFacade.getTask(taskId);
     }
 
-    @Nullable public Task getPendingTaskForWorkflow(String taskReferenceName, String workflowId) {
+     public Task getPendingTaskForWorkflow(String taskReferenceName, String workflowId) {
         return executionDAOFacade.getTasksForWorkflow(workflowId).stream()
                 .filter(task -> !task.getStatus().isTerminal())
                 .filter(task -> task.getReferenceTaskName().equals(taskReferenceName))

@@ -133,7 +133,7 @@ public class WorkflowClient extends ClientBase {
      * @param version      the version of the wokflow definition. Defaults to 1.
      * @return the list of running workflow instances
      */
-    public List<String> getRunningWorkflow(String workflowName, @Nullable Integer version) {
+    public List<String> getRunningWorkflow(String workflowName,  Integer version) {
         Preconditions.checkArgument(
                 StringUtils.isNotBlank(workflowName), "Workflow name cannot be blank");
 
@@ -327,11 +327,11 @@ public class WorkflowClient extends ClientBase {
      * @return the {@link SearchResult} containing the {@link WorkflowSummary} that match the query
      */
     public SearchResult<WorkflowSummary> search(
-            @Nullable Integer start,
-            @Nullable Integer size,
-            @Nullable String sort,
-            @Nullable String freeText,
-            @Nullable String query) {
+             Integer start,
+             Integer size,
+             String sort,
+             String freeText,
+             String query) {
 
         SearchPb.Request searchRequest = createSearchRequest(start, size, sort, freeText, query);
         WorkflowServicePb.WorkflowSummarySearchResult result = stub.search(searchRequest);
@@ -353,11 +353,11 @@ public class WorkflowClient extends ClientBase {
      * @return the {@link SearchResult} containing the {@link Workflow} that match the query
      */
     public SearchResult<Workflow> searchV2(
-            @Nullable Integer start,
-            @Nullable Integer size,
-            @Nullable String sort,
-            @Nullable String freeText,
-            @Nullable String query) {
+             Integer start,
+             Integer size,
+             String sort,
+             String freeText,
+             String query) {
         SearchPb.Request searchRequest = createSearchRequest(start, size, sort, freeText, query);
         WorkflowServicePb.WorkflowSearchResult result = stub.searchV2(searchRequest);
         return new SearchResult<>(

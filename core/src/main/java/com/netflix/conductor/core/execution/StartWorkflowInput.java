@@ -21,19 +21,19 @@ import javax.annotation.Nullable;
 
 public class StartWorkflowInput {
 
-    @Nullable private String name;
-    @Nullable private Integer version;
-    @Nullable private WorkflowDef workflowDefinition;
-    @Nullable private Map<String, Object> workflowInput;
-    @Nullable private String externalInputPayloadStoragePath;
-    @Nullable private String correlationId;
-    @Nullable private Integer priority;
-    @Nullable private String parentWorkflowId;
-    @Nullable private String parentWorkflowTaskId;
-    @Nullable private String event;
-    @Nullable private Map<String, String> taskToDomain;
-    @Nullable private String workflowId;
-    @Nullable private String triggeringWorkflowId;
+     private String name;
+     private Integer version;
+     private WorkflowDef workflowDefinition;
+     private Map<String, Object> workflowInput;
+     private String externalInputPayloadStoragePath;
+     private String correlationId;
+     private Integer priority;
+     private String parentWorkflowId;
+     private String parentWorkflowTaskId;
+     private String event;
+     private Map<String, String> taskToDomain;
+     private String workflowId;
+     private String triggeringWorkflowId;
 
     public StartWorkflowInput() {}
 
@@ -49,7 +49,7 @@ public class StartWorkflowInput {
         this.taskToDomain = startWorkflowRequest.getTaskToDomain();
     }
 
-    @Nullable public String getName() {
+     public String getName() {
         return name;
     }
 
@@ -57,7 +57,7 @@ public class StartWorkflowInput {
         this.name = name;
     }
 
-    @Nullable public Integer getVersion() {
+     public Integer getVersion() {
         return version;
     }
 
@@ -65,15 +65,15 @@ public class StartWorkflowInput {
         this.version = version;
     }
 
-    @Nullable public WorkflowDef getWorkflowDefinition() {
+     public WorkflowDef getWorkflowDefinition() {
         return workflowDefinition;
     }
 
-    public void setWorkflowDefinition(@Nullable WorkflowDef workflowDefinition) {
+    public void setWorkflowDefinition( WorkflowDef workflowDefinition) {
         this.workflowDefinition = workflowDefinition;
     }
 
-    @Nullable public Map<String, Object> getWorkflowInput() {
+     public Map<String, Object> getWorkflowInput() {
         return workflowInput;
     }
 
@@ -81,7 +81,7 @@ public class StartWorkflowInput {
         this.workflowInput = workflowInput;
     }
 
-    @Nullable public String getExternalInputPayloadStoragePath() {
+     public String getExternalInputPayloadStoragePath() {
         return externalInputPayloadStoragePath;
     }
 
@@ -89,15 +89,15 @@ public class StartWorkflowInput {
         this.externalInputPayloadStoragePath = externalInputPayloadStoragePath;
     }
 
-    @Nullable public String getCorrelationId() {
+     public String getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(@Nullable String correlationId) {
+    public void setCorrelationId( String correlationId) {
         this.correlationId = correlationId;
     }
 
-    @Nullable public Integer getPriority() {
+     public Integer getPriority() {
         return priority;
     }
 
@@ -105,15 +105,15 @@ public class StartWorkflowInput {
         this.priority = priority;
     }
 
-    @Nullable public String getParentWorkflowId() {
+     public String getParentWorkflowId() {
         return parentWorkflowId;
     }
 
-    public void setParentWorkflowId(@Nullable String parentWorkflowId) {
+    public void setParentWorkflowId( String parentWorkflowId) {
         this.parentWorkflowId = parentWorkflowId;
     }
 
-    @Nullable public String getParentWorkflowTaskId() {
+     public String getParentWorkflowTaskId() {
         return parentWorkflowTaskId;
     }
 
@@ -121,7 +121,7 @@ public class StartWorkflowInput {
         this.parentWorkflowTaskId = parentWorkflowTaskId;
     }
 
-    @Nullable public String getEvent() {
+     public String getEvent() {
         return event;
     }
 
@@ -129,15 +129,15 @@ public class StartWorkflowInput {
         this.event = event;
     }
 
-    @Nullable public Map<String, String> getTaskToDomain() {
+     public Map<String, String> getTaskToDomain() {
         return taskToDomain;
     }
 
-    public void setTaskToDomain(@Nullable Map<String, String> taskToDomain) {
+    public void setTaskToDomain( Map<String, String> taskToDomain) {
         this.taskToDomain = taskToDomain;
     }
 
-    @Nullable public String getWorkflowId() {
+     public String getWorkflowId() {
         return workflowId;
     }
 
@@ -145,11 +145,11 @@ public class StartWorkflowInput {
         this.workflowId = workflowId;
     }
 
-    @Nullable public String getTriggeringWorkflowId() {
+     public String getTriggeringWorkflowId() {
         return triggeringWorkflowId;
     }
 
-    public void setTriggeringWorkflowId(@Nullable String triggeringWorkflowId) {
+    public void setTriggeringWorkflowId( String triggeringWorkflowId) {
         this.triggeringWorkflowId = triggeringWorkflowId;
     }
 

@@ -37,7 +37,7 @@ public class JsonUtils {
      * @param input the object to be expanded
      * @return the expanded object containing java types like {@link Map} and {@link List}
      */
-    @Nullable public Object expand(@Nullable Object input) {
+     public Object expand( Object input) {
         if (input instanceof List) {
             expandList((List<Object>) input);
             return input;

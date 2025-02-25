@@ -28,13 +28,13 @@ public class NoopLock implements Lock {
     }
 
     @Override
-    public boolean acquireLock(@Nullable String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
+    public boolean acquireLock( String lockId, long timeToTry, long leaseTime, TimeUnit unit) {
         return true;
     }
 
     @Override
-    public void releaseLock(@Nullable String lockId) {}
+    public void releaseLock( String lockId) {}
 
     @Override
-    public void deleteLock(@Nullable String lockId) {}
+    public void deleteLock( String lockId) {}
 }

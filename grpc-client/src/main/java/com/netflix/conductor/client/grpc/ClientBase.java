@@ -45,11 +45,11 @@ abstract class ClientBase {
     }
 
     SearchPb.Request createSearchRequest(
-            @Nullable Integer start,
-            @Nullable Integer size,
-            @Nullable String sort,
-            @Nullable String freeText,
-            @Nullable String query) {
+             Integer start,
+             Integer size,
+             String sort,
+             String freeText,
+             String query) {
         SearchPb.Request.Builder request = SearchPb.Request.newBuilder();
         if (start != null) request.setStart(start);
         if (size != null) request.setSize(size);

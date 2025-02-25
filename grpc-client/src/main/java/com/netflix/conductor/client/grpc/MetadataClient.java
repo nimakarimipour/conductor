@@ -73,7 +73,7 @@ public class MetadataClient extends ClientBase {
      * @param version the version of the workflow def
      * @return Workflow definition for the given workflow and version
      */
-    public WorkflowDef getWorkflowDef(String name, @Nullable Integer version) {
+    public WorkflowDef getWorkflowDef(String name,  Integer version) {
         Preconditions.checkArgument(StringUtils.isNotBlank(name), "name cannot be blank");
 
         MetadataServicePb.GetWorkflowRequest.Builder request =

@@ -94,7 +94,7 @@ public class Terminate extends WorkflowSystemTask {
         return TERMINATION_WORKFLOW_OUTPUT;
     }
 
-    public static Boolean validateInputStatus(@Nullable String status) {
+    public static Boolean validateInputStatus( String status) {
         return COMPLETED.name().equals(status) || FAILED.name().equals(status);
     }
 

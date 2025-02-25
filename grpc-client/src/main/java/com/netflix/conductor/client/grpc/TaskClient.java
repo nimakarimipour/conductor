@@ -195,11 +195,11 @@ public class TaskClient extends ClientBase {
     }
 
     public SearchResult<TaskSummary> search(
-            @Nullable Integer start,
-            @Nullable Integer size,
-            @Nullable String sort,
-            @Nullable String freeText,
-            @Nullable String query) {
+             Integer start,
+             Integer size,
+             String sort,
+             String freeText,
+             String query) {
         SearchPb.Request searchRequest = createSearchRequest(start, size, sort, freeText, query);
         TaskServicePb.TaskSummarySearchResult result = stub.search(searchRequest);
         return new SearchResult<>(
@@ -210,11 +210,11 @@ public class TaskClient extends ClientBase {
     }
 
     public SearchResult<Task> searchV2(
-            @Nullable Integer start,
-            @Nullable Integer size,
-            @Nullable String sort,
-            @Nullable String freeText,
-            @Nullable String query) {
+             Integer start,
+             Integer size,
+             String sort,
+             String freeText,
+             String query) {
         SearchPb.Request searchRequest = createSearchRequest(start, size, sort, freeText, query);
         TaskServicePb.TaskSearchResult result = stub.searchV2(searchRequest);
         return new SearchResult<>(

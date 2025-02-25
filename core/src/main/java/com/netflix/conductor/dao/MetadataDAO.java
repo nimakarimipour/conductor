@@ -63,14 +63,14 @@ public interface MetadataDAO {
      * @param name Name of the workflow
      * @return Workflow Definition
      */
-    Optional<WorkflowDef> getLatestWorkflowDef(@Nullable String name);
+    Optional<WorkflowDef> getLatestWorkflowDef( String name);
 
     /**
      * @param name Name of the workflow
      * @param version version
      * @return workflow definition
      */
-    Optional<WorkflowDef> getWorkflowDef(@Nullable String name, int version);
+    Optional<WorkflowDef> getWorkflowDef( String name, int version);
 
     /**
      * @param name Name of the workflow definition to be removed

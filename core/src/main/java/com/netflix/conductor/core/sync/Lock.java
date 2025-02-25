@@ -58,19 +58,19 @@ public interface Lock {
      * @param unit time unit
      * @return true, if successfully acquired
      */
-    boolean acquireLock(@Nullable String lockId, long timeToTry, long leaseTime, TimeUnit unit);
+    boolean acquireLock( String lockId, long timeToTry, long leaseTime, TimeUnit unit);
 
     /**
      * Release a previously acquired lock
      *
      * @param lockId resource to lock on
      */
-    void releaseLock(@Nullable String lockId);
+    void releaseLock( String lockId);
 
     /**
      * Explicitly cleanup lock resources, if releasing it wouldn't do so.
      *
      * @param lockId resource to lock on
      */
-    void deleteLock(@Nullable String lockId);
+    void deleteLock( String lockId);
 }

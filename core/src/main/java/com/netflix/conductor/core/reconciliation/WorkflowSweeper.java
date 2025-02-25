@@ -47,7 +47,7 @@ public class WorkflowSweeper {
 
     private final ConductorProperties properties;
     private final WorkflowExecutor workflowExecutor;
-    @Nullable private final WorkflowRepairService workflowRepairService;
+     private final WorkflowRepairService workflowRepairService;
     private final QueueDAO queueDAO;
 
     private static final String CLASS_NAME = WorkflowSweeper.class.getSimpleName();

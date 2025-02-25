@@ -64,7 +64,7 @@ public interface IndexDAO {
      * @return List of workflow ids for the matching query
      */
     SearchResult<String> searchWorkflows(
-            String query, String freeText, int start, int count, @Nullable List<String> sort);
+            String query, String freeText, int start, int count,  List<String> sort);
 
     /**
      * @param query SQL like query for workflow search parameters.
@@ -112,7 +112,7 @@ public interface IndexDAO {
      * @param workflowId workflow to be removed
      * @return CompletableFuture of type void
      */
-    CompletableFuture<Void> asyncRemoveWorkflow(@Nullable String workflowId);
+    CompletableFuture<Void> asyncRemoveWorkflow( String workflowId);
 
     /**
      * Updates the index
@@ -121,7 +121,7 @@ public interface IndexDAO {
      * @param keys keys to be updated
      * @param values values. Number of keys and values MUST match.
      */
-    void updateWorkflow(@Nullable String workflowInstanceId, String[] keys, Object[] values);
+    void updateWorkflow( String workflowInstanceId, String[] keys, Object[] values);
 
     /**
      * Updates the index
@@ -141,7 +141,7 @@ public interface IndexDAO {
      * @param key field to be retrieved
      * @return value of the field as string
      */
-    @Nullable String get(@Nullable String workflowInstanceId, String key);
+     String get( String workflowInstanceId, String key);
 
     /**
      * @param logs Task Execution logs to be indexed
@@ -171,7 +171,7 @@ public interface IndexDAO {
      * @param eventExecution Event Execution to be indexed
      * @return CompletableFuture of type void
      */
-    @Nullable CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution);
+     CompletableFuture<Void> asyncAddEventExecution(EventExecution eventExecution);
 
     /**
      * Adds an incoming external message into the index

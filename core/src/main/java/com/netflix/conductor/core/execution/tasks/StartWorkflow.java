@@ -93,7 +93,7 @@ public class StartWorkflow extends WorkflowSystemTask {
         }
     }
 
-    @Nullable private StartWorkflowRequest getRequest(TaskModel taskModel) {
+     private StartWorkflowRequest getRequest(TaskModel taskModel) {
         Map<String, Object> taskInput = taskModel.getInputData();
 
         StartWorkflowRequest startWorkflowRequest = null;
@@ -137,7 +137,7 @@ public class StartWorkflow extends WorkflowSystemTask {
         return startWorkflowRequest;
     }
 
-    private String startWorkflow(StartWorkflowRequest request, @Nullable String workflowId) {
+    private String startWorkflow(StartWorkflowRequest request,  String workflowId) {
         StartWorkflowInput input = new StartWorkflowInput(request);
         input.setTriggeringWorkflowId(workflowId);
         return startWorkflowOperation.execute(input);

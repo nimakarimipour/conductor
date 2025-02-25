@@ -166,7 +166,7 @@ public class DefaultEventQueueProcessor {
         LOGGER.info("QueueListener::STARTED...listening for " + queue.getName());
     }
 
-    @Nullable private String getValue(String fieldName, JsonNode json) {
+     private String getValue(String fieldName, JsonNode json) {
         JsonNode node = json.findValue(fieldName);
         if (node == null) {
             return null;

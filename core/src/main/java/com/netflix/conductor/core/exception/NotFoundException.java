@@ -19,7 +19,7 @@ public class NotFoundException extends RuntimeException {
         super(message);
     }
 
-    public NotFoundException(String message, @Nullable Object... args) {
+    public NotFoundException(String message,  Object... args) {
         super(String.format(message, args));
     }
 

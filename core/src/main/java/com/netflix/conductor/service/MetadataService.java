@@ -83,7 +83,7 @@ public interface MetadataService {
      */
     WorkflowDef getWorkflowDef(
             @NotEmpty(message = "Workflow name cannot be null or empty") String name,
-            @Nullable Integer version);
+             Integer version);
 
     /**
      * @param name Name of the workflow to retrieve

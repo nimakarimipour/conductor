@@ -21,7 +21,7 @@ public class WorkflowContext {
 
     private final String clientApp;
 
-    @Nullable private final String userName;
+     private final String userName;
 
     public WorkflowContext(String clientApp) {
         this.clientApp = clientApp;
@@ -55,7 +55,7 @@ public class WorkflowContext {
     /**
      * @return the username
      */
-    @Nullable public String getUserName() {
+     public String getUserName() {
         return userName;
     }
 }

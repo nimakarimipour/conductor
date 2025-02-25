@@ -71,17 +71,17 @@ public class TaskModel {
 
     private Status status;
 
-    @Nullable private String referenceTaskName;
+     private String referenceTaskName;
 
     private int retryCount;
 
     private int seq;
 
-    @Nullable private String correlationId;
+     private String correlationId;
 
     private int pollCount;
 
-    @Nullable private String taskDefName;
+     private String taskDefName;
 
     /** Time when the task was scheduled */
     private long scheduledTime;
@@ -97,7 +97,7 @@ public class TaskModel {
 
     private int startDelayInSeconds;
 
-    @Nullable private String retriedTaskId;
+     private String retriedTaskId;
 
     private boolean retried;
 
@@ -107,43 +107,43 @@ public class TaskModel {
 
     private long responseTimeoutSeconds;
 
-    @Nullable private String workflowInstanceId;
+     private String workflowInstanceId;
 
-    @Nullable private String workflowType;
+     private String workflowType;
 
-    @Nullable private String taskId;
+     private String taskId;
 
-    @Nullable private String reasonForIncompletion;
+     private String reasonForIncompletion;
 
     private long callbackAfterSeconds;
 
-    @Nullable private String workerId;
+     private String workerId;
 
-    @Nullable private WorkflowTask workflowTask;
+     private WorkflowTask workflowTask;
 
-    @Nullable private String domain;
+     private String domain;
 
-    @Nullable private Any inputMessage;
+     private Any inputMessage;
 
-    @Nullable private Any outputMessage;
+     private Any outputMessage;
 
     private int rateLimitPerFrequency;
 
     private int rateLimitFrequencyInSeconds;
 
-    @Nullable private String externalInputPayloadStoragePath;
+     private String externalInputPayloadStoragePath;
 
-    @Nullable private String externalOutputPayloadStoragePath;
+     private String externalOutputPayloadStoragePath;
 
     private int workflowPriority;
 
-    @Nullable private String executionNameSpace;
+     private String executionNameSpace;
 
-    @Nullable private String isolationGroupId;
+     private String isolationGroupId;
 
     private int iteration;
 
-    @Nullable private String subWorkflowId;
+     private String subWorkflowId;
 
     // Timeout after which the wait task should be marked as completed
     private long waitTimeout;
@@ -162,7 +162,7 @@ public class TaskModel {
 
     @JsonIgnore private Map<String, Object> outputData = new HashMap<>();
 
-    @Nullable
+    
     public String getTaskType() {
         return taskType;
     }
@@ -242,11 +242,11 @@ public class TaskModel {
         this.seq = seq;
     }
 
-    @Nullable public String getCorrelationId() {
+     public String getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(@Nullable String correlationId) {
+    public void setCorrelationId( String correlationId) {
         this.correlationId = correlationId;
     }
 
@@ -309,11 +309,11 @@ public class TaskModel {
         this.startDelayInSeconds = startDelayInSeconds;
     }
 
-    @Nullable public String getRetriedTaskId() {
+     public String getRetriedTaskId() {
         return retriedTaskId;
     }
 
-    public void setRetriedTaskId(@Nullable String retriedTaskId) {
+    public void setRetriedTaskId( String retriedTaskId) {
         this.retriedTaskId = retriedTaskId;
     }
 
@@ -349,15 +349,15 @@ public class TaskModel {
         this.responseTimeoutSeconds = responseTimeoutSeconds;
     }
 
-    @Nullable public String getWorkflowInstanceId() {
+     public String getWorkflowInstanceId() {
         return workflowInstanceId;
     }
 
-    public void setWorkflowInstanceId(@Nullable String workflowInstanceId) {
+    public void setWorkflowInstanceId( String workflowInstanceId) {
         this.workflowInstanceId = workflowInstanceId;
     }
 
-    @Nullable public String getWorkflowType() {
+     public String getWorkflowType() {
         return workflowType;
     }
 
@@ -373,11 +373,11 @@ public class TaskModel {
         this.taskId = taskId;
     }
 
-    @Nullable public String getReasonForIncompletion() {
+     public String getReasonForIncompletion() {
         return reasonForIncompletion;
     }
 
-    public void setReasonForIncompletion(@Nullable String reasonForIncompletion) {
+    public void setReasonForIncompletion( String reasonForIncompletion) {
         this.reasonForIncompletion = reasonForIncompletion;
     }
 
@@ -389,11 +389,11 @@ public class TaskModel {
         this.callbackAfterSeconds = callbackAfterSeconds;
     }
 
-    @Nullable public String getWorkerId() {
+     public String getWorkerId() {
         return workerId;
     }
 
-    public void setWorkerId(@Nullable String workerId) {
+    public void setWorkerId( String workerId) {
         this.workerId = workerId;
     }
 
@@ -444,15 +444,15 @@ public class TaskModel {
         this.workflowTask = workflowTask;
     }
 
-    @Nullable public String getDomain() {
+     public String getDomain() {
         return domain;
     }
 
-    public void setDomain(@Nullable String domain) {
+    public void setDomain( String domain) {
         this.domain = domain;
     }
 
-    @Nullable public Any getInputMessage() {
+     public Any getInputMessage() {
         return inputMessage;
     }
 
@@ -460,7 +460,7 @@ public class TaskModel {
         this.inputMessage = inputMessage;
     }
 
-    @Nullable public Any getOutputMessage() {
+     public Any getOutputMessage() {
         return outputMessage;
     }
 
@@ -484,7 +484,7 @@ public class TaskModel {
         this.rateLimitFrequencyInSeconds = rateLimitFrequencyInSeconds;
     }
 
-    @Nullable public String getExternalInputPayloadStoragePath() {
+     public String getExternalInputPayloadStoragePath() {
         return externalInputPayloadStoragePath;
     }
 
@@ -492,7 +492,7 @@ public class TaskModel {
         this.externalInputPayloadStoragePath = externalInputPayloadStoragePath;
     }
 
-    @Nullable public String getExternalOutputPayloadStoragePath() {
+     public String getExternalOutputPayloadStoragePath() {
         return externalOutputPayloadStoragePath;
     }
 
@@ -508,7 +508,7 @@ public class TaskModel {
         this.workflowPriority = workflowPriority;
     }
 
-    @Nullable public String getExecutionNameSpace() {
+     public String getExecutionNameSpace() {
         return executionNameSpace;
     }
 
@@ -516,7 +516,7 @@ public class TaskModel {
         this.executionNameSpace = executionNameSpace;
     }
 
-    @Nullable public String getIsolationGroupId() {
+     public String getIsolationGroupId() {
         return isolationGroupId;
     }
 
@@ -532,7 +532,7 @@ public class TaskModel {
         this.iteration = iteration;
     }
 
-    @Nullable public String getSubWorkflowId() {
+     public String getSubWorkflowId() {
         // For backwards compatibility
         if (StringUtils.isNotBlank(subWorkflowId)) {
             return subWorkflowId;
@@ -545,7 +545,7 @@ public class TaskModel {
         }
     }
 
-    public void setSubWorkflowId(@Nullable String subWorkflowId) {
+    public void setSubWorkflowId( String subWorkflowId) {
         this.subWorkflowId = subWorkflowId;
         // For backwards compatibility
         if (this.outputData != null && this.outputData.containsKey("subWorkflowId")) {
@@ -856,17 +856,17 @@ public class TaskModel {
         return Task.Status.valueOf(status.name());
     }
 
-    public void addInput(String key, @Nullable Object value) {
+    public void addInput(String key,  Object value) {
         this.inputData.put(key, value);
     }
 
-    public void addInput(@Nullable Map<String, Object> inputData) {
+    public void addInput( Map<String, Object> inputData) {
         if (inputData != null) {
             this.inputData.putAll(inputData);
         }
     }
 
-    public void addOutput(String key, @Nullable Object value) {
+    public void addOutput(String key,  Object value) {
         this.outputData.put(key, value);
     }
 

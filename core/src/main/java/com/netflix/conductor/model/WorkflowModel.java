@@ -58,23 +58,23 @@ public class WorkflowModel {
 
     private long endTime;
 
-    @Nullable private String workflowId;
+     private String workflowId;
 
-    @Nullable private String parentWorkflowId;
+     private String parentWorkflowId;
 
-    @Nullable private String parentWorkflowTaskId;
+     private String parentWorkflowTaskId;
 
     private List<TaskModel> tasks = new LinkedList<>();
 
-    @Nullable private String correlationId;
+     private String correlationId;
 
-    @Nullable private String reRunFromWorkflowId;
+     private String reRunFromWorkflowId;
 
-    @Nullable private String reasonForIncompletion;
+     private String reasonForIncompletion;
 
-    @Nullable private String event;
+     private String event;
 
-    @Nullable private Map<String, String> taskToDomain = new HashMap<>();
+     private Map<String, String> taskToDomain = new HashMap<>();
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Set<String> failedReferenceTaskNames = new HashSet<>();
@@ -84,9 +84,9 @@ public class WorkflowModel {
 
     private WorkflowDef workflowDefinition;
 
-    @Nullable private String externalInputPayloadStoragePath;
+     private String externalInputPayloadStoragePath;
 
-    @Nullable private String externalOutputPayloadStoragePath;
+     private String externalOutputPayloadStoragePath;
 
     private int priority;
 
@@ -94,20 +94,20 @@ public class WorkflowModel {
 
     private long lastRetriedTime;
 
-    @Nullable private String ownerApp;
+     private String ownerApp;
 
-    @Nullable private Long createTime;
+     private Long createTime;
 
-    @Nullable private Long updatedTime;
+     private Long updatedTime;
 
-    @Nullable private String createdBy;
+     private String createdBy;
 
-    @Nullable private String updatedBy;
+     private String updatedBy;
 
     // Capture the failed taskId if the workflow execution failed because of task failure
-    @Nullable private String failedTaskId;
+     private String failedTaskId;
 
-    @Nullable private Status previousStatus;
+     private Status previousStatus;
 
     @JsonIgnore private Map<String, Object> input = new HashMap<>();
 
@@ -117,7 +117,7 @@ public class WorkflowModel {
 
     @JsonIgnore private Map<String, Object> outputPayload = new HashMap<>();
 
-    @Nullable public Status getPreviousStatus() {
+     public Status getPreviousStatus() {
         return previousStatus;
     }
 
@@ -145,7 +145,7 @@ public class WorkflowModel {
         this.endTime = endTime;
     }
 
-    @Nullable public String getWorkflowId() {
+     public String getWorkflowId() {
         return workflowId;
     }
 
@@ -153,19 +153,19 @@ public class WorkflowModel {
         this.workflowId = workflowId;
     }
 
-    @Nullable public String getParentWorkflowId() {
+     public String getParentWorkflowId() {
         return parentWorkflowId;
     }
 
-    public void setParentWorkflowId(@Nullable String parentWorkflowId) {
+    public void setParentWorkflowId( String parentWorkflowId) {
         this.parentWorkflowId = parentWorkflowId;
     }
 
-    @Nullable public String getParentWorkflowTaskId() {
+     public String getParentWorkflowTaskId() {
         return parentWorkflowTaskId;
     }
 
-    public void setParentWorkflowTaskId(@Nullable String parentWorkflowTaskId) {
+    public void setParentWorkflowTaskId( String parentWorkflowTaskId) {
         this.parentWorkflowTaskId = parentWorkflowTaskId;
     }
 
@@ -212,7 +212,7 @@ public class WorkflowModel {
     }
 
     @JsonIgnore
-    public void setOutput(@Nullable Map<String, Object> output) {
+    public void setOutput( Map<String, Object> output) {
         if (output == null) {
             output = new HashMap<>();
         }
@@ -255,15 +255,15 @@ public class WorkflowModel {
         setOutput(output);
     }
 
-    @Nullable public String getCorrelationId() {
+     public String getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(@Nullable String correlationId) {
+    public void setCorrelationId( String correlationId) {
         this.correlationId = correlationId;
     }
 
-    @Nullable public String getReRunFromWorkflowId() {
+     public String getReRunFromWorkflowId() {
         return reRunFromWorkflowId;
     }
 
@@ -271,27 +271,27 @@ public class WorkflowModel {
         this.reRunFromWorkflowId = reRunFromWorkflowId;
     }
 
-    @Nullable public String getReasonForIncompletion() {
+     public String getReasonForIncompletion() {
         return reasonForIncompletion;
     }
 
-    public void setReasonForIncompletion(@Nullable String reasonForIncompletion) {
+    public void setReasonForIncompletion( String reasonForIncompletion) {
         this.reasonForIncompletion = reasonForIncompletion;
     }
 
-    @Nullable public String getEvent() {
+     public String getEvent() {
         return event;
     }
 
-    public void setEvent(@Nullable String event) {
+    public void setEvent( String event) {
         this.event = event;
     }
 
-    @Nullable public Map<String, String> getTaskToDomain() {
+     public Map<String, String> getTaskToDomain() {
         return taskToDomain;
     }
 
-    public void setTaskToDomain(@Nullable Map<String, String> taskToDomain) {
+    public void setTaskToDomain( Map<String, String> taskToDomain) {
         this.taskToDomain = taskToDomain;
     }
 
@@ -319,19 +319,19 @@ public class WorkflowModel {
         this.workflowDefinition = workflowDefinition;
     }
 
-    @Nullable public String getExternalInputPayloadStoragePath() {
+     public String getExternalInputPayloadStoragePath() {
         return externalInputPayloadStoragePath;
     }
 
-    public void setExternalInputPayloadStoragePath(@Nullable String externalInputPayloadStoragePath) {
+    public void setExternalInputPayloadStoragePath( String externalInputPayloadStoragePath) {
         this.externalInputPayloadStoragePath = externalInputPayloadStoragePath;
     }
 
-    @Nullable public String getExternalOutputPayloadStoragePath() {
+     public String getExternalOutputPayloadStoragePath() {
         return externalOutputPayloadStoragePath;
     }
 
-    public void setExternalOutputPayloadStoragePath(@Nullable String externalOutputPayloadStoragePath) {
+    public void setExternalOutputPayloadStoragePath( String externalOutputPayloadStoragePath) {
         this.externalOutputPayloadStoragePath = externalOutputPayloadStoragePath;
     }
 
@@ -362,7 +362,7 @@ public class WorkflowModel {
         this.lastRetriedTime = lastRetriedTime;
     }
 
-    @Nullable public String getOwnerApp() {
+     public String getOwnerApp() {
         return ownerApp;
     }
 
@@ -378,15 +378,15 @@ public class WorkflowModel {
         this.createTime = createTime;
     }
 
-    @Nullable public Long getUpdatedTime() {
+     public Long getUpdatedTime() {
         return updatedTime;
     }
 
-    public void setUpdatedTime(@Nullable Long updatedTime) {
+    public void setUpdatedTime( Long updatedTime) {
         this.updatedTime = updatedTime;
     }
 
-    @Nullable public String getCreatedBy() {
+     public String getCreatedBy() {
         return createdBy;
     }
 
@@ -394,19 +394,19 @@ public class WorkflowModel {
         this.createdBy = createdBy;
     }
 
-    @Nullable public String getUpdatedBy() {
+     public String getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(@Nullable String updatedBy) {
+    public void setUpdatedBy( String updatedBy) {
         this.updatedBy = updatedBy;
     }
 
-    @Nullable public String getFailedTaskId() {
+     public String getFailedTaskId() {
         return failedTaskId;
     }
 
-    public void setFailedTaskId(@Nullable String failedTaskId) {
+    public void setFailedTaskId( String failedTaskId) {
         this.failedTaskId = failedTaskId;
     }
 
@@ -444,7 +444,7 @@ public class WorkflowModel {
         return String.format("%s.%s/%s", name, version, workflowId);
     }
 
-    @Nullable public TaskModel getTaskByRefName(String refName) {
+     public TaskModel getTaskByRefName(String refName) {
         if (refName == null) {
             throw new RuntimeException(
                     "refName passed is null.  Check the workflow execution.  For dynamic tasks, make sure referenceTaskName is set to a not null value");

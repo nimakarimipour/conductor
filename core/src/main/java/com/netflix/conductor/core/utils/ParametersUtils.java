@@ -56,8 +56,8 @@ public class ParametersUtils {
     public Map<String, Object> getTaskInput(
             Map<String, Object> inputParams,
             WorkflowModel workflow,
-            @Nullable TaskDef taskDefinition,
-            @Nullable String taskId) {
+             TaskDef taskDefinition,
+             String taskId) {
         if (workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
             return getTaskInputV2(inputParams, workflow, taskId, taskDefinition);
         }
@@ -67,8 +67,8 @@ public class ParametersUtils {
     public Map<String, Object> getTaskInputV2(
             Map<String, Object> input,
             WorkflowModel workflow,
-            @Nullable String taskId,
-            @Nullable TaskDef taskDefinition) {
+             String taskId,
+             TaskDef taskDefinition) {
         Map<String, Object> inputParams;
 
         if (input != null) {
@@ -158,7 +158,7 @@ public class ParametersUtils {
         }
     }
 
-    public Map<String, Object> replace(Map<String, Object> input, @Nullable Object json) {
+    public Map<String, Object> replace(Map<String, Object> input,  Object json) {
         Object doc;
         if (json instanceof String) {
             doc = JsonPath.parse(json.toString());
@@ -171,7 +171,7 @@ public class ParametersUtils {
         return replace(input, documentContext, null);
     }
 
-    public Object replace(@Nullable String paramString) {
+    public Object replace( String paramString) {
         Configuration option =
                 Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.parse(Collections.emptyMap(), option);
@@ -180,7 +180,7 @@ public class ParametersUtils {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> replace(
-            Map<String, Object> input, DocumentContext documentContext, @Nullable String taskId) {
+            Map<String, Object> input, DocumentContext documentContext,  String taskId) {
         Map<String, Object> result = new HashMap<>();
         for (Entry<String, Object> e : input.entrySet()) {
             Object newValue;
@@ -201,7 +201,7 @@ public class ParametersUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private Object replaceList(List<?> values, @Nullable String taskId, DocumentContext io) {
+    private Object replaceList(List<?> values,  String taskId, DocumentContext io) {
         List<Object> replacedList = new LinkedList<>();
         for (Object listVal : values) {
             if (listVal instanceof String) {
@@ -221,7 +221,7 @@ public class ParametersUtils {
     }
 
     private Object replaceVariables(
-            @Nullable String paramString, DocumentContext documentContext, @Nullable String taskId) {
+             String paramString, DocumentContext documentContext,  String taskId) {
         String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=})");
         Object[] convertedValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {

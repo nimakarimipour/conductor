@@ -26,11 +26,11 @@ import javax.annotation.Nullable;
 public class TaskMapperContext {
 
     private final WorkflowModel workflowModel;
-    @Nullable private final TaskDef taskDefinition;
+     private final TaskDef taskDefinition;
     private final WorkflowTask workflowTask;
     private final Map<String, Object> taskInput;
     private final int retryCount;
-    @Nullable private final String retryTaskId;
+     private final String retryTaskId;
     private final String taskId;
     private final DeciderService deciderService;
 
@@ -70,7 +70,7 @@ public class TaskMapperContext {
         return workflowModel;
     }
 
-    @Nullable public TaskDef getTaskDefinition() {
+     public TaskDef getTaskDefinition() {
         return taskDefinition;
     }
 
@@ -82,7 +82,7 @@ public class TaskMapperContext {
         return retryCount;
     }
 
-    @Nullable public String getRetryTaskId() {
+     public String getRetryTaskId() {
         return retryTaskId;
     }
 
@@ -188,12 +188,12 @@ public class TaskMapperContext {
     public static final class Builder {
 
         private WorkflowModel workflowModel;
-        @Nullable private TaskDef taskDefinition;
+         private TaskDef taskDefinition;
         private WorkflowTask workflowTask;
         private Map<String, Object> taskInput;
         private int retryCount;
-        @Nullable private String retryTaskId;
-        @Nullable private String taskId;
+         private String retryTaskId;
+         private String taskId;
         private DeciderService deciderService;
 
         private Builder() {}
@@ -265,7 +265,7 @@ public class TaskMapperContext {
          * @param val the {@code retryTaskId} to set
          * @return a reference to this Builder
          */
-        public Builder withRetryTaskId(@Nullable String val) {
+        public Builder withRetryTaskId( String val) {
             retryTaskId = val;
             return this;
         }
