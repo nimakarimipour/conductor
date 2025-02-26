@@ -27,5 +27,5 @@ public interface RateLimitingDAO {
      * @return true: If the {@link TaskModel} is rateLimited false: If the {@link TaskModel} is not
      *     rateLimited
      */
-    boolean exceedsRateLimitPerFrequency(TaskModel task,  TaskDef taskDef);
+    boolean exceedsRateLimitPerFrequency(TaskModel task,  @Nullable TaskDef taskDef);
 }

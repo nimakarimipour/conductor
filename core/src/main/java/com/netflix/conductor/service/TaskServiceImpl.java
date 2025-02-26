@@ -60,7 +60,7 @@ public class TaskServiceImpl implements TaskService {
      * @param domain Domain of the workflow
      * @return polled {@link Task}
      */
-     public Task poll(String taskType, String workerId, String domain) {
+     @Nullable public Task poll(String taskType, String workerId, String domain) {
         LOGGER.debug("Task being polled: /tasks/poll/{}?{}&{}", taskType, workerId, domain);
         Task task = executionService.getLastPollTask(taskType, workerId, domain);
         if (task != null) {
@@ -117,7 +117,7 @@ public class TaskServiceImpl implements TaskService {
      * @param taskReferenceName Task reference name.
      * @return instance of {@link Task}
      */
-     public Task getPendingTaskForWorkflow(String workflowId, String taskReferenceName) {
+     @Nullable public Task getPendingTaskForWorkflow(String workflowId, String taskReferenceName) {
         return executionService.getPendingTaskForWorkflow(taskReferenceName, workflowId);
     }
 
@@ -222,7 +222,7 @@ public class TaskServiceImpl implements TaskService {
      * @param taskId id of the task.
      * @return instance of {@link Task}
      */
-     public Task getTask(String taskId) {
+     @Nullable public Task getTask(String taskId) {
         return executionService.getTask(taskId);
     }
 

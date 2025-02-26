@@ -29,7 +29,7 @@ public class JavascriptEvaluator implements Evaluator {
     private static final Logger LOGGER = LoggerFactory.getLogger(JavascriptEvaluator.class);
 
     @Override
-    public Object evaluate( String expression,  Object input) {
+    public Object evaluate( @Nullable String expression,  @Nullable Object input) {
         LOGGER.debug("Javascript evaluator -- expression: {}", expression);
         try {
             // Evaluate the expression by using the Javascript evaluation engine.

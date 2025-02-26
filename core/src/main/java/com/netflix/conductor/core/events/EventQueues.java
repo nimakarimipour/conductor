@@ -53,7 +53,7 @@ public class EventQueues {
     }
 
     @NonNull
-    public ObservableQueue getQueue( String eventType) {
+    public ObservableQueue getQueue( @Nullable String eventType) {
         String event = parametersUtils.replace(eventType).toString();
         int index = event.indexOf(':');
         if (index == -1) {

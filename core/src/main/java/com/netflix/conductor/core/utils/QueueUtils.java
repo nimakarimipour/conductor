@@ -47,7 +47,7 @@ public class QueueUtils {
      * @return domain:taskType@eexecutionNameSpace-isolationGroupId.
      */
     public static String getQueueName(
-            String taskType,  String domain,  String isolationGroupId,  String executionNamespace) {
+            String taskType,  @Nullable String domain,  @Nullable String isolationGroupId,  @Nullable String executionNamespace) {
 
         String queueName;
         if (domain == null) {

@@ -156,7 +156,7 @@ public class WorkflowRepairService {
         return false;
     }
 
-    private boolean verifyAndRepairWorkflow( String workflowId) {
+    private boolean verifyAndRepairWorkflow( @Nullable String workflowId) {
         if (StringUtils.isNotEmpty(workflowId)) {
             String queueName = Utils.DECIDER_QUEUE;
             if (!queueDAO.containsMessage(queueName, workflowId)) {

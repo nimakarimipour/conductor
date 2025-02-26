@@ -79,7 +79,7 @@ public interface ExecutionDAO {
      * @param taskId Task instance id
      * @return Task
      */
-    TaskModel getTask( String taskId);
+    TaskModel getTask( @Nullable String taskId);
 
     /**
      * @param taskIds Task instance ids
@@ -130,7 +130,7 @@ public interface ExecutionDAO {
      * @param workflowType Workflow Type
      * @param workflowId workflow instance id
      */
-    void removeFromPendingWorkflow(String workflowType,  String workflowId);
+    void removeFromPendingWorkflow(String workflowType,  @Nullable String workflowId);
 
     /**
      * @param workflowId workflow instance id
@@ -144,7 +144,7 @@ public interface ExecutionDAO {
      *     Sequence number in Workflow.
      * @return Workflow instance details
      */
-    WorkflowModel getWorkflow( String workflowId, boolean includeTasks);
+    WorkflowModel getWorkflow( @Nullable String workflowId, boolean includeTasks);
 
     /**
      * @param workflowName name of the workflow

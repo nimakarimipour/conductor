@@ -1,4 +1,0 @@
-/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/events/queue/Message.java:25: error: [NullAway] initializer method does not guarantee @NonNull fields payload (line 20), id (line 21), receipt (line 22) are initialized along all control-flow paths (remember to check for exceptions or early returns).
-    public Message() {}
-           ^
-    (see http://t.uber.com/nullaway )
