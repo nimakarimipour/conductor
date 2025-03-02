@@ -134,15 +134,23 @@ public class WorkflowSweeper {
           if (taskDef.getPollTimeoutSeconds() != null && taskDef.getPollTimeoutSeconds() != 0) {
             postponeDurationSeconds = taskDef.getPollTimeoutSeconds() + 1;
           } else {
+            WorkflowDef workflowDef =
+                Optional.ofNullable(workflowModel.getWorkflowDefinition())
+                    .orElseThrow(
+                        () -> new IllegalStateException("Workflow definition cannot be null"));
             postponeDurationSeconds =
-                (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                    ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1
+                (workflowDef.getTimeoutSeconds() != 0)
+                    ? workflowDef.getTimeoutSeconds() + 1
                     : workflowOffsetTimeout;
           }
         } else {
+          WorkflowDef workflowDef =
+              Optional.ofNullable(workflowModel.getWorkflowDefinition())
+                  .orElseThrow(
+                      () -> new IllegalStateException("Workflow definition cannot be null"));
           postponeDurationSeconds =
-              (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                  ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1
+              (workflowDef.getTimeoutSeconds() != 0)
+                  ? workflowDef.getTimeoutSeconds() + 1
                   : workflowOffsetTimeout;
         }
         break;

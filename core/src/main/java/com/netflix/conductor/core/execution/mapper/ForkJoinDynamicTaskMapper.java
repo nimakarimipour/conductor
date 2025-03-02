@@ -143,19 +143,12 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
     List<String> joinOnTaskRefs = new LinkedList<>();
     // Add each dynamic task to the mapped tasks and also get the last dynamic task in the list,
     // which indicates that the following task after that needs to be a join task
-    for (WorkflowTask dynForkTask :
-        dynForkTasks) { // TODO this is a cyclic dependency, break it out using function
-      // composition
+    for (WorkflowTask dynForkTask : dynForkTasks) {
       List<TaskModel> forkedTasks =
           taskMapperContext
               .getDeciderService()
               .getTasksToBeScheduled(workflowModel, dynForkTask, retryCount);
 
-      // It's an error state if no forkedTasks can be decided upon. In the cases where we've
-      // seen
-      // this happen is when a dynamic task is attempting to be created here, but a task with
-      // the
-      // same reference name has already been created in the Workflow.
       if (forkedTasks == null || forkedTasks.isEmpty()) {
         Optional<String> existingTaskRefName =
             workflowModel.getTasks().stream()
@@ -167,7 +160,6 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
                 .filter(refTaskName -> refTaskName.equals(dynForkTask.getTaskReferenceName()))
                 .findAny();
 
-        // Construct an informative error message
         String terminateMessage =
             "No dynamic tasks could be created for the Workflow: "
                 + workflowModel.toShortString()
@@ -192,18 +184,20 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
         }
       }
       mappedTasks.addAll(forkedTasks);
-      // Get the last of the dynamic tasks so that the join can be performed once this task is
-      // done
       TaskModel last = forkedTasks.get(forkedTasks.size() - 1);
       joinOnTaskRefs.add(last.getReferenceTaskName());
     }
 
-    // From the workflow definition get the next task and make sure that it is a JOIN task.
-    // The dynamic fork tasks need to be followed by a join task
+    // Ensure workflow definition is present before using it
     WorkflowTask joinWorkflowTask =
-        workflowModel.getWorkflowDefinition().getNextTask(workflowTask.getTaskReferenceName());
+        Optional.ofNullable(workflowModel.getWorkflowDefinition())
+            .map(wd -> wd.getNextTask(workflowTask.getTaskReferenceName()))
+            .orElseThrow(
+                () ->
+                    new TerminateWorkflowException(
+                        "Workflow definition is missing or dynamic join definition is not followed by a join task. Check the workflow definition."));
 
-    if (joinWorkflowTask == null || !joinWorkflowTask.getType().equals(TaskType.JOIN.name())) {
+    if (!joinWorkflowTask.getType().equals(TaskType.JOIN.name())) {
       throw new TerminateWorkflowException(
           "Dynamic join definition is not followed by a join task.  Check the workflow definition.");
     }

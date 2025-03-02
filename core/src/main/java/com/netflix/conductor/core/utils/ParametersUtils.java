@@ -53,19 +53,21 @@ public class ParametersUtils {
   public Map<String, Object> getTaskInput(
       Map<String, Object> inputParams,
       WorkflowModel workflow,
-      @Nullable TaskDef taskDefinition,
-      @Nullable String taskId) {
-    if (workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
+      TaskDef taskDefinition,
+      String taskId) {
+
+    WorkflowDef workflowDef =
+        Optional.ofNullable(workflow.getWorkflowDefinition())
+            .orElseThrow(() -> new IllegalStateException("Workflow definition is missing"));
+
+    if (workflowDef.getSchemaVersion() > 1) {
       return getTaskInputV2(inputParams, workflow, taskId, taskDefinition);
     }
     return getTaskInputV1(workflow, inputParams);
   }
 
   public Map<String, Object> getTaskInputV2(
-      Map<String, Object> input,
-      WorkflowModel workflow,
-      @Nullable String taskId,
-      @Nullable TaskDef taskDefinition) {
+      Map<String, Object> input, WorkflowModel workflow, String taskId, TaskDef taskDefinition) {
     Map<String, Object> inputParams;
 
     if (input != null) {
@@ -90,12 +92,15 @@ public class ParametersUtils {
     workflowParams.put("version", workflow.getWorkflowVersion());
     workflowParams.put("correlationId", workflow.getCorrelationId());
     workflowParams.put("reasonForIncompletion", workflow.getReasonForIncompletion());
-    workflowParams.put("schemaVersion", workflow.getWorkflowDefinition().getSchemaVersion());
+
+    Optional.ofNullable(workflow.getWorkflowDefinition())
+        .ifPresent(
+            definition -> workflowParams.put("schemaVersion", definition.getSchemaVersion()));
+
     workflowParams.put("variables", workflow.getVariables());
 
     inputMap.put("workflow", workflowParams);
 
-    // For new workflow being started the list of tasks will be empty
     workflow.getTasks().stream()
         .map(TaskModel::getReferenceTaskName)
         .map(workflow::getTaskByRefName)
@@ -134,8 +139,6 @@ public class ParametersUtils {
     DocumentContext documentContext = JsonPath.parse(inputMap, option);
     Map<String, Object> replacedTaskInput = replace(inputParams, documentContext, taskId);
     if (taskDefinition != null && taskDefinition.getInputTemplate() != null) {
-      // If input for a given key resolves to null, try replacing it with one from
-      // inputTemplate, if it exists.
       replacedTaskInput.replaceAll(
           (key, value) -> (value == null) ? taskDefinition.getInputTemplate().get(key) : value);
     }

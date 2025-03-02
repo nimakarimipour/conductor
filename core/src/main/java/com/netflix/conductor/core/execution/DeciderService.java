@@ -174,9 +174,9 @@ public class DeciderService {
       if (taskDefinition.isEmpty()) {
         taskDefinition =
             Optional.ofNullable(
-                    workflow
-                        .getWorkflowDefinition()
-                        .getTaskByRefName(pendingTask.getReferenceTaskName()))
+                    Optional.ofNullable(workflow.getWorkflowDefinition())
+                        .map(def -> def.getTaskByRefName(pendingTask.getReferenceTaskName()))
+                        .orElse(null))
                 .map(WorkflowTask::getTaskDefinition);
       }
 
@@ -194,7 +194,9 @@ public class DeciderService {
         WorkflowTask workflowTask = pendingTask.getWorkflowTask();
         if (workflowTask == null) {
           workflowTask =
-              workflow.getWorkflowDefinition().getTaskByRefName(pendingTask.getReferenceTaskName());
+              Optional.ofNullable(workflow.getWorkflowDefinition())
+                  .map(def -> def.getTaskByRefName(pendingTask.getReferenceTaskName()))
+                  .orElse(null);
         }
 
         Optional<TaskModel> retryTask =
@@ -393,7 +395,7 @@ public class DeciderService {
         return false;
       }
 
-      // If there is a TERMINATE task that has been executed successfuly then the workflow
+      // If there is a TERMINATE task that has been executed successfully then the workflow
       // should be marked as completed.
       if (TERMINATE.name().equals(task.getTaskType())
           && task.getStatus().isTerminal()
@@ -410,7 +412,11 @@ public class DeciderService {
       return false;
     }
 
-    List<WorkflowTask> workflowTasks = workflow.getWorkflowDefinition().getTasks();
+    WorkflowDef workflowDefinition =
+        Optional.ofNullable(workflow.getWorkflowDefinition())
+            .orElseThrow(() -> new IllegalStateException("Workflow definition cannot be null"));
+
+    List<WorkflowTask> workflowTasks = workflowDefinition.getTasks();
 
     for (WorkflowTask wftask : workflowTasks) {
       TaskModel.Status status = taskStatusMap.get(wftask.getTaskReferenceName());
@@ -477,6 +483,9 @@ public class DeciderService {
     final WorkflowDef def = workflow.getWorkflowDefinition();
 
     String taskReferenceName = task.getReferenceTaskName();
+    if (def == null) {
+      return null;
+    }
     WorkflowTask taskToSchedule = def.getNextTask(taskReferenceName);
     while (isTaskSkipped(taskToSchedule, workflow)) {
       taskToSchedule = def.getNextTask(taskToSchedule.getTaskReferenceName());
@@ -486,10 +495,7 @@ public class DeciderService {
 
   @VisibleForTesting
   Optional<TaskModel> retry(
-      @Nullable TaskDef taskDefinition,
-      WorkflowTask workflowTask,
-      TaskModel task,
-      WorkflowModel workflow)
+      TaskDef taskDefinition, WorkflowTask workflowTask, TaskModel task, WorkflowModel workflow)
       throws TerminateWorkflowException {
 
     int retryCount = task.getRetryCount();
@@ -574,7 +580,15 @@ public class DeciderService {
     } else {
       rescheduled.addInput(task.getInputData());
     }
-    if (workflowTask != null && workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
+    Optional<WorkflowDef> workflowDefOpt = Optional.ofNullable(workflow.getWorkflowDefinition());
+    if (workflowTask != null
+        && workflowDefOpt
+                .map(WorkflowDef::getSchemaVersion)
+                .orElseThrow(
+                    () ->
+                        new TerminateWorkflowException(
+                            "Missing workflow definition", WorkflowModel.Status.FAILED))
+            > 1) {
       Map<String, Object> taskInput =
           parametersUtils.getTaskInputV2(
               workflowTask.getInputParameters(), workflow, rescheduled.getTaskId(), taskDefinition);
