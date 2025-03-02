@@ -45,6 +45,7 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -1504,7 +1505,7 @@ public class WorkflowExecutor {
     // Now iterate through the tasks and find the "specific" task
     TaskModel rerunFromTask = null;
     for (TaskModel task : workflow.getTasks()) {
-      if (task.getTaskId().equals(taskId)) {
+      if (Nullability.castToNonnull(task.getTaskId(), "reason...").equals(taskId)) {
         rerunFromTask = task;
         break;
       }
