@@ -24,7 +24,7 @@ public class Message {
 
   public Message() {}
 
-  public Message(String id, @Nullable String payload, @Nullable String receipt) {
+  public Message(@Nullable String id, @Nullable String payload, @Nullable String receipt) {
     this.payload = payload;
     this.id = id;
     this.receipt = receipt;
