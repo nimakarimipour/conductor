@@ -18,6 +18,7 @@ import com.netflix.conductor.common.utils.TaskUtils;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -70,7 +71,7 @@ public class Join extends WorkflowSystemTask {
       }
 
       // check for optional task failures
-      if (forkedTask.getWorkflowTask().isOptional()
+      if (Nullability.castToNonnull(forkedTask.getWorkflowTask(), "reason...").isOptional()
           && taskStatus == TaskModel.Status.COMPLETED_WITH_ERRORS) {
         optionalTaskFailures
             .append(String.format("%s/%s", forkedTask.getTaskDefName(), forkedTask.getTaskId()))
