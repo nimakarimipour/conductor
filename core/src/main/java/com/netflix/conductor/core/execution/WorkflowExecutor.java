@@ -271,16 +271,11 @@ public class WorkflowExecutor {
       // update parent's sub workflow task
       TaskModel subWorkflowTask =
           executionDAOFacade.getTaskModel(workflow.getParentWorkflowTaskId());
-
-      // Fix: Check for null workflowTask before calling isOptional
-      if (Optional.ofNullable(subWorkflowTask.getWorkflowTask())
-          .map(WorkflowTask::isOptional)
-          .orElse(false)) {
+      if (subWorkflowTask.getWorkflowTask().isOptional()) {
         // break out
         LOGGER.info("Sub workflow task {} is optional, skip updating parents", subWorkflowTask);
         break;
       }
-
       subWorkflowTask.setSubworkflowChanged(true);
       subWorkflowTask.setStatus(IN_PROGRESS);
       executionDAOFacade.updateTask(subWorkflowTask);
@@ -422,26 +417,22 @@ public class WorkflowExecutor {
 
     // perform parameter replacement for retried task
     Map<String, Object> taskInput =
-        Optional.ofNullable(taskToBeRetried.getWorkflowTask())
-            .map(
-                workflowTask ->
-                    parametersUtils.getTaskInput(
-                        workflowTask.getInputParameters(),
-                        workflow,
-                        workflowTask.getTaskDefinition(),
-                        taskToBeRetried.getTaskId()))
-            .orElse(Collections.emptyMap());
-
+        parametersUtils.getTaskInput(
+            taskToBeRetried.getWorkflowTask().getInputParameters(),
+            workflow,
+            taskToBeRetried.getWorkflowTask().getTaskDefinition(),
+            taskToBeRetried.getTaskId());
     taskToBeRetried.getInputData().putAll(taskInput);
 
     task.setRetried(true);
-    // since this task is being retried and a retry has been computed, task lifecycle is complete
+    // since this task is being retried and a retry has been computed, task lifecycle is
+    // complete
     task.setExecuted(true);
     return taskToBeRetried;
   }
 
-  private void endExecution(WorkflowModel workflow, TaskModel terminateTask) {
-    if (terminateTask != null && terminateTask.getWorkflowTask() != null) {
+  private void endExecution(WorkflowModel workflow, @Nullable TaskModel terminateTask) {
+    if (terminateTask != null) {
       String terminationStatus =
           (String)
               terminateTask
@@ -454,14 +445,12 @@ public class WorkflowExecutor {
                   .getWorkflowTask()
                   .getInputParameters()
                   .get(Terminate.getTerminationReasonParameter());
-
       if (StringUtils.isBlank(reason)) {
         reason =
             String.format(
                 "Workflow is %s by TERMINATE task: %s",
                 terminationStatus, terminateTask.getTaskId());
       }
-
       if (WorkflowModel.Status.FAILED.name().equals(terminationStatus)) {
         workflow.setStatus(WorkflowModel.Status.FAILED);
         workflow =
@@ -1605,42 +1594,36 @@ public class WorkflowExecutor {
   public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
     // Schedule only first loop over task. Rest will be taken care in Decider Service when this
     // task will get completed.
-    Optional<WorkflowTask> optionalWorkflowTask = Optional.ofNullable(loopTask.getWorkflowTask());
-    optionalWorkflowTask.ifPresent(
-        workflowTask -> {
-          List<TaskModel> scheduledLoopOverTasks =
-              deciderService.getTasksToBeScheduled(
-                  workflow, workflowTask.getLoopOver().get(0), loopTask.getRetryCount(), null);
-          setTaskDomains(scheduledLoopOverTasks, workflow);
-          scheduledLoopOverTasks.forEach(
-              t -> {
-                t.setReferenceTaskName(
-                    TaskUtils.appendIteration(t.getReferenceTaskName(), loopTask.getIteration()));
-                t.setIteration(loopTask.getIteration());
-              });
-          scheduleTask(workflow, scheduledLoopOverTasks);
-          workflow.getTasks().addAll(scheduledLoopOverTasks);
+    List<TaskModel> scheduledLoopOverTasks =
+        deciderService.getTasksToBeScheduled(
+            workflow,
+            loopTask.getWorkflowTask().getLoopOver().get(0),
+            loopTask.getRetryCount(),
+            null);
+    setTaskDomains(scheduledLoopOverTasks, workflow);
+    scheduledLoopOverTasks.forEach(
+        t -> {
+          t.setReferenceTaskName(
+              TaskUtils.appendIteration(t.getReferenceTaskName(), loopTask.getIteration()));
+          t.setIteration(loopTask.getIteration());
         });
+    scheduleTask(workflow, scheduledLoopOverTasks);
+    workflow.getTasks().addAll(scheduledLoopOverTasks);
   }
 
   public TaskDef getTaskDefinition(TaskModel task) {
     return task.getTaskDefinition()
         .orElseGet(
-            () -> {
-              return Optional.ofNullable(task.getWorkflowTask())
-                  .map(WorkflowTask::getName)
-                  .flatMap(name -> Optional.ofNullable(metadataDAO.getTaskDef(name)))
-                  .orElseThrow(
-                      () -> {
-                        String reason =
-                            String.format(
-                                "Invalid task specified. Cannot find task by name %s in the task definitions",
-                                Optional.ofNullable(task.getWorkflowTask())
-                                    .map(WorkflowTask::getName)
-                                    .orElse("unknown"));
-                        return new TerminateWorkflowException(reason);
-                      });
-            });
+            () ->
+                Optional.ofNullable(metadataDAO.getTaskDef(task.getWorkflowTask().getName()))
+                    .orElseThrow(
+                        () -> {
+                          String reason =
+                              String.format(
+                                  "Invalid task specified. Cannot find task by name %s in the task definitions",
+                                  task.getWorkflowTask().getName());
+                          return new TerminateWorkflowException(reason);
+                        }));
   }
 
   @VisibleForTesting
