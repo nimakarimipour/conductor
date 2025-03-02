@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,14 +36,14 @@ public class SystemTaskRegistry {
             .collect(Collectors.toMap(WorkflowSystemTask::getTaskType, Function.identity()));
   }
 
-  public WorkflowSystemTask get(@Nullable String taskType) {
+  public WorkflowSystemTask get(String taskType) {
     return Optional.ofNullable(registry.get(taskType))
         .orElseThrow(
             () ->
                 new IllegalStateException(taskType + "not found in " + getClass().getSimpleName()));
   }
 
-  public boolean isSystemTask(@Nullable String taskType) {
+  public boolean isSystemTask(String taskType) {
     return registry.containsKey(taskType);
   }
 }

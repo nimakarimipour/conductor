@@ -45,7 +45,6 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
-import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -320,8 +319,7 @@ public class WorkflowExecutor {
           retriableMap.put(task.getReferenceTaskName(), task);
           break;
         case CANCELED:
-          if (Nullability.castToNonnull(task.getTaskType(), "reason...")
-                  .equalsIgnoreCase(TaskType.JOIN.toString())
+          if (task.getTaskType().equalsIgnoreCase(TaskType.JOIN.toString())
               || task.getTaskType().equalsIgnoreCase(TaskType.DO_WHILE.toString())) {
             task.setStatus(IN_PROGRESS);
             addTaskToQueue(task);
@@ -1053,7 +1051,7 @@ public class WorkflowExecutor {
       return workflow.getTasks().stream()
           .filter(
               t ->
-                  TaskType.TASK_TYPE_SUB_WORKFLOW.equals(t.getTaskType())
+                  t.getTaskType().equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
                       && t.isSubworkflowChanged()
                       && !t.isRetried())
           .findFirst();
@@ -1303,7 +1301,7 @@ public class WorkflowExecutor {
    */
   @Nullable
   @VisibleForTesting
-  String getActiveDomain(@Nullable String taskType, String[] domains) {
+  String getActiveDomain(String taskType, String[] domains) {
     if (domains == null || domains.length == 0) {
       return null;
     }
@@ -1515,8 +1513,7 @@ public class WorkflowExecutor {
     // If not found look into sub workflows
     if (rerunFromTask == null) {
       for (TaskModel task : workflow.getTasks()) {
-        if (Nullability.castToNonnull(task.getTaskType(), "reason...")
-            .equalsIgnoreCase(TaskType.TASK_TYPE_SUB_WORKFLOW)) {
+        if (task.getTaskType().equalsIgnoreCase(TaskType.TASK_TYPE_SUB_WORKFLOW)) {
           String subWorkflowId = task.getSubWorkflowId();
           if (rerunWF(subWorkflowId, taskId, taskInput, null, null)) {
             rerunFromTask = task;
