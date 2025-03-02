@@ -361,7 +361,6 @@ public class TaskModel {
     this.workflowType = workflowType;
   }
 
-  @Nullable
   public String getTaskId() {
     return taskId;
   }

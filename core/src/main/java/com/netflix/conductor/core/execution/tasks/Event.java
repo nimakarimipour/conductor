@@ -140,7 +140,7 @@ public class Event extends WorkflowSystemTask {
   }
 
   @VisibleForTesting
-  ObservableQueue getQueue(@Nullable String queueName, @Nullable String taskId) {
+  ObservableQueue getQueue(@Nullable String queueName, String taskId) {
     try {
       return eventQueues.getQueue(queueName);
     } catch (IllegalArgumentException e) {
