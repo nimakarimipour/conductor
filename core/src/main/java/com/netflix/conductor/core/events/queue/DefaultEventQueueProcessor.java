@@ -25,6 +25,7 @@ import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.TaskModel.Status;
 import com.netflix.conductor.model.WorkflowModel;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.*;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -108,7 +109,8 @@ public class DefaultEventQueueProcessor {
                           .filter(
                               task ->
                                   !task.getStatus().isTerminal()
-                                      && task.getTaskType().equals(TASK_TYPE_WAIT))
+                                      && Nullability.castToNonnull(task.getTaskType(), "reason...")
+                                          .equals(TASK_TYPE_WAIT))
                           .findFirst();
                 } else {
                   optionalTaskModel =
