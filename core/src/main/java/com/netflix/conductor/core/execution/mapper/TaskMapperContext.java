@@ -190,7 +190,7 @@ public class TaskMapperContext {
 
     private WorkflowModel workflowModel;
     @Nullable private TaskDef taskDefinition;
-    @Nullable private WorkflowTask workflowTask;
+    private WorkflowTask workflowTask;
     private Map<String, Object> taskInput;
     private int retryCount;
     @Nullable private String retryTaskId;
