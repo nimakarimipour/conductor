@@ -45,6 +45,7 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -319,7 +320,8 @@ public class WorkflowExecutor {
           retriableMap.put(task.getReferenceTaskName(), task);
           break;
         case CANCELED:
-          if (task.getTaskType().equalsIgnoreCase(TaskType.JOIN.toString())
+          if (Nullability.castToNonnull(task.getTaskType(), "reason...")
+                  .equalsIgnoreCase(TaskType.JOIN.toString())
               || task.getTaskType().equalsIgnoreCase(TaskType.DO_WHILE.toString())) {
             task.setStatus(IN_PROGRESS);
             addTaskToQueue(task);
@@ -1051,7 +1053,7 @@ public class WorkflowExecutor {
       return workflow.getTasks().stream()
           .filter(
               t ->
-                  t.getTaskType().equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
+                  TaskType.TASK_TYPE_SUB_WORKFLOW.equals(t.getTaskType())
                       && t.isSubworkflowChanged()
                       && !t.isRetried())
           .findFirst();
@@ -1301,7 +1303,7 @@ public class WorkflowExecutor {
    */
   @Nullable
   @VisibleForTesting
-  String getActiveDomain(String taskType, String[] domains) {
+  String getActiveDomain(@Nullable String taskType, String[] domains) {
     if (domains == null || domains.length == 0) {
       return null;
     }
@@ -1566,7 +1568,8 @@ public class WorkflowExecutor {
       rerunFromTask.clearOutput();
       rerunFromTask.setRetried(false);
       rerunFromTask.setExecuted(false);
-      if (rerunFromTask.getTaskType().equalsIgnoreCase(TaskType.TASK_TYPE_SUB_WORKFLOW)) {
+      if (Nullability.castToNonnull(rerunFromTask.getTaskType(), "reason...")
+          .equalsIgnoreCase(TaskType.TASK_TYPE_SUB_WORKFLOW)) {
         // if task is sub workflow set task as IN_PROGRESS and reset start time
         rerunFromTask.setStatus(IN_PROGRESS);
         rerunFromTask.setStartTime(System.currentTimeMillis());

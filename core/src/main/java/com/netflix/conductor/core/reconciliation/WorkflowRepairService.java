@@ -24,6 +24,7 @@ import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -137,7 +138,8 @@ public class WorkflowRepairService {
         Monitors.recordQueueMessageRepushFromRepairService(task.getTaskDefName());
         return true;
       }
-    } else if (task.getTaskType().equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
+    } else if (Nullability.castToNonnull(task.getTaskType(), "reason...")
+            .equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
         && task.getStatus() == TaskModel.Status.IN_PROGRESS) {
       WorkflowModel subWorkflow = executionDAO.getWorkflow(task.getSubWorkflowId(), false);
       if (subWorkflow.getStatus().isTerminal()) {

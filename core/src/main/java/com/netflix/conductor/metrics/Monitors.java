@@ -174,13 +174,13 @@ public class Monitors {
     getCounter(classQualifier, name, additionalTags).increment(count);
   }
 
-  public static void recordQueueWaitTime(String taskType, long queueWaitTime) {
+  public static void recordQueueWaitTime(@Nullable String taskType, long queueWaitTime) {
     getTimer(classQualifier, "task_queue_wait", "taskType", taskType)
         .record(queueWaitTime, TimeUnit.MILLISECONDS);
   }
 
   public static void recordTaskExecutionTime(
-      String taskType, long duration, boolean includesRetries, TaskModel.Status status) {
+      @Nullable String taskType, long duration, boolean includesRetries, TaskModel.Status status) {
     getTimer(
             classQualifier,
             "task_execution",
@@ -268,16 +268,16 @@ public class Monitors {
         classQualifier, "tasks_in_workflow", count, "workflowName", name, "version", version);
   }
 
-  public static void recordTaskTimeout(String taskType) {
+  public static void recordTaskTimeout(@Nullable String taskType) {
     counter(classQualifier, "task_timeout", "taskType", taskType);
   }
 
-  public static void recordTaskResponseTimeout(String taskType) {
+  public static void recordTaskResponseTimeout(@Nullable String taskType) {
     counter(classQualifier, "task_response_timeout", "taskType", taskType);
   }
 
   public static void recordTaskPendingTime(
-      String taskType, @Nullable String workflowType, long duration) {
+      @Nullable String taskType, @Nullable String workflowType, long duration) {
     gauge(
         classQualifier,
         "task_pending_time",
@@ -325,7 +325,7 @@ public class Monitors {
   }
 
   public static void recordUpdateConflict(
-      String taskType, String workflowType, WorkflowModel.Status status) {
+      @Nullable String taskType, String workflowType, WorkflowModel.Status status) {
     counter(
         classQualifier,
         "task_update_conflict",
@@ -350,12 +350,13 @@ public class Monitors {
         status.name());
   }
 
-  public static void recordTaskUpdateError(String taskType, String workflowType) {
+  public static void recordTaskUpdateError(@Nullable String taskType, String workflowType) {
     counter(
         classQualifier, "task_update_error", "workflowName", workflowType, "taskType", taskType);
   }
 
-  public static void recordTaskExtendLeaseError(String taskType, @Nullable String workflowType) {
+  public static void recordTaskExtendLeaseError(
+      @Nullable String taskType, @Nullable String workflowType) {
     counter(
         classQualifier,
         "task_extendLease_error",
@@ -365,7 +366,7 @@ public class Monitors {
         taskType);
   }
 
-  public static void recordTaskQueueOpError(String taskType, String workflowType) {
+  public static void recordTaskQueueOpError(@Nullable String taskType, String workflowType) {
     counter(
         classQualifier, "task_queue_op_error", "workflowName", workflowType, "taskType", taskType);
   }
@@ -458,7 +459,8 @@ public class Monitors {
         exceptionClazz);
   }
 
-  public static void recordEventActionError(String action, String entityName, String event) {
+  public static void recordEventActionError(
+      String action, @Nullable String entityName, String event) {
     counter(
         classQualifier,
         "event_action_error",
@@ -506,7 +508,7 @@ public class Monitors {
   }
 
   public static void recordExternalPayloadStorageUsage(
-      String name, String operation, String payloadType) {
+      @Nullable String name, String operation, String payloadType) {
     counter(
         classQualifier,
         "external_payload_storage_usage",
@@ -573,7 +575,7 @@ public class Monitors {
     gauge(Monitors.classQualifier, "event_queue_poll", val, "queueType", queueType);
   }
 
-  public static void recordQueueMessageRepushFromRepairService(String queueName) {
+  public static void recordQueueMessageRepushFromRepairService(@Nullable String queueName) {
     counter(classQualifier, "queue_message_repushed", "queueName", queueName);
   }
 
