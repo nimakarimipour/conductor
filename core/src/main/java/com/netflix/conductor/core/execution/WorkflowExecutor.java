@@ -45,7 +45,6 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
-import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -857,7 +856,7 @@ public class WorkflowExecutor {
    * @return true if workflow can be lazily evaluated, false otherwise
    */
   @VisibleForTesting
-  boolean isLazyEvaluateWorkflow(@Nullable WorkflowDef workflowDef, TaskModel task) {
+  boolean isLazyEvaluateWorkflow(WorkflowDef workflowDef, TaskModel task) {
     if (task.isLoopOverTask()) {
       return false;
     }
@@ -1020,10 +1019,9 @@ public class WorkflowExecutor {
           workflow.toShortString(),
           subWorkflowTask.getTaskId());
 
-      WorkflowDef workflowDefinition = workflow.getWorkflowDefinition();
-      if (workflowDefinition != null
-          && (workflowDefinition.containsType(TaskType.TASK_TYPE_JOIN)
-              || workflowDefinition.containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC))) {
+      // find all terminal and unsuccessful JOIN tasks and set them to IN_PROGRESS
+      if (workflow.getWorkflowDefinition().containsType(TaskType.TASK_TYPE_JOIN)
+          || workflow.getWorkflowDefinition().containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
         // if we are here, then the SUB_WORKFLOW task could be part of a FORK_JOIN or
         // FORK_JOIN_DYNAMIC
         // and the JOIN task(s) needs to be evaluated again, set them to IN_PROGRESS
@@ -1049,8 +1047,7 @@ public class WorkflowExecutor {
                         .orElseThrow(
                             () -> new TransientException("Workflow Definition is not found")));
     if (workflowDef.containsType(TaskType.TASK_TYPE_SUB_WORKFLOW)
-        || Nullability.castToNonnull(workflow.getWorkflowDefinition(), "reason...")
-            .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
+        || workflow.getWorkflowDefinition().containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
       return workflow.getTasks().stream()
           .filter(
               t ->
@@ -1192,13 +1189,8 @@ public class WorkflowExecutor {
     }
 
     // Check if the reference name is as per the workflowdef
-    WorkflowDef workflowDefinition = workflow.getWorkflowDefinition();
-    if (workflowDefinition == null) {
-      String errorMsg = String.format("WorkflowDefinition is null for workflow %s", workflowId);
-      throw new IllegalStateException(errorMsg);
-    }
-
-    WorkflowTask workflowTask = workflowDefinition.getTaskByRefName(taskReferenceName);
+    WorkflowTask workflowTask =
+        workflow.getWorkflowDefinition().getTaskByRefName(taskReferenceName);
     if (workflowTask == null) {
       String errorMsg =
           String.format(
@@ -1447,11 +1439,7 @@ public class WorkflowExecutor {
       workflow.setFailedTaskId(terminateWorkflowException.getTask().getTaskId());
     }
 
-    WorkflowDef workflowDef =
-        Optional.ofNullable(workflow.getWorkflowDefinition())
-            .orElseThrow(() -> new NullPointerException("Workflow definition is not available"));
-
-    String failureWorkflow = workflowDef.getFailureWorkflow();
+    String failureWorkflow = workflow.getWorkflowDefinition().getFailureWorkflow();
     if (failureWorkflow != null) {
       if (failureWorkflow.startsWith("$")) {
         String[] paramPathComponents = failureWorkflow.split("\\.");

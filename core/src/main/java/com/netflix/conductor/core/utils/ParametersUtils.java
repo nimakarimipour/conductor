@@ -53,20 +53,19 @@ public class ParametersUtils {
   public Map<String, Object> getTaskInput(
       Map<String, Object> inputParams,
       WorkflowModel workflow,
-      TaskDef taskDefinition,
-      String taskId) {
-    WorkflowDef workflowDefinition =
-        Optional.ofNullable(workflow.getWorkflowDefinition())
-            .orElseThrow(() -> new IllegalStateException("WorkflowDefinition is null"));
-    if (workflowDefinition.getSchemaVersion() > 1) {
+      @Nullable TaskDef taskDefinition,
+      @Nullable String taskId) {
+    if (workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
       return getTaskInputV2(inputParams, workflow, taskId, taskDefinition);
     }
     return getTaskInputV1(workflow, inputParams);
   }
 
   public Map<String, Object> getTaskInputV2(
-      Map<String, Object> input, WorkflowModel workflow, String taskId, TaskDef taskDefinition) {
-
+      Map<String, Object> input,
+      WorkflowModel workflow,
+      @Nullable String taskId,
+      @Nullable TaskDef taskDefinition) {
     Map<String, Object> inputParams;
 
     if (input != null) {
@@ -91,12 +90,7 @@ public class ParametersUtils {
     workflowParams.put("version", workflow.getWorkflowVersion());
     workflowParams.put("correlationId", workflow.getCorrelationId());
     workflowParams.put("reasonForIncompletion", workflow.getReasonForIncompletion());
-
-    WorkflowDef workflowDef = workflow.getWorkflowDefinition();
-    if (workflowDef != null) {
-      workflowParams.put("schemaVersion", workflowDef.getSchemaVersion());
-    }
-
+    workflowParams.put("schemaVersion", workflow.getWorkflowDefinition().getSchemaVersion());
     workflowParams.put("variables", workflow.getVariables());
 
     inputMap.put("workflow", workflowParams);

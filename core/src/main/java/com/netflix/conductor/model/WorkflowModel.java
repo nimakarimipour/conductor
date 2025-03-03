@@ -18,7 +18,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.core.utils.Utils;
-import edu.ucr.cs.riple.annotator.util.Nullability;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -80,7 +79,7 @@ public class WorkflowModel {
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Set<String> failedTaskNames = new HashSet<>();
 
-  @Nullable private WorkflowDef workflowDefinition;
+  private WorkflowDef workflowDefinition;
 
   @Nullable private String externalInputPayloadStoragePath;
 
@@ -310,7 +309,6 @@ public class WorkflowModel {
     this.failedTaskNames = failedTaskNames;
   }
 
-  @Nullable
   public WorkflowDef getWorkflowDefinition() {
     return workflowDefinition;
   }
@@ -425,7 +423,7 @@ public class WorkflowModel {
    */
   public String getWorkflowName() {
     Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
-    return Nullability.castToNonnull(workflowDefinition, "reason...").getName();
+    return workflowDefinition.getName();
   }
 
   /**
@@ -435,7 +433,7 @@ public class WorkflowModel {
    */
   public int getWorkflowVersion() {
     Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
-    return Nullability.castToNonnull(workflowDefinition, "reason...").getVersion();
+    return workflowDefinition.getVersion();
   }
 
   public boolean hasParent() {
