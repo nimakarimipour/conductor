@@ -201,11 +201,16 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
     // From the workflow definition get the next task and make sure that it is a JOIN task.
     // The dynamic fork tasks need to be followed by a join task
     WorkflowTask joinWorkflowTask =
-        workflowModel.getWorkflowDefinition().getNextTask(workflowTask.getTaskReferenceName());
+        Optional.ofNullable(workflowModel.getWorkflowDefinition())
+            .map(def -> def.getNextTask(workflowTask.getTaskReferenceName()))
+            .orElseThrow(
+                () ->
+                    new TerminateWorkflowException(
+                        "Dynamic join definition is not followed by a join task. Check the workflow definition."));
 
-    if (joinWorkflowTask == null || !joinWorkflowTask.getType().equals(TaskType.JOIN.name())) {
+    if (!joinWorkflowTask.getType().equals(TaskType.JOIN.name())) {
       throw new TerminateWorkflowException(
-          "Dynamic join definition is not followed by a join task.  Check the workflow definition.");
+          "Dynamic join definition is not followed by a join task. Check the workflow definition.");
     }
 
     // Create Join task
