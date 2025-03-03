@@ -26,7 +26,7 @@ public interface QueueDAO {
    * @param offsetTimeInSecond time in seconds, after which the message should be marked visible.
    *     (for timed queues)
    */
-  void push(String queueName, String id, long offsetTimeInSecond);
+  void push(String queueName, @Nullable String id, long offsetTimeInSecond);
 
   /**
    * @param queueName name of the queue
@@ -128,7 +128,7 @@ public interface QueueDAO {
    * @param id message id
    * @return true if the message is in queue and the change was successful else returns false
    */
-  boolean resetOffsetTime(String queueName, String id);
+  boolean resetOffsetTime(String queueName, @Nullable String id);
 
   /**
    * Postpone a given message with postponeDurationInSeconds, so that the message won't be available
