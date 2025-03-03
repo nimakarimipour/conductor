@@ -24,13 +24,13 @@ import javax.annotation.Nullable;
 /** Business Object class used for interaction between the DeciderService and Different Mappers */
 public class TaskMapperContext {
 
-  private final WorkflowModel workflowModel;
+  @Nullable private final WorkflowModel workflowModel;
   @Nullable private final TaskDef taskDefinition;
-  private final WorkflowTask workflowTask;
-  private final Map<String, Object> taskInput;
+  @Nullable private final WorkflowTask workflowTask;
+  @Nullable private final Map<String, Object> taskInput;
   private final int retryCount;
   @Nullable private final String retryTaskId;
-  private final String taskId;
+  @Nullable private final String taskId;
   private final DeciderService deciderService;
 
   private TaskMapperContext(Builder builder) {
@@ -62,9 +62,13 @@ public class TaskMapperContext {
   }
 
   public WorkflowDef getWorkflowDefinition() {
+    if (workflowModel == null) {
+      throw new NullPointerException("workflowModel is null");
+    }
     return workflowModel.getWorkflowDefinition();
   }
 
+  @Nullable
   public WorkflowModel getWorkflowModel() {
     return workflowModel;
   }
@@ -74,6 +78,7 @@ public class TaskMapperContext {
     return taskDefinition;
   }
 
+  @Nullable
   public WorkflowTask getWorkflowTask() {
     return workflowTask;
   }
@@ -91,10 +96,12 @@ public class TaskMapperContext {
     return taskId;
   }
 
+  @Nullable
   public Map<String, Object> getTaskInput() {
     return taskInput;
   }
 
+  @Nullable
   public DeciderService getDeciderService() {
     return deciderService;
   }
@@ -107,7 +114,10 @@ public class TaskMapperContext {
     taskModel.setCorrelationId(workflowModel.getCorrelationId());
     taskModel.setScheduledTime(System.currentTimeMillis());
 
-    taskModel.setTaskId(taskId);
+    if (taskId != null) {
+      taskModel.setTaskId(taskId);
+    }
+
     taskModel.setWorkflowTask(workflowTask);
     taskModel.setWorkflowPriority(workflowModel.getPriority());
 
@@ -188,14 +198,14 @@ public class TaskMapperContext {
   /** {@code TaskMapperContext} builder static inner class. */
   public static final class Builder {
 
-    private WorkflowModel workflowModel;
+    @Nullable private WorkflowModel workflowModel;
     @Nullable private TaskDef taskDefinition;
-    private WorkflowTask workflowTask;
-    private Map<String, Object> taskInput;
+    @Nullable private WorkflowTask workflowTask;
+    @Nullable private Map<String, Object> taskInput;
     private int retryCount;
     @Nullable private String retryTaskId;
     @Nullable private String taskId;
-    private DeciderService deciderService;
+    @Nullable private DeciderService deciderService;
 
     private Builder() {}
 
