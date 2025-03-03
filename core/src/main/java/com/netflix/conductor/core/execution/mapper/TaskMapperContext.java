@@ -30,7 +30,7 @@ public class TaskMapperContext {
   private final Map<String, Object> taskInput;
   private final int retryCount;
   @Nullable private final String retryTaskId;
-  private final String taskId;
+  @Nullable private final String taskId;
   private final DeciderService deciderService;
 
   private TaskMapperContext(Builder builder) {
@@ -87,6 +87,7 @@ public class TaskMapperContext {
     return retryTaskId;
   }
 
+  @Nullable
   public String getTaskId() {
     return taskId;
   }
