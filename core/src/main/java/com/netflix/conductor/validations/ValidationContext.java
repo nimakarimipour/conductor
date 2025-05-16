@@ -12,8 +12,9 @@
  */
 package com.netflix.conductor.validations;
 
-import com.netflix.conductor.dao.MetadataDAO;
 import javax.annotation.Nullable;
+
+import com.netflix.conductor.dao.MetadataDAO;
 
 /**
  * This context is defined to get access to {@link MetadataDAO} inside {@link
@@ -22,13 +23,13 @@ import javax.annotation.Nullable;
  */
 public class ValidationContext {
 
-  @Nullable private static MetadataDAO metadataDAO;
+    @Nullable private static MetadataDAO metadataDAO;
 
-  public static void initialize(MetadataDAO metadataDAO) {
-    ValidationContext.metadataDAO = metadataDAO;
-  }
+    public static void initialize(MetadataDAO metadataDAO) {
+        ValidationContext.metadataDAO = metadataDAO;
+    }
 
-  public static MetadataDAO getMetadataDAO() {
-    return metadataDAO;
-  }
+    public static MetadataDAO getMetadataDAO() {
+        return metadataDAO;
+    }
 }
