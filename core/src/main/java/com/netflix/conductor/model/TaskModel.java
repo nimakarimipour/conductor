@@ -68,7 +68,7 @@ public class TaskModel {
         }
     }
 
-    @Nullable private String taskType;
+    private String taskType;
 
     private Status status;
 
@@ -163,7 +163,6 @@ public class TaskModel {
 
     @JsonIgnore private Map<String, Object> outputData = new HashMap<>();
 
-    @Nullable
     public String getTaskType() {
         return taskType;
     }
