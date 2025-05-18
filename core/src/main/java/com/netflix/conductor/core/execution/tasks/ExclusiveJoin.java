@@ -37,8 +37,6 @@ public class ExclusiveJoin extends WorkflowSystemTask {
         super(TASK_TYPE_EXCLUSIVE_JOIN);
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
     public boolean execute(
             WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
 
@@ -47,30 +45,33 @@ public class ExclusiveJoin extends WorkflowSystemTask {
         StringBuilder failureReason = new StringBuilder();
         TaskModel.Status taskStatus;
         List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
-        if (task.isLoopOverTask()) {
-            // If exclusive join is part of loop over task, wait for specific iteration to get
-            // complete
-            joinOn =
-                    joinOn.stream()
-                            .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
-                            .collect(Collectors.toList());
-        }
-        TaskModel exclusiveTask = null;
-        for (String joinOnRef : joinOn) {
-            LOGGER.debug("Exclusive Join On Task {} ", joinOnRef);
-            exclusiveTask = workflow.getTaskByRefName(joinOnRef);
-            if (exclusiveTask == null || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
-                LOGGER.debug("The task {} is either not scheduled or skipped.", joinOnRef);
-                continue;
+        if (joinOn != null && !joinOn.isEmpty()) {
+            if (task.isLoopOverTask()) {
+                // If exclusive join is part of loop over task, wait for specific iteration to get
+                // complete
+                joinOn =
+                        joinOn.stream()
+                                .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
+                                .collect(Collectors.toList());
             }
-            taskStatus = exclusiveTask.getStatus();
-            foundExlusiveJoinOnTask = taskStatus.isTerminal();
-            hasFailures = !taskStatus.isSuccessful();
-            if (hasFailures) {
-                failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
-            }
+            TaskModel exclusiveTask = null;
+            for (String joinOnRef : joinOn) {
+                LOGGER.debug("Exclusive Join On Task {} ", joinOnRef);
+                exclusiveTask = workflow.getTaskByRefName(joinOnRef);
+                if (exclusiveTask == null
+                        || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
+                    LOGGER.debug("The task {} is either not scheduled or skipped.", joinOnRef);
+                    continue;
+                }
+                taskStatus = exclusiveTask.getStatus();
+                foundExlusiveJoinOnTask = taskStatus.isTerminal();
+                hasFailures = !taskStatus.isSuccessful();
+                if (hasFailures) {
+                    failureReason.append(exclusiveTask.getReasonForIncompletion()).append(" ");
+                }
 
-            break;
+                break;
+            }
         }
 
         if (!foundExlusiveJoinOnTask) {
@@ -83,7 +84,7 @@ public class ExclusiveJoin extends WorkflowSystemTask {
             if (defaultExclusiveJoinTasks != null && !defaultExclusiveJoinTasks.isEmpty()) {
                 for (String defaultExclusiveJoinTask : defaultExclusiveJoinTasks) {
                     // Pick the first task that we should join on and break.
-                    exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
+                    TaskModel exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
                     if (exclusiveTask == null
                             || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
                         LOGGER.debug(
