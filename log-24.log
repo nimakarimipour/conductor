@@ -1,0 +1,161 @@
+====================
+Type='DEREFERENCE_NULLABLE', message='dereferenced expression evaluator is @Nullable'
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/Inline.java:82
+            Object evalResult = evaluator.evaluate(expression, taskInput);
+Log:
+---NullAway.lambda$resolveRemainingErrors$17---
+==============================
+---NullAway.lambda$resolveRemainingErrors$17---
+TOP LEVEL CALL TO FIX ERROR: Type='DEREFERENCE_NULLABLE', message='dereferenced expression evaluator is @Nullable'
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/Inline.java:82
+            Object evalResult = evaluator.evaluate(expression, taskInput);
+---ChatGPT.ask---
+Asking ChatGPT:
+I want to resolve a warning reported by NullAway.
+The error is of the type of "DEREFERENCE_NULLABLE" and the full error message is: "dereferenced expression evaluator is @Nullable".
+The line with the error is: "            Object evalResult = evaluator.evaluate(expression, taskInput);".
+
+The error is within "the method: execute(com.netflix.conductor.model.WorkflowModel,com.netflix.conductor.model.TaskModel,com.netflix.conductor.core.execution.WorkflowExecutor)" and the code surrounding the error is:
+```java
+    public static final String NAME = "INLINE";
+
+    private final Map<String, Evaluator> evaluators;
+
+    public Inline(Map<String, Evaluator> evaluators) {
+        super(TASK_TYPE_INLINE);
+        this.evaluators = evaluators;
+    }
+
+    @Override
+    public boolean execute(
+            WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+        Map<String, Object> taskInput = task.getInputData();
+        String evaluatorType = (String) taskInput.get(QUERY_EVALUATOR_TYPE);
+        String expression = (String) taskInput.get(QUERY_EXPRESSION_PARAMETER);
+
+        try {
+            checkEvaluatorType(evaluatorType);
+            checkExpression(expression);
+            Evaluator evaluator = evaluators.get(evaluatorType);
+            Object evalResult = evaluator.evaluate(expression, taskInput);
+            task.addOutput("result", evalResult);
+            task.setStatus(TaskModel.Status.COMPLETED);
+        } catch (Exception e) {
+            String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+            LOGGER.error(
+                    "Failed to execute Inline Task: {} in workflow: {}",
+                    task.getTaskId(),
+                    workflow.getWorkflowId(),
+                    e);
+            // TerminateWorkflowException is thrown when the script evaluation fails
+            // Retry will result in the same error, so FAILED_WITH_TERMINAL_ERROR status is used.
+            task.setStatus(
+                    e instanceof TerminateWorkflowException
+                            ? TaskModel.Status.FAILED_WITH_TERMINAL_ERROR
+                            : TaskModel.Status.FAILED);
+            task.setReasonForIncompletion(errorMessage);
+            task.addOutput("error", errorMessage);
+        }
+
+        return true;
+```
+
+Give me the fixed code snippet (ONLY THE METHOD REWRITE OF "execute(com.netflix.conductor.model.WorkflowModel,com.netflix.conductor.model.TaskModel,com.netflix.conductor.core.execution.WorkflowExecutor)") in XML format in <response> tag like the example below. I will apply the fix to my codebase.
+Do not import any additional libraries or classes or java comments.
+If you can provide the fixed code snippet, provide it in the following format and place the code snippet in the <code> tag within ```java block.
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  Your fixed code snippet here
+  ```
+    ]]>
+  </code>
+</response>
+
+---ChatGPT.sendRequestToOpenAI---
+Sending request to OpenAI...
+---ChatGPT.sendRequestToOpenAI---
+Response received from OpenAI.
+---Response.<init>---
+Creating Response:
+```xml
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  @Override
+  public boolean execute(
+          WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+      Map<String, Object> taskInput = task.getInputData();
+      String evaluatorType = (String) taskInput.get(QUERY_EVALUATOR_TYPE);
+      String expression = (String) taskInput.get(QUERY_EXPRESSION_PARAMETER);
+
+      try {
+          checkEvaluatorType(evaluatorType);
+          checkExpression(expression);
+          Evaluator evaluator = evaluators.get(evaluatorType);
+          if (evaluator == null) {
+              throw new NullPointerException("Evaluator not found for type: " + evaluatorType);
+          }
+          Object evalResult = evaluator.evaluate(expression, taskInput);
+          task.addOutput("result", evalResult);
+          task.setStatus(TaskModel.Status.COMPLETED);
+      } catch (Exception e) {
+          String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+          LOGGER.error(
+                  "Failed to execute Inline Task: {} in workflow: {}",
+                  task.getTaskId(),
+                  workflow.getWorkflowId(),
+                  e);
+          task.setStatus(
+                  e instanceof TerminateWorkflowException
+                          ? TaskModel.Status.FAILED_WITH_TERMINAL_ERROR
+                          : TaskModel.Status.FAILED);
+          task.setReasonForIncompletion(errorMessage);
+          task.addOutput("error", errorMessage);
+      }
+
+      return true;
+  }
+  ```
+    ]]>
+  </code>
+</response>
+```
+---Response.<init>---
+Response created:
+@Override
+  public boolean execute(
+          WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
+      Map<String, Object> taskInput = task.getInputData();
+      String evaluatorType = (String) taskInput.get(QUERY_EVALUATOR_TYPE);
+      String expression = (String) taskInput.get(QUERY_EXPRESSION_PARAMETER);
+
+      try {
+          checkEvaluatorType(evaluatorType);
+          checkExpression(expression);
+          Evaluator evaluator = evaluators.get(evaluatorType);
+          if (evaluator == null) {
+              throw new NullPointerException("Evaluator not found for type: " + evaluatorType);
+          }
+          Object evalResult = evaluator.evaluate(expression, taskInput);
+          task.addOutput("result", evalResult);
+          task.setStatus(TaskModel.Status.COMPLETED);
+      } catch (Exception e) {
+          String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+          LOGGER.error(
+                  "Failed to execute Inline Task: {} in workflow: {}",
+                  task.getTaskId(),
+                  workflow.getWorkflowId(),
+                  e);
+          task.setStatus(
+                  e instanceof TerminateWorkflowException
+                          ? TaskModel.Status.FAILED_WITH_TERMINAL_ERROR
+                          : TaskModel.Status.FAILED);
+          task.setReasonForIncompletion(errorMessage);
+          task.addOutput("error", errorMessage);
+      }
+
+      return true;
+  }
