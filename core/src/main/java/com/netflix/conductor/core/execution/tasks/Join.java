@@ -41,6 +41,11 @@ public class Join extends WorkflowSystemTask {
         StringBuilder failureReason = new StringBuilder();
         StringBuilder optionalTaskFailures = new StringBuilder();
         List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
+
+        if (joinOn == null) {
+            return false; // or handle appropriately
+        }
+
         if (task.isLoopOverTask()) {
             // If join is part of loop over task, wait for specific iteration to get complete
             joinOn =
