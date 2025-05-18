@@ -28,11 +28,11 @@ public class TaskMapperContext {
 
     private final WorkflowModel workflowModel;
     @Nullable private final TaskDef taskDefinition;
-    private final WorkflowTask workflowTask;
+    @Nullable private final WorkflowTask workflowTask;
     private final Map<String, Object> taskInput;
     private final int retryCount;
     @Nullable private final String retryTaskId;
-    private final String taskId;
+    @Nullable private final String taskId;
     private final DeciderService deciderService;
 
     private TaskMapperContext(Builder builder) {
@@ -76,6 +76,7 @@ public class TaskMapperContext {
         return taskDefinition;
     }
 
+    @Nullable
     public WorkflowTask getWorkflowTask() {
         return workflowTask;
     }
@@ -192,7 +193,7 @@ public class TaskMapperContext {
 
         private WorkflowModel workflowModel;
         @Nullable private TaskDef taskDefinition;
-        private WorkflowTask workflowTask;
+        @Nullable private WorkflowTask workflowTask;
         private Map<String, Object> taskInput;
         private int retryCount;
         @Nullable private String retryTaskId;
