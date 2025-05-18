@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,8 +50,8 @@ public class WorkflowMonitor {
     private final int metadataRefreshInterval;
     private final Set<WorkflowSystemTask> asyncSystemTasks;
 
-    private List<TaskDef> taskDefs;
-    private List<WorkflowDef> workflowDefs;
+    @Nullable private List<TaskDef> taskDefs;
+    @Nullable private List<WorkflowDef> workflowDefs;
     private int refreshCounter = 0;
 
     public WorkflowMonitor(
@@ -73,8 +75,15 @@ public class WorkflowMonitor {
     public void reportMetrics() {
         try {
             if (refreshCounter <= 0) {
-                workflowDefs = metadataService.getWorkflowDefs();
-                taskDefs = new ArrayList<>(metadataService.getTaskDefs());
+                workflowDefs =
+                        Objects.requireNonNull(
+                                metadataService.getWorkflowDefs(),
+                                "Workflow definitions cannot be null");
+                taskDefs =
+                        new ArrayList<>(
+                                Objects.requireNonNull(
+                                        metadataService.getTaskDefs(),
+                                        "Task definitions cannot be null"));
                 refreshCounter = metadataRefreshInterval;
             }
 
