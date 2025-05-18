@@ -830,13 +830,14 @@ public class DeciderService {
             WorkflowModel workflow,
             WorkflowTask taskToSchedule,
             int retryCount,
-            String retriedTaskId) {
+            @Nullable String retriedTaskId) {
         Map<String, Object> input =
                 parametersUtils.getTaskInput(
                         taskToSchedule.getInputParameters(), workflow, null, null);
 
         String type = taskToSchedule.getType();
 
+        // get tasks already scheduled (in progress/terminal) for  this workflow instance
         List<String> tasksInWorkflow =
                 workflow.getTasks().stream()
                         .filter(
@@ -859,13 +860,15 @@ public class DeciderService {
                         .withDeciderService(this)
                         .build();
 
-        TaskMapper taskMapper =
-                taskMappers.getOrDefault(type, taskMappers.get(USER_DEFINED.name()));
-        if (taskMapper == null) {
-            throw new IllegalStateException("TaskMapper not found for type: " + type);
-        }
-
-        return taskMapper.getMappedTasks(taskMapperContext).stream()
+        // For static forks, each branch of the fork creates a join task upon completion for
+        // dynamic forks, a join task is created with the fork and also with each branch of the
+        // fork.
+        // A new task must only be scheduled if a task, with the same reference name is not already
+        // in this workflow instance
+        return taskMappers
+                .getOrDefault(type, taskMappers.get(USER_DEFINED.name()))
+                .getMappedTasks(taskMapperContext)
+                .stream()
                 .filter(task -> !tasksInWorkflow.contains(task.getReferenceTaskName()))
                 .collect(Collectors.toList());
     }
