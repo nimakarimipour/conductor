@@ -501,10 +501,6 @@ public class DeciderService {
     private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef def = workflow.getWorkflowDefinition();
 
-        if (def == null) {
-            return null;
-        }
-
         String taskReferenceName = task.getReferenceTaskName();
         WorkflowTask taskToSchedule = def.getNextTask(taskReferenceName);
         while (isTaskSkipped(taskToSchedule, workflow)) {
