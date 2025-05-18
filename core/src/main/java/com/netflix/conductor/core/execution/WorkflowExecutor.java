@@ -907,7 +907,7 @@ public class WorkflowExecutor {
      * @return true if workflow can be lazily evaluated, false otherwise
      */
     @VisibleForTesting
-    boolean isLazyEvaluateWorkflow(WorkflowDef workflowDef, TaskModel task) {
+    boolean isLazyEvaluateWorkflow(@Nullable WorkflowDef workflowDef, TaskModel task) {
         if (task.isLoopOverTask()) {
             return false;
         }
