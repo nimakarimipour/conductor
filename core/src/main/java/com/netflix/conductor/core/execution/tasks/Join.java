@@ -42,7 +42,6 @@ public class Join extends WorkflowSystemTask {
         StringBuilder optionalTaskFailures = new StringBuilder();
         List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
         if (task.isLoopOverTask()) {
-            // If join is part of loop over task, wait for specific iteration to get complete
             joinOn =
                     joinOn.stream()
                             .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
@@ -51,7 +50,6 @@ public class Join extends WorkflowSystemTask {
         for (String joinOnRef : joinOn) {
             TaskModel forkedTask = workflow.getTaskByRefName(joinOnRef);
             if (forkedTask == null) {
-                // Task is not even scheduled yet
                 allDone = false;
                 break;
             }
@@ -60,7 +58,6 @@ public class Join extends WorkflowSystemTask {
             if (hasFailures) {
                 failureReason.append(forkedTask.getReasonForIncompletion()).append(" ");
             }
-            // Only add to task output if it's not empty
             if (!forkedTask.getOutputData().isEmpty()) {
                 task.addOutput(joinOnRef, forkedTask.getOutputData());
             }
@@ -71,8 +68,8 @@ public class Join extends WorkflowSystemTask {
                 break;
             }
 
-            // check for optional task failures
-            if (forkedTask.getWorkflowTask().isOptional()
+            if (NullabilityUtil.castToNonnull(forkedTask.getWorkflowTask(), "ensured by null check")
+                            .isOptional()
                     && taskStatus == TaskModel.Status.COMPLETED_WITH_ERRORS) {
                 optionalTaskFailures
                         .append(

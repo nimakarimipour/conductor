@@ -287,7 +287,9 @@ public class WorkflowExecutor {
             // update parent's sub workflow task
             TaskModel subWorkflowTask =
                     executionDAOFacade.getTaskModel(workflow.getParentWorkflowTaskId());
-            if (subWorkflowTask.getWorkflowTask().isOptional()) {
+            Optional<WorkflowTask> workflowTask =
+                    Optional.ofNullable(subWorkflowTask.getWorkflowTask());
+            if (workflowTask.isPresent() && workflowTask.get().isOptional()) {
                 // break out
                 LOGGER.info(
                         "Sub workflow task {} is optional, skip updating parents", subWorkflowTask);
@@ -435,13 +437,17 @@ public class WorkflowExecutor {
         taskToBeRetried.setReasonForIncompletion(null);
         taskToBeRetried.setSeq(0);
 
-        // perform parameter replacement for retried task
+        // perform parameter replacement for retried task using safe check for null
         Map<String, Object> taskInput =
-                parametersUtils.getTaskInput(
-                        taskToBeRetried.getWorkflowTask().getInputParameters(),
-                        workflow,
-                        taskToBeRetried.getWorkflowTask().getTaskDefinition(),
-                        taskToBeRetried.getTaskId());
+                Optional.ofNullable(taskToBeRetried.getWorkflowTask())
+                        .map(
+                                workflowTask ->
+                                        parametersUtils.getTaskInput(
+                                                workflowTask.getInputParameters(),
+                                                workflow,
+                                                workflowTask.getTaskDefinition(),
+                                                taskToBeRetried.getTaskId()))
+                        .orElse(Collections.emptyMap());
         taskToBeRetried.getInputData().putAll(taskInput);
 
         task.setRetried(true);
@@ -451,8 +457,8 @@ public class WorkflowExecutor {
         return taskToBeRetried;
     }
 
-    private void endExecution(WorkflowModel workflow, @Nullable TaskModel terminateTask) {
-        if (terminateTask != null) {
+    private void endExecution(WorkflowModel workflow, TaskModel terminateTask) {
+        if (terminateTask != null && terminateTask.getWorkflowTask() != null) {
             String terminationStatus =
                     (String)
                             terminateTask
@@ -1676,12 +1682,21 @@ public class WorkflowExecutor {
     public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
         // Schedule only first loop over task. Rest will be taken care in Decider Service when this
         // task will get completed.
+
+        Optional<WorkflowTask> optionalWorkflowTask =
+                Optional.ofNullable(loopTask.getWorkflowTask());
+
         List<TaskModel> scheduledLoopOverTasks =
-                deciderService.getTasksToBeScheduled(
-                        workflow,
-                        loopTask.getWorkflowTask().getLoopOver().get(0),
-                        loopTask.getRetryCount(),
-                        null);
+                optionalWorkflowTask
+                        .map(
+                                workflowTask ->
+                                        deciderService.getTasksToBeScheduled(
+                                                workflow,
+                                                workflowTask.getLoopOver().get(0),
+                                                loopTask.getRetryCount(),
+                                                null))
+                        .orElse(Collections.emptyList());
+
         setTaskDomains(scheduledLoopOverTasks, workflow);
         scheduledLoopOverTasks.forEach(
                 t -> {
@@ -1698,9 +1713,9 @@ public class WorkflowExecutor {
         return task.getTaskDefinition()
                 .orElseGet(
                         () ->
-                                Optional.ofNullable(
-                                                metadataDAO.getTaskDef(
-                                                        task.getWorkflowTask().getName()))
+                                Optional.ofNullable(task.getWorkflowTask())
+                                        .map(WorkflowTask::getName)
+                                        .map(metadataDAO::getTaskDef)
                                         .orElseThrow(
                                                 () -> {
                                                     String reason =

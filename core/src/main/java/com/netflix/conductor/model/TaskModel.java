@@ -442,6 +442,7 @@ public class TaskModel {
         return outputData;
     }
 
+    @Nullable
     public WorkflowTask getWorkflowTask() {
         return workflowTask;
     }
