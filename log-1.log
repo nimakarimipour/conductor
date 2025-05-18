@@ -1,0 +1,110 @@
+====================
+Type='ASSIGN_FIELD_NULLABLE', message='assigning @Nullable expression to @NonNull field'
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/TaskMapperContext.java:45
+        taskId = builder.taskId;
+Log:
+---NullAway.lambda$resolveRemainingErrors$17---
+==============================
+---NullAway.lambda$resolveRemainingErrors$17---
+TOP LEVEL CALL TO FIX ERROR: Type='ASSIGN_FIELD_NULLABLE', message='assigning @Nullable expression to @NonNull field'
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/TaskMapperContext.java:45
+        taskId = builder.taskId;
+---ChatGPT.ask---
+Asking ChatGPT:
+I want to resolve a warning reported by NullAway.
+The error is of the type of "ASSIGN_FIELD_NULLABLE" and the full error message is: "assigning @Nullable expression to @NonNull field".
+The line with the error is: "        taskId = builder.taskId;".
+
+The error is within "the method: TaskMapperContext(com.netflix.conductor.core.execution.mapper.TaskMapperContext.Builder)" and the code surrounding the error is:
+```java
+
+/** Business Object class used for interaction between the DeciderService and Different Mappers */
+public class TaskMapperContext {
+
+    private final WorkflowModel workflowModel;
+    @Nullable private final TaskDef taskDefinition;
+    private final WorkflowTask workflowTask;
+    private final Map<String, Object> taskInput;
+    private final int retryCount;
+    @Nullable private final String retryTaskId;
+    private final String taskId;
+    private final DeciderService deciderService;
+
+    private TaskMapperContext(Builder builder) {
+        workflowModel = builder.workflowModel;
+        taskDefinition = builder.taskDefinition;
+        workflowTask = builder.workflowTask;
+        taskInput = builder.taskInput;
+        retryCount = builder.retryCount;
+        retryTaskId = builder.retryTaskId;
+        taskId = builder.taskId;
+        deciderService = builder.deciderService;
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static Builder newBuilder(TaskMapperContext copy) {
+        Builder builder = new Builder();
+        builder.workflowModel = copy.getWorkflowModel();
+        builder.taskDefinition = copy.getTaskDefinition();
+        builder.workflowTask = copy.getWorkflowTask();
+        builder.taskInput = copy.getTaskInput();
+        builder.retryCount = copy.getRetryCount();
+        builder.retryTaskId = copy.getRetryTaskId();
+        builder.taskId = copy.getTaskId();
+        builder.deciderService = copy.getDeciderService();
+        return builder;
+    }
+```
+
+Give me the fixed code snippet (ONLY THE METHOD REWRITE OF "TaskMapperContext(com.netflix.conductor.core.execution.mapper.TaskMapperContext.Builder)") in XML format in <response> tag like the example below. I will apply the fix to my codebase.
+Do not import any additional libraries or classes or java comments.
+If you can provide the fixed code snippet, provide it in the following format and place the code snippet in the <code> tag within ```java block.
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  Your fixed code snippet here
+  ```
+    ]]>
+  </code>
+</response>
+
+---ChatGPT.sendRequestToOpenAI---
+Sending request to OpenAI...
+---ChatGPT.sendRequestToOpenAI---
+Response received from OpenAI.
+---Response.<init>---
+Creating Response:
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  private TaskMapperContext(Builder builder) {
+        workflowModel = builder.workflowModel;
+        taskDefinition = builder.taskDefinition;
+        workflowTask = builder.workflowTask;
+        taskInput = builder.taskInput;
+        retryCount = builder.retryCount;
+        retryTaskId = builder.retryTaskId;
+        taskId = Objects.requireNonNull(builder.taskId, "taskId cannot be null");
+        deciderService = builder.deciderService;
+    }
+  ```
+  ]]>
+  </code>
+</response>
+---Response.<init>---
+Response created:
+private TaskMapperContext(Builder builder) {
+        workflowModel = builder.workflowModel;
+        taskDefinition = builder.taskDefinition;
+        workflowTask = builder.workflowTask;
+        taskInput = builder.taskInput;
+        retryCount = builder.retryCount;
+        retryTaskId = builder.retryTaskId;
+        taskId = Objects.requireNonNull(builder.taskId, "taskId cannot be null");
+        deciderService = builder.deciderService;
+    }
