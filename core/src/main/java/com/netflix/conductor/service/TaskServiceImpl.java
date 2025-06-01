@@ -171,12 +171,9 @@ public class TaskServiceImpl implements TaskService {
             // being stuck from transient ack errors.
             String errorMsg = String.format("Error when trying to ack task %s", taskId);
             LOGGER.error(errorMsg, e);
-            Optional.ofNullable(executionService.getTask(taskId))
-                    .ifPresent(
-                            task -> {
-                                Monitors.recordAckTaskError(task.getTaskType());
-                                failTask(task, errorMsg);
-                            });
+            Task task = executionService.getTask(taskId);
+            Monitors.recordAckTaskError(task.getTaskType());
+            failTask(task, errorMsg);
             ackResult.set(false);
         }
         return ackResult.get();
