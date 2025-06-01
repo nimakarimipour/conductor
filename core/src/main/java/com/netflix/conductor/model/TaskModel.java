@@ -443,6 +443,9 @@ public class TaskModel {
     }
 
     public WorkflowTask getWorkflowTask() {
+        if (workflowTask == null) {
+            throw new NullPointerException("workflowTask is null");
+        }
         return workflowTask;
     }
 
