@@ -461,7 +461,6 @@ public class DeciderService {
     List<TaskModel> getNextTask(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
-        // Get the following task after the last completed task
         if (systemTaskRegistry.isSystemTask(task.getTaskType())
                 && (TaskType.TASK_TYPE_DECISION.equals(task.getTaskType())
                         || TaskType.TASK_TYPE_SWITCH.equals(task.getTaskType()))) {
@@ -479,13 +478,13 @@ public class DeciderService {
             taskToSchedule = workflowDef.getNextTask(taskToSchedule.getTaskReferenceName());
         }
         if (taskToSchedule != null && TaskType.DO_WHILE.name().equals(taskToSchedule.getType())) {
-            // check if already has this DO_WHILE task, ignore it if it already exists
             String nextTaskReferenceName = taskToSchedule.getTaskReferenceName();
             if (workflow.getTasks().stream()
                     .anyMatch(
                             runningTask ->
-                                    runningTask
-                                            .getReferenceTaskName()
+                                    NullabilityUtil.castToNonnull(
+                                                    runningTask.getReferenceTaskName(),
+                                                    "task previously validated")
                                             .equals(nextTaskReferenceName))) {
                 return Collections.emptyList();
             }

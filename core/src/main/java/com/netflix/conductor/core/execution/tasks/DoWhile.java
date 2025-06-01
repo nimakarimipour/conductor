@@ -68,6 +68,7 @@ public class DoWhile extends WorkflowSystemTask {
             if (doWhileTaskModel
                             .getWorkflowTask()
                             .has(TaskUtils.removeIterationFromTaskRefName(t.getReferenceTaskName()))
+                    && doWhileTaskModel.getReferenceTaskName() != null
                     && !doWhileTaskModel.getReferenceTaskName().equals(t.getReferenceTaskName())
                     && doWhileTaskModel.getIteration() == t.getIteration()) {
                 relevantTask = relevantTasks.get(t.getReferenceTaskName());
@@ -225,7 +226,13 @@ public class DoWhile extends WorkflowSystemTask {
                         workflow,
                         task.getTaskId(),
                         taskDefinition);
-        conditionInput.put(task.getReferenceTaskName(), task.getOutputData());
+
+        // Ensure task.getReferenceTaskName() is not null before using it
+        String referenceTaskName = task.getReferenceTaskName();
+        if (referenceTaskName != null) {
+            conditionInput.put(referenceTaskName, task.getOutputData());
+        }
+
         List<TaskModel> loopOver =
                 workflow.getTasks().stream()
                         .filter(
