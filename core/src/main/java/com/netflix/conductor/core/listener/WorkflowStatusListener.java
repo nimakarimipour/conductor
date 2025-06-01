@@ -18,19 +18,37 @@ import com.netflix.conductor.model.WorkflowModel;
 public interface WorkflowStatusListener {
 
     default void onWorkflowCompletedIfEnabled(WorkflowModel workflow) {
-        if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
+        if (NullabilityUtil.castToNonnull(
+                        workflow.getWorkflowDefinition(), "system guarantees non-null")
+                .isWorkflowStatusListenerEnabled()) {
             onWorkflowCompleted(workflow);
         }
     }
 
     default void onWorkflowTerminatedIfEnabled(WorkflowModel workflow) {
-        if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
+        WorkflowDef workflowDef =
+                Optional.ofNullable(workflow.getWorkflowDefinition())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "Workflow definition should not be null"));
+        if (workflowDef.isWorkflowStatusListenerEnabled()) {
             onWorkflowTerminated(workflow);
         }
     }
 
     default void onWorkflowFinalizedIfEnabled(WorkflowModel workflow) {
-        if (workflow.getWorkflowDefinition().isWorkflowStatusListenerEnabled()) {
+        WorkflowDef workflowDef =
+                Optional.ofNullable(workflow.getWorkflowDefinition())
+                        .orElseGet(
+                                () -> {
+                                    // Handle the case where there's no WorkflowDef, maybe by
+                                    // throwing an exception
+                                    // or any fallback behavior as needed
+                                    throw new IllegalStateException(
+                                            "Workflow definition cannot be null");
+                                });
+        if (workflowDef.isWorkflowStatusListenerEnabled()) {
             onWorkflowFinalized(workflow);
         }
     }

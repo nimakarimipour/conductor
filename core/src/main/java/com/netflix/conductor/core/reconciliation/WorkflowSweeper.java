@@ -117,6 +117,9 @@ public class WorkflowSweeper {
     @VisibleForTesting
     void unack(WorkflowModel workflowModel, long workflowOffsetTimeout) {
         long postponeDurationSeconds = 0;
+        Optional<WorkflowDef> workflowDefOptional =
+                Optional.ofNullable(workflowModel.getWorkflowDefinition());
+
         for (TaskModel taskModel : workflowModel.getTasks()) {
             if (taskModel.getStatus() == Status.IN_PROGRESS) {
                 if (taskModel.getTaskType().equals(TaskType.TASK_TYPE_WAIT)
@@ -141,16 +144,19 @@ public class WorkflowSweeper {
                         postponeDurationSeconds = taskDef.getPollTimeoutSeconds() + 1;
                     } else {
                         postponeDurationSeconds =
-                                (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                                        ? workflowModel.getWorkflowDefinition().getTimeoutSeconds()
-                                                + 1
-                                        : workflowOffsetTimeout;
+                                workflowDefOptional
+                                        .map(WorkflowDef::getTimeoutSeconds)
+                                        .filter(timeoutSeconds -> timeoutSeconds != 0)
+                                        .map(timeoutSeconds -> timeoutSeconds + 1)
+                                        .orElse(workflowOffsetTimeout);
                     }
                 } else {
                     postponeDurationSeconds =
-                            (workflowModel.getWorkflowDefinition().getTimeoutSeconds() != 0)
-                                    ? workflowModel.getWorkflowDefinition().getTimeoutSeconds() + 1
-                                    : workflowOffsetTimeout;
+                            workflowDefOptional
+                                    .map(WorkflowDef::getTimeoutSeconds)
+                                    .filter(timeoutSeconds -> timeoutSeconds != 0)
+                                    .map(timeoutSeconds -> timeoutSeconds + 1)
+                                    .orElse(workflowOffsetTimeout);
                 }
                 break;
             }

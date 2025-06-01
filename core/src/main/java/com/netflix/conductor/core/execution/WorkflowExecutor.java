@@ -907,7 +907,7 @@ public class WorkflowExecutor {
      * @return true if workflow can be lazily evaluated, false otherwise
      */
     @VisibleForTesting
-    boolean isLazyEvaluateWorkflow(WorkflowDef workflowDef, TaskModel task) {
+    boolean isLazyEvaluateWorkflow(@Nullable WorkflowDef workflowDef, TaskModel task) {
         if (task.isLoopOverTask()) {
             return false;
         }
@@ -1074,9 +1074,14 @@ public class WorkflowExecutor {
                     subWorkflowTask.getTaskId());
 
             // find all terminal and unsuccessful JOIN tasks and set them to IN_PROGRESS
-            if (workflow.getWorkflowDefinition().containsType(TaskType.TASK_TYPE_JOIN)
-                    || workflow.getWorkflowDefinition()
-                            .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
+            Optional<WorkflowDef> workflowDefOptional =
+                    Optional.ofNullable(workflow.getWorkflowDefinition());
+            if (workflowDefOptional.isPresent()
+                    && (workflowDefOptional.get().containsType(TaskType.TASK_TYPE_JOIN)
+                            || workflowDefOptional
+                                    .get()
+                                    .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC))) {
+
                 // if we are here, then the SUB_WORKFLOW task could be part of a FORK_JOIN or
                 // FORK_JOIN_DYNAMIC
                 // and the JOIN task(s) needs to be evaluated again, set them to IN_PROGRESS
@@ -1105,9 +1110,9 @@ public class WorkflowExecutor {
                                                         () ->
                                                                 new TransientException(
                                                                         "Workflow Definition is not found")));
+
         if (workflowDef.containsType(TaskType.TASK_TYPE_SUB_WORKFLOW)
-                || workflow.getWorkflowDefinition()
-                        .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
+                || workflowDef.containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
             return workflow.getTasks().stream()
                     .filter(
                             t ->
@@ -1251,7 +1256,6 @@ public class WorkflowExecutor {
 
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
 
-        // If the workflow is not running then cannot skip any task
         if (!workflow.getStatus().equals(WorkflowModel.Status.RUNNING)) {
             String errorMsg =
                     String.format(
@@ -1260,9 +1264,10 @@ public class WorkflowExecutor {
             throw new IllegalStateException(errorMsg);
         }
 
-        // Check if the reference name is as per the workflowdef
         WorkflowTask workflowTask =
-                workflow.getWorkflowDefinition().getTaskByRefName(taskReferenceName);
+                NullabilityUtil.castToNonnull(
+                                workflow.getWorkflowDefinition(), "system guarantees definition")
+                        .getTaskByRefName(taskReferenceName);
         if (workflowTask == null) {
             String errorMsg =
                     String.format(
@@ -1271,7 +1276,6 @@ public class WorkflowExecutor {
             throw new IllegalStateException(errorMsg);
         }
 
-        // If the task is already started the again it cannot be skipped
         workflow.getTasks()
                 .forEach(
                         task -> {
@@ -1284,7 +1288,6 @@ public class WorkflowExecutor {
                             }
                         });
 
-        // Now create a "SKIPPED" task for this workflow
         TaskModel taskToBeSkipped = new TaskModel();
         taskToBeSkipped.setTaskId(idGenerator.generate());
         taskToBeSkipped.setReferenceTaskName(taskReferenceName);
@@ -1517,7 +1520,11 @@ public class WorkflowExecutor {
             workflow.setFailedTaskId(terminateWorkflowException.getTask().getTaskId());
         }
 
-        String failureWorkflow = workflow.getWorkflowDefinition().getFailureWorkflow();
+        String failureWorkflow =
+                Optional.ofNullable(workflow.getWorkflowDefinition())
+                        .map(WorkflowDef::getFailureWorkflow)
+                        .orElse(null);
+
         if (failureWorkflow != null) {
             if (failureWorkflow.startsWith("$")) {
                 String[] paramPathComponents = failureWorkflow.split("\\.");

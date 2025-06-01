@@ -90,15 +90,23 @@ public class ForkJoinTaskMapper implements TaskMapper {
             tasksToBeScheduled.addAll(tasks2);
         }
 
-        WorkflowTask joinWorkflowTask =
-                workflowModel
-                        .getWorkflowDefinition()
-                        .getNextTask(workflowTask.getTaskReferenceName());
+        Optional<WorkflowTask> joinWorkflowTaskOptional =
+                Optional.ofNullable(
+                        workflowModel
+                                .getWorkflowDefinition()
+                                .getNextTask(workflowTask.getTaskReferenceName()));
 
-        if (joinWorkflowTask == null || !joinWorkflowTask.getType().equals(TaskType.JOIN.name())) {
+        WorkflowTask joinWorkflowTask =
+                joinWorkflowTaskOptional.orElseThrow(
+                        () ->
+                                new TerminateWorkflowException(
+                                        "Fork task definition is not followed by a join task.  Check the blueprint"));
+
+        if (!joinWorkflowTask.getType().equals(TaskType.JOIN.name())) {
             throw new TerminateWorkflowException(
                     "Fork task definition is not followed by a join task.  Check the blueprint");
         }
+
         List<TaskModel> joinTask =
                 taskMapperContext
                         .getDeciderService()
