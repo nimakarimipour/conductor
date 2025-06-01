@@ -104,11 +104,7 @@ public class DefaultEventQueueProcessor {
                                                     .filter(
                                                             task ->
                                                                     !task.getStatus().isTerminal()
-                                                                            && NullabilityUtil
-                                                                                    .castToNonnull(
-                                                                                            task
-                                                                                                    .getTaskId(),
-                                                                                            "checked for presence")
+                                                                            && task.getTaskId()
                                                                                     .equals(taskId))
                                                     .findFirst();
                                 } else if (StringUtils.isEmpty(taskRefName)) {
