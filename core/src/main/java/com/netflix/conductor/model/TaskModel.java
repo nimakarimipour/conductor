@@ -70,7 +70,7 @@ public class TaskModel {
 
     private String taskType;
 
-    @Nullable private Status status;
+    private Status status;
 
     @Nullable private String referenceTaskName;
 
@@ -171,7 +171,6 @@ public class TaskModel {
         this.taskType = taskType;
     }
 
-    @Nullable
     public Status getStatus() {
         return status;
     }
