@@ -219,7 +219,7 @@ public class TaskModel {
     }
 
     public String getReferenceTaskName() {
-        return referenceTaskName != null ? referenceTaskName : "";
+        return referenceTaskName;
     }
 
     public void setReferenceTaskName(String referenceTaskName) {
