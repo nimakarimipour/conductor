@@ -47,16 +47,18 @@ public class SubWorkflow extends WorkflowSystemTask {
         this.startWorkflowOperation = startWorkflowOperation;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void start(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> input = task.getInputData();
-        String name = input.get("subWorkflowName").toString();
-        int version = (int) input.get("subWorkflowVersion");
+        String name = null;
+        if (input.get("subWorkflowName") != null) {
+            name = input.get("subWorkflowName").toString();
+        }
+        int version =
+                input.get("subWorkflowVersion") != null ? (int) input.get("subWorkflowVersion") : 0;
 
         WorkflowDef workflowDefinition = null;
         if (input.get("subWorkflowDefinition") != null) {
-            // convert the value back to workflow definition object
             workflowDefinition =
                     objectMapper.convertValue(
                             input.get("subWorkflowDefinition"), WorkflowDef.class);
@@ -88,11 +90,8 @@ public class SubWorkflow extends WorkflowSystemTask {
             String subWorkflowId = startWorkflowOperation.execute(startWorkflowInput);
 
             task.setSubWorkflowId(subWorkflowId);
-            // For backwards compatibility
             task.addOutput(SUB_WORKFLOW_ID, subWorkflowId);
 
-            // Set task status based on current sub-workflow status, as the status can change in
-            // recursion by the time we update here.
             WorkflowModel subWorkflow = workflowExecutor.getWorkflow(subWorkflowId, false);
             updateTaskStatus(subWorkflow, task);
         } catch (TransientException te) {
@@ -102,7 +101,6 @@ public class SubWorkflow extends WorkflowSystemTask {
                     workflow.toShortString(),
                     name);
         } catch (Exception ae) {
-
             task.setStatus(TaskModel.Status.FAILED);
             task.setReasonForIncompletion(ae.getMessage());
             LOGGER.error(
