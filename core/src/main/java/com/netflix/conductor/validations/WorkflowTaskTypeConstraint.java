@@ -362,13 +362,11 @@ public @interface WorkflowTaskTypeConstraint {
                 isInputParameterSet = true;
             }
 
-            MetadataDAO metadataDAO = ValidationContext.getMetadataDAO();
-            TaskDef taskDef = null;
-            if (metadataDAO != null) {
-                taskDef =
-                        Optional.ofNullable(workflowTask.getTaskDefinition())
-                                .orElse(metadataDAO.getTaskDef(workflowTask.getName()));
-            }
+            TaskDef taskDef =
+                    Optional.ofNullable(workflowTask.getTaskDefinition())
+                            .orElse(
+                                    ValidationContext.getMetadataDAO()
+                                            .getTaskDef(workflowTask.getName()));
 
             if (taskDef != null
                     && taskDef.getInputTemplate() != null
@@ -445,14 +443,9 @@ public @interface WorkflowTaskTypeConstraint {
 
             TaskDef taskDef =
                     Optional.ofNullable(workflowTask.getTaskDefinition())
-                            .orElseGet(
-                                    () ->
-                                            Optional.ofNullable(ValidationContext.getMetadataDAO())
-                                                    .map(
-                                                            dao ->
-                                                                    dao.getTaskDef(
-                                                                            workflowTask.getName()))
-                                                    .orElse(null));
+                            .orElse(
+                                    ValidationContext.getMetadataDAO()
+                                            .getTaskDef(workflowTask.getName()));
 
             if (taskDef != null
                     && taskDef.getInputTemplate() != null
@@ -503,13 +496,11 @@ public @interface WorkflowTaskTypeConstraint {
                 isInputParameterSet = true;
             }
 
-            MetadataDAO metadataDAO = ValidationContext.getMetadataDAO();
-            TaskDef taskDef = null;
-            if (metadataDAO != null) {
-                taskDef =
-                        Optional.ofNullable(workflowTask.getTaskDefinition())
-                                .orElse(metadataDAO.getTaskDef(workflowTask.getName()));
-            }
+            TaskDef taskDef =
+                    Optional.ofNullable(workflowTask.getTaskDefinition())
+                            .orElse(
+                                    ValidationContext.getMetadataDAO()
+                                            .getTaskDef(workflowTask.getName()));
 
             if (taskDef != null
                     && taskDef.getInputTemplate() != null
