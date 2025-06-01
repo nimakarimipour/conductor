@@ -56,16 +56,14 @@ public class SubWorkflowTaskMapper implements TaskMapper {
         WorkflowTask workflowTask = taskMapperContext.getWorkflowTask();
         WorkflowModel workflowModel = taskMapperContext.getWorkflowModel();
         String taskId = taskMapperContext.getTaskId();
+        // Check if there are sub workflow parameters, if not throw an exception, cannot initiate a
+        // sub-workflow without workflow params
         SubWorkflowParams subWorkflowParams = getSubWorkflowParams(workflowTask);
 
         Map<String, Object> resolvedParams =
                 getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
 
-        Object nameObject = resolvedParams.get("name");
-        if (nameObject == null) {
-            throw new IllegalArgumentException("SubWorkflow name cannot be null");
-        }
-        String subWorkflowName = nameObject.toString();
+        String subWorkflowName = resolvedParams.get("name").toString();
         Integer subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
 
         Object subWorkflowDefinition = resolvedParams.get("workflowDefinition");
