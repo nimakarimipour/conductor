@@ -1,0 +1,94 @@
+====================
+Type='FIELD_NO_INIT', message='@NonNull field taskType not initialized'
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:71
+    private String taskType;
+Log:
+---NullAway.lambda$resolveRemainingErrors$17---
+==============================
+---NullAway.lambda$resolveRemainingErrors$17---
+8 : TOP LEVEL CALL TO FIX ERROR: Type='FIELD_NO_INIT', message='@NonNull field taskType not initialized'
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:71
+    private String taskType;
+---ChatGPT.ask---
+Asking ChatGPT:
+I want to resolve a warning reported by NullAway.
+The error is of the type of "FIELD_NO_INIT" and the full error message is: "@NonNull field taskType not initialized".
+The line with the error is: "    private String taskType;".
+
+The error is within "the declaration of field: taskType" and the code surrounding the error is:
+```java
+
+        Status(boolean terminal, boolean successful, boolean retriable) {
+            this.terminal = terminal;
+            this.successful = successful;
+            this.retriable = retriable;
+        }
+
+        public boolean isTerminal() {
+            return terminal;
+        }
+
+        public boolean isSuccessful() {
+            return successful;
+        }
+
+        public boolean isRetriable() {
+            return retriable;
+        }
+    }
+
+    private String taskType;
+
+    private Status status;
+
+    @Nullable private String referenceTaskName;
+
+    private int retryCount;
+
+    private int seq;
+
+    @Nullable private String correlationId;
+
+    private int pollCount;
+
+    @Nullable private String taskDefName;
+
+    /** Time when the task was scheduled */
+    private long scheduledTime;
+
+    /** Time when the task was first polled */
+```
+
+Give me the fixed code snippet (ONLY THE METHOD REWRITE OF "taskType") in XML format in <response> tag like the example below. I will apply the fix to my codebase.
+Do not import any additional libraries or classes or java comments.
+If you can provide the fixed code snippet, provide it in the following format and place the code snippet in the <code> tag within ```java block.
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  Your fixed code snippet here
+  ```
+    ]]>
+  </code>
+</response>
+
+---ChatGPT.sendRequestToOpenAI---
+Sending request to OpenAI...
+---ChatGPT.sendRequestToOpenAI---
+Response received from OpenAI.
+---Response.<init>---
+Creating Response:
+```xml
+<response>
+  <success>true</success>
+  <code><![CDATA[
+  ```java
+  private String taskType = "";
+  ```
+    ]]>
+  </code>
+</response>
+```
+---Response.<init>---
+Response created:
+private String taskType = "";
