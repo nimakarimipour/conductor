@@ -79,9 +79,6 @@ public class Inline extends WorkflowSystemTask {
             checkEvaluatorType(evaluatorType);
             checkExpression(expression);
             Evaluator evaluator = evaluators.get(evaluatorType);
-            if (evaluator == null) {
-                throw new NullPointerException("Evaluator not found for type: " + evaluatorType);
-            }
             Object evalResult = evaluator.evaluate(expression, taskInput);
             task.addOutput("result", evalResult);
             task.setStatus(TaskModel.Status.COMPLETED);
@@ -92,6 +89,8 @@ public class Inline extends WorkflowSystemTask {
                     task.getTaskId(),
                     workflow.getWorkflowId(),
                     e);
+            // TerminateWorkflowException is thrown when the script evaluation fails
+            // Retry will result in the same error, so FAILED_WITH_TERMINAL_ERROR status is used.
             task.setStatus(
                     e instanceof TerminateWorkflowException
                             ? TaskModel.Status.FAILED_WITH_TERMINAL_ERROR
