@@ -179,13 +179,9 @@ public class DeciderService {
             if (taskDefinition.isEmpty()) {
                 taskDefinition =
                         Optional.ofNullable(
-                                        Optional.ofNullable(workflow.getWorkflowDefinition())
-                                                .map(
-                                                        wd ->
-                                                                wd.getTaskByRefName(
-                                                                        pendingTask
-                                                                                .getReferenceTaskName()))
-                                                .orElse(null))
+                                        workflow.getWorkflowDefinition()
+                                                .getTaskByRefName(
+                                                        pendingTask.getReferenceTaskName()))
                                 .map(WorkflowTask::getTaskDefinition);
             }
 
@@ -203,12 +199,8 @@ public class DeciderService {
                 WorkflowTask workflowTask = pendingTask.getWorkflowTask();
                 if (workflowTask == null) {
                     workflowTask =
-                            Optional.ofNullable(workflow.getWorkflowDefinition())
-                                    .map(
-                                            wd ->
-                                                    wd.getTaskByRefName(
-                                                            pendingTask.getReferenceTaskName()))
-                                    .orElse(null);
+                            workflow.getWorkflowDefinition()
+                                    .getTaskByRefName(pendingTask.getReferenceTaskName());
                 }
 
                 Optional<TaskModel> retryTask =
@@ -305,24 +297,30 @@ public class DeciderService {
 
         LOGGER.debug("Starting workflow: {}", workflow);
 
+        // The tasks will be empty in case of new workflow
         List<TaskModel> tasks = workflow.getTasks();
+        // Check if the workflow is a re-run case or if it is a new workflow execution
         if (workflow.getReRunFromWorkflowId() == null || tasks.isEmpty()) {
 
-            if (NullabilityUtil.castToNonnull(workflowDef, "code ensures initialization")
-                    .getTasks()
-                    .isEmpty()) {
+            if (workflowDef.getTasks().isEmpty()) {
                 throw new TerminateWorkflowException(
                         "No tasks found to be executed", WorkflowModel.Status.COMPLETED);
             }
 
-            WorkflowTask taskToSchedule = workflowDef.getTasks().get(0);
+            WorkflowTask taskToSchedule =
+                    workflowDef
+                            .getTasks()
+                            .get(0); // Nothing is running yet - so schedule the first task
+            // Loop until a non-skipped task is found
             while (isTaskSkipped(taskToSchedule, workflow)) {
                 taskToSchedule = workflowDef.getNextTask(taskToSchedule.getTaskReferenceName());
             }
 
+            // In case of a new workflow, the first non-skippable task will be scheduled
             return getTasksToBeScheduled(workflow, taskToSchedule, 0);
         }
 
+        // Get the first task to schedule
         TaskModel rerunFromTask =
                 tasks.stream()
                         .findFirst()
@@ -417,6 +415,8 @@ public class DeciderService {
                 return false;
             }
 
+            // If there is a TERMINATE task that has been executed successfuly then the workflow
+            // should be marked as completed.
             if (TERMINATE.name().equals(task.getTaskType())
                     && task.getStatus().isTerminal()
                     && task.getStatus().isSuccessful()) {
@@ -427,21 +427,20 @@ public class DeciderService {
             }
         }
 
+        // If there are no tasks executed, then we are not done yet
         if (taskStatusMap.isEmpty()) {
             return false;
         }
 
-        List<WorkflowTask> workflowTasks =
-                NullabilityUtil.castToNonnull(
-                                workflow.getWorkflowDefinition(), "guaranteed by system null check")
-                        .getTasks();
+        List<WorkflowTask> workflowTasks = workflow.getWorkflowDefinition().getTasks();
 
         for (WorkflowTask wftask : workflowTasks) {
             TaskModel.Status status = taskStatusMap.get(wftask.getTaskReferenceName());
             if (status == null || !status.isTerminal()) {
                 return false;
             }
-
+            // if we reach here, the task has been completed.
+            // Was the task successful in completion?
             if (!status.isSuccessful()) {
                 return false;
             }
@@ -462,6 +461,7 @@ public class DeciderService {
     List<TaskModel> getNextTask(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
+        // Get the following task after the last completed task
         if (systemTaskRegistry.isSystemTask(task.getTaskType())
                 && (TaskType.TASK_TYPE_DECISION.equals(task.getTaskType())
                         || TaskType.TASK_TYPE_SWITCH.equals(task.getTaskType()))) {
@@ -474,13 +474,12 @@ public class DeciderService {
                 task.isLoopOverTask()
                         ? TaskUtils.removeIterationFromTaskRefName(task.getReferenceTaskName())
                         : task.getReferenceTaskName();
-        WorkflowTask taskToSchedule =
-                NullabilityUtil.castToNonnull(workflowDef, "code ensures initialization")
-                        .getNextTask(taskReferenceName);
+        WorkflowTask taskToSchedule = workflowDef.getNextTask(taskReferenceName);
         while (isTaskSkipped(taskToSchedule, workflow)) {
             taskToSchedule = workflowDef.getNextTask(taskToSchedule.getTaskReferenceName());
         }
         if (taskToSchedule != null && TaskType.DO_WHILE.name().equals(taskToSchedule.getType())) {
+            // check if already has this DO_WHILE task, ignore it if it already exists
             String nextTaskReferenceName = taskToSchedule.getTaskReferenceName();
             if (workflow.getTasks().stream()
                     .anyMatch(
@@ -502,10 +501,6 @@ public class DeciderService {
     private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef def = workflow.getWorkflowDefinition();
 
-        if (def == null) {
-            return null;
-        }
-
         String taskReferenceName = task.getReferenceTaskName();
         WorkflowTask taskToSchedule = def.getNextTask(taskReferenceName);
         while (isTaskSkipped(taskToSchedule, workflow)) {
@@ -516,7 +511,7 @@ public class DeciderService {
 
     @VisibleForTesting
     Optional<TaskModel> retry(
-            TaskDef taskDefinition,
+            @Nullable TaskDef taskDefinition,
             WorkflowTask workflowTask,
             TaskModel task,
             WorkflowModel workflow)
@@ -609,9 +604,7 @@ public class DeciderService {
         } else {
             rescheduled.addInput(task.getInputData());
         }
-        if (workflowTask != null
-                && workflow.getWorkflowDefinition() != null
-                && workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
+        if (workflowTask != null && workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
             Map<String, Object> taskInput =
                     parametersUtils.getTaskInputV2(
                             workflowTask.getInputParameters(),

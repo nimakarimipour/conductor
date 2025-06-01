@@ -83,7 +83,7 @@ public class WorkflowModel {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Set<String> failedTaskNames = new HashSet<>();
 
-    @Nullable private WorkflowDef workflowDefinition;
+    private WorkflowDef workflowDefinition;
 
     @Nullable private String externalInputPayloadStoragePath;
 
@@ -321,7 +321,6 @@ public class WorkflowModel {
         this.failedTaskNames = failedTaskNames;
     }
 
-    @Nullable
     public WorkflowDef getWorkflowDefinition() {
         return workflowDefinition;
     }
@@ -437,8 +436,7 @@ public class WorkflowModel {
      */
     public String getWorkflowName() {
         Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
-        return NullabilityUtil.castToNonnull(workflowDefinition, "checked by checkNotNull")
-                .getName();
+        return workflowDefinition.getName();
     }
 
     /**
@@ -448,7 +446,7 @@ public class WorkflowModel {
      */
     public int getWorkflowVersion() {
         Utils.checkNotNull(workflowDefinition, "Workflow definition is null");
-        return NullabilityUtil.castToNonnull(workflowDefinition, "checkNotNull guarantees");
+        return workflowDefinition.getVersion();
     }
 
     public boolean hasParent() {

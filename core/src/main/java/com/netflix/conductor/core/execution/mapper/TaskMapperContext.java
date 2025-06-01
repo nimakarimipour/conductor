@@ -63,7 +63,6 @@ public class TaskMapperContext {
         return builder;
     }
 
-    @Nullable
     public WorkflowDef getWorkflowDefinition() {
         return workflowModel.getWorkflowDefinition();
     }
