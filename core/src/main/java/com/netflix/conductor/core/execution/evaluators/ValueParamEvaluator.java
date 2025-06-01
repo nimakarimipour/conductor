@@ -31,12 +31,8 @@ public class ValueParamEvaluator implements Evaluator {
     @Nullable
     @SuppressWarnings("unchecked")
     @Override
-    public Object evaluate(String expression, Object input) {
+    public Object evaluate(@Nullable String expression, @Nullable Object input) {
         LOGGER.debug("ValueParam evaluator -- evaluating: {}", expression);
-        if (input == null) {
-            return null;
-        }
-
         if (input instanceof Map) {
             Object result = ((Map<String, Object>) input).get(expression);
             LOGGER.debug("ValueParam evaluator -- result: {}", result);
