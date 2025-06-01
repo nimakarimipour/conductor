@@ -510,7 +510,7 @@ public class ExecutionDAOFacade {
         tasks.forEach(this::updateTask);
     }
 
-    public void removeTask(String taskId) {
+    public void removeTask(@Nullable String taskId) {
         executionDAO.removeTask(taskId);
     }
 

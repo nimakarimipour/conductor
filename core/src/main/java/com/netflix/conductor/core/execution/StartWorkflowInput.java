@@ -127,7 +127,7 @@ public class StartWorkflowInput {
         return parentWorkflowTaskId;
     }
 
-    public void setParentWorkflowTaskId(String parentWorkflowTaskId) {
+    public void setParentWorkflowTaskId(@Nullable String parentWorkflowTaskId) {
         this.parentWorkflowTaskId = parentWorkflowTaskId;
     }
 
