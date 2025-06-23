@@ -1,0 +1,126 @@
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:71: warning: [NullAway] @NonNull field taskType not initialized
+    private String taskType;
+                   ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:73: warning: [NullAway] @NonNull field status not initialized
+    private Status status;
+                   ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:222: warning: [NullAway] returning @Nullable expression from method with @NonNull return type
+        return referenceTaskName;
+        ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:373: warning: [NullAway] returning @Nullable expression from method with @NonNull return type
+        return taskId;
+        ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:446: warning: [NullAway] returning @Nullable expression from method with @NonNull return type
+        return workflowTask;
+        ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/DeciderService.java:870: warning: [NullAway] dereferenced expression taskMappers
+                .getMappedTasks(taskMapperContext)
+                ^
+                  .getOrDefault(type, taskMappers.get(USER_DEFINED.name())) is @Nullable
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/utils/ParametersUtils.java:228: warning: [NullAway] dereferenced expression paramString is @Nullable
+        String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=})");
+                                     ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/WorkflowModel.java:86: warning: [NullAway] @NonNull field workflowDefinition not initialized
+    private WorkflowDef workflowDefinition;
+                        ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/WorkflowModel.java:389: warning: [NullAway] returning @Nullable expression from method with @NonNull return type
+        return createTime;
+        ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/TaskMapperContext.java:176: warning: [NullAway] dereferenced expression getTaskId() is @Nullable
+        return getTaskId().equals(that.getTaskId());
+                          ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/TaskMapperContext.java:187: warning: [NullAway] dereferenced expression getTaskId() is @Nullable
+        result = 31 * result + getTaskId().hashCode();
+                                          ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/TaskMapperContext.java:203: warning: [NullAway] initializer method does not guarantee @NonNull fields workflowModel (line 194), workflowTask (line 196), taskInput (line 197), deciderService (line 201) are initialized along all control-flow paths (remember to check for exceptions or early returns).
+        private Builder() {}
+                ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/SubWorkflow.java:54: warning: [NullAway] dereferenced expression input.get("subWorkflowName") is @Nullable
+        String name = input.get("subWorkflowName").toString();
+                                                  ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/SubWorkflow.java:55: warning: [NullAway] unboxing of a @Nullable value
+        int version = (int) input.get("subWorkflowVersion");
+                                     ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/Inline.java:82: warning: [NullAway] dereferenced expression evaluator is @Nullable
+            Object evalResult = evaluator.evaluate(expression, taskInput);
+                                         ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/Event.java:135: warning: [NullAway] dereferenced expression sinkValue is @Nullable
+        if (sinkValue.startsWith("conductor")) {
+                     ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/Join.java:47: warning: [NullAway] dereferenced expression joinOn is @Nullable
+                    joinOn.stream()
+                          ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/Join.java:51: warning: [NullAway] enhanced-for expression joinOn is @Nullable
+        for (String joinOnRef : joinOn) {
+                                ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/ExclusiveJoin.java:54: warning: [NullAway] dereferenced expression joinOn is @Nullable
+                    joinOn.stream()
+                          ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/ExclusiveJoin.java:59: warning: [NullAway] enhanced-for expression joinOn is @Nullable
+        for (String joinOnRef : joinOn) {
+                                ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/tasks/ExclusiveJoin.java:118: warning: [NullAway] dereferenced expression exclusiveTask is @Nullable
+                task.setOutputData(exclusiveTask.getOutputData());
+                                                ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/mapper/SubWorkflowTaskMapper.java:66: warning: [NullAway] dereferenced expression resolvedParams.get("name") is @Nullable
+        String subWorkflowName = resolvedParams.get("name").toString();
+                                                           ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/core/execution/evaluators/ValueParamEvaluator.java:41: warning: [NullAway] dereferenced expression input is @Nullable
+            String errorMsg = String.format("Input has to be a JSON object: %s", input.getClass());
+                                                                                      ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/metrics/WorkflowMonitor.java:55: warning: [NullAway] initializer method does not guarantee @NonNull fields taskDefs (line 51), workflowDefs (line 52) are initialized along all control-flow paths (remember to check for exceptions or early returns).
+    public WorkflowMonitor(
+           ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/service/TaskServiceImpl.java:175: warning: [NullAway] dereferenced expression task is @Nullable
+            Monitors.recordAckTaskError(task.getTaskType());
+                                            ^
+    (see http://t.uber.com/nullaway )
+/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/validations/ValidationContext.java:33: warning: [NullAway] returning @Nullable expression from method with @NonNull return type
+        return metadataDAO;
+        ^
+    (see http://t.uber.com/nullaway )
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+26 warnings
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':conductor-core:compileTestJava'.
+> NullAway is not a valid checker name
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 3s
