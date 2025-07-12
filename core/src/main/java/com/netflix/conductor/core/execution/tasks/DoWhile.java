@@ -229,15 +229,15 @@ public class DoWhile extends WorkflowSystemTask {
         List<TaskModel> loopOver =
                 workflow.getTasks().stream()
                         .filter(
-                                t ->
+                                tttt ->
                                         (task.getWorkflowTask()
                                                         .has(
                                                                 TaskUtils
                                                                         .removeIterationFromTaskRefName(
-                                                                                t
+                                                                                tttt
                                                                                         .getReferenceTaskName()))
                                                 && !task.getReferenceTaskName()
-                                                        .equals(t.getReferenceTaskName())))
+                                                        .equals(tttt.getReferenceTaskName())))
                         .collect(Collectors.toList());
 
         for (TaskModel loopOverTask : loopOver) {
