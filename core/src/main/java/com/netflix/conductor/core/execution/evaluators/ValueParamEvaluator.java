@@ -37,8 +37,12 @@ public class ValueParamEvaluator implements Evaluator {
             Object result = ((Map<String, Object>) input).get(expression);
             LOGGER.debug("ValueParam evaluator -- result: {}", result);
             return result;
-        } else {
+        } else if (input != null) {
             String errorMsg = String.format("Input has to be a JSON object: %s", input.getClass());
+            LOGGER.error(errorMsg);
+            throw new TerminateWorkflowException(errorMsg);
+        } else {
+            String errorMsg = "Input is null";
             LOGGER.error(errorMsg);
             throw new TerminateWorkflowException(errorMsg);
         }
