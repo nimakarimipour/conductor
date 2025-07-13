@@ -47,13 +47,9 @@ public class ExclusiveJoin extends WorkflowSystemTask {
         StringBuilder failureReason = new StringBuilder();
         TaskModel.Status taskStatus;
         List<String> joinOn = (List<String>) task.getInputData().get("joinOn");
-
-        if (joinOn == null) {
-            LOGGER.debug("joinOn is null, exiting method.");
-            return false;
-        }
-
         if (task.isLoopOverTask()) {
+            // If exclusive join is part of loop over task, wait for specific iteration to get
+            // complete
             joinOn =
                     joinOn.stream()
                             .map(name -> TaskUtils.appendIteration(name, task.getIteration()))
@@ -86,6 +82,7 @@ public class ExclusiveJoin extends WorkflowSystemTask {
                     workflow.getWorkflowId());
             if (defaultExclusiveJoinTasks != null && !defaultExclusiveJoinTasks.isEmpty()) {
                 for (String defaultExclusiveJoinTask : defaultExclusiveJoinTasks) {
+                    // Pick the first task that we should join on and break.
                     exclusiveTask = workflow.getTaskByRefName(defaultExclusiveJoinTask);
                     if (exclusiveTask == null
                             || exclusiveTask.getStatus() == TaskModel.Status.SKIPPED) {
