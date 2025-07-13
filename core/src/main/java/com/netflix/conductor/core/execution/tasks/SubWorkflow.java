@@ -52,12 +52,11 @@ public class SubWorkflow extends WorkflowSystemTask {
     public void start(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
         Map<String, Object> input = task.getInputData();
         String name = input.get("subWorkflowName").toString();
-
-        Integer versionInteger = (Integer) input.get("subWorkflowVersion");
-        int version = versionInteger != null ? versionInteger : 0; // Provide a default value here
+        int version = (int) input.get("subWorkflowVersion");
 
         WorkflowDef workflowDefinition = null;
         if (input.get("subWorkflowDefinition") != null) {
+            // convert the value back to workflow definition object
             workflowDefinition =
                     objectMapper.convertValue(
                             input.get("subWorkflowDefinition"), WorkflowDef.class);
@@ -89,8 +88,11 @@ public class SubWorkflow extends WorkflowSystemTask {
             String subWorkflowId = startWorkflowOperation.execute(startWorkflowInput);
 
             task.setSubWorkflowId(subWorkflowId);
+            // For backwards compatibility
             task.addOutput(SUB_WORKFLOW_ID, subWorkflowId);
 
+            // Set task status based on current sub-workflow status, as the status can change in
+            // recursion by the time we update here.
             WorkflowModel subWorkflow = workflowExecutor.getWorkflow(subWorkflowId, false);
             updateTaskStatus(subWorkflow, task);
         } catch (TransientException te) {
@@ -100,6 +102,7 @@ public class SubWorkflow extends WorkflowSystemTask {
                     workflow.toShortString(),
                     name);
         } catch (Exception ae) {
+
             task.setStatus(TaskModel.Status.FAILED);
             task.setReasonForIncompletion(ae.getMessage());
             LOGGER.error(
