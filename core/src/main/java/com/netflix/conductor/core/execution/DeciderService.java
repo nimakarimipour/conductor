@@ -475,7 +475,7 @@ public class DeciderService {
                         ? TaskUtils.removeIterationFromTaskRefName(task.getReferenceTaskName())
                         : task.getReferenceTaskName();
         WorkflowTask taskToSchedule = workflowDef.getNextTask(taskReferenceName);
-        while (isTaskSkipped(taskToSchedule, workflow)) {
+        while (taskToSchedule != null && isTaskSkipped(taskToSchedule, workflow)) {
             taskToSchedule = workflowDef.getNextTask(taskToSchedule.getTaskReferenceName());
         }
         if (taskToSchedule != null && TaskType.DO_WHILE.name().equals(taskToSchedule.getType())) {
@@ -484,9 +484,10 @@ public class DeciderService {
             if (workflow.getTasks().stream()
                     .anyMatch(
                             runningTask ->
-                                    runningTask
-                                            .getReferenceTaskName()
-                                            .equals(nextTaskReferenceName))) {
+                                    runningTask.getReferenceTaskName() != null
+                                            && runningTask
+                                                    .getReferenceTaskName()
+                                                    .equals(nextTaskReferenceName))) {
                 return Collections.emptyList();
             }
         }
