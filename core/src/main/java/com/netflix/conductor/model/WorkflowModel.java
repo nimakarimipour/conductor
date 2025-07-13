@@ -385,7 +385,11 @@ public class WorkflowModel {
         this.ownerApp = ownerApp;
     }
 
+    @NonNull
     public Long getCreateTime() {
+        if (createTime == null) {
+            throw new IllegalStateException("createTime is null");
+        }
         return createTime;
     }
 
