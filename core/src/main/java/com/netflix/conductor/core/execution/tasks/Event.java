@@ -122,7 +122,6 @@ public class Event extends WorkflowSystemTask {
     }
 
     @Nullable
-    @VisibleForTesting
     String computeQueueName(WorkflowModel workflow, TaskModel task) {
         String sinkValueRaw = (String) task.getInputData().get("sink");
         Map<String, Object> input = new HashMap<>();
@@ -132,7 +131,7 @@ public class Event extends WorkflowSystemTask {
         String sinkValue = (String) replaced.get("sink");
         String queueName = sinkValue;
 
-        if (sinkValue.startsWith("conductor")) {
+        if (sinkValue != null && sinkValue.startsWith("conductor")) {
             if ("conductor".equals(sinkValue)) {
                 queueName =
                         sinkValue
