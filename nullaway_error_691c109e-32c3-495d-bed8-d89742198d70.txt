@@ -1,4 +1,0 @@
-/home/nima/Developer/nullness-benchmarks/conductor/core/src/main/java/com/netflix/conductor/model/TaskModel.java:73: error: [NullAway] @NonNull field status not initialized
-    private Status status;
-                   ^
-    (see http://t.uber.com/nullaway )
