@@ -49,6 +49,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TERMINATE;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.USER_DEFINED;
 import static com.netflix.conductor.model.TaskModel.Status.*;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 
 /**
  * Decider evaluates the state of the workflow by inspecting the current state along with the
@@ -618,47 +619,47 @@ public class DeciderService {
     }
 
     @VisibleForTesting
-    void checkWorkflowTimeout(WorkflowModel workflow) {
-        WorkflowDef workflowDef = workflow.getWorkflowDefinition();
-        if (workflowDef == null) {
-            LOGGER.warn("Missing workflow definition : {}", workflow.getWorkflowId());
-            return;
-        }
-        if (workflow.getStatus().isTerminal() || workflowDef.getTimeoutSeconds() <= 0) {
-            return;
-        }
-
-        long timeout = 1000L * workflowDef.getTimeoutSeconds();
-        long now = System.currentTimeMillis();
-        long elapsedTime =
-                workflow.getLastRetriedTime() > 0
-                        ? now - workflow.getLastRetriedTime()
-                        : now - workflow.getCreateTime();
-
-        if (elapsedTime < timeout) {
-            return;
-        }
-
-        String reason =
-                String.format(
-                        "Workflow timed out after %d seconds. Timeout configured as %d seconds. "
-                                + "Timeout policy configured to %s",
-                        elapsedTime / 1000L,
-                        workflowDef.getTimeoutSeconds(),
-                        workflowDef.getTimeoutPolicy().name());
-
-        switch (workflowDef.getTimeoutPolicy()) {
-            case ALERT_ONLY:
-                LOGGER.info("{} {}", workflow.getWorkflowId(), reason);
-                Monitors.recordWorkflowTermination(
-                        workflow.getWorkflowName(),
-                        WorkflowModel.Status.TIMED_OUT,
-                        workflow.getOwnerApp());
+        void checkWorkflowTimeout(WorkflowModel workflow) {
+            WorkflowDef workflowDef = workflow.getWorkflowDefinition();
+            if (workflowDef == null) {
+                LOGGER.warn("Missing workflow definition : {}", workflow.getWorkflowId());
                 return;
-            case TIME_OUT_WF:
-                throw new TerminateWorkflowException(reason, WorkflowModel.Status.TIMED_OUT);
-        }
-    }
+            }
+            if (workflow.getStatus().isTerminal() || workflowDef.getTimeoutSeconds() <= 0) {
+                return;
+            }
+    
+            long timeout = 1000L * workflowDef.getTimeoutSeconds();
+            long now = System.currentTimeMillis();
+            long elapsedTime =
+                    workflow.getLastRetriedTime() > 0
+                            ? now - workflow.getLastRetriedTime()
+                            : now - Nullability.castToNonnull(workflow.getCreateTime());
+    
+            if (elapsedTime < timeout) {
+                return;
+            }
+    
+            String reason =
+                    String.format(
+                            "Workflow timed out after %d seconds. Timeout configured as %d seconds. "
+                                    + "Timeout policy configured to %s",
+                            elapsedTime / 1000L,
+                            workflowDef.getTimeoutSeconds(),
+                            workflowDef.getTimeoutPolicy().name());
+    
+            switch (workflowDef.getTimeoutPolicy()) {
+                case ALERT_ONLY:
+                    LOGGER.info("{} {}", workflow.getWorkflowId(), reason);
+                    Monitors.recordWorkflowTermination(
+                            workflow.getWorkflowName(),
+                            WorkflowModel.Status.TIMED_OUT,
+                            workflow.getOwnerApp());
+                    return;
+                case TIME_OUT_WF:
+                    throw new TerminateWorkflowException(reason, WorkflowModel.Status.TIMED_OUT);
+            }
+      }
 
     @VisibleForTesting
     void checkTaskTimeout(TaskDef taskDef, TaskModel task) {
