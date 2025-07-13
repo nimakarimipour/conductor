@@ -57,8 +57,6 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
 
-import edu.ucr.cs.riple.annotator.util.Nullability;
-
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import static com.netflix.conductor.model.TaskModel.Status.*;
 
@@ -1541,6 +1539,7 @@ public class WorkflowExecutor {
             @Nullable Map<String, Object> workflowInput,
             @Nullable String correlationId) {
 
+        // Get the workflow
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
         if (!workflow.getStatus().isTerminal()) {
             String errorMsg =
@@ -1551,10 +1550,14 @@ public class WorkflowExecutor {
         }
         updateAndPushParents(workflow, "reran");
 
+        // If the task Id is null it implies that the entire workflow has to be rerun
         if (taskId == null) {
+            // remove all tasks
             workflow.getTasks().forEach(task -> executionDAOFacade.removeTask(task.getTaskId()));
             workflow.setTasks(new ArrayList<>());
+            // Set workflow as RUNNING
             workflow.setStatus(WorkflowModel.Status.RUNNING);
+            // Reset failure reason from previous run to default
             workflow.setReasonForIncompletion(null);
             workflow.setFailedTaskId(null);
             workflow.setFailedReferenceTaskNames(new HashSet<>());
@@ -1578,15 +1581,16 @@ public class WorkflowExecutor {
             return true;
         }
 
+        // Now iterate through the tasks and find the "specific" task
         TaskModel rerunFromTask = null;
         for (TaskModel task : workflow.getTasks()) {
-            if (Nullability.castToNonnull(task.getTaskId(), "non-null taskId expected")
-                    .equals(taskId)) {
+            if (task.getTaskId().equals(taskId)) {
                 rerunFromTask = task;
                 break;
             }
         }
 
+        // If not found look into sub workflows
         if (rerunFromTask == null) {
             for (TaskModel task : workflow.getTasks()) {
                 if (task.getTaskType().equalsIgnoreCase(TaskType.TASK_TYPE_SUB_WORKFLOW)) {
@@ -1600,7 +1604,9 @@ public class WorkflowExecutor {
         }
 
         if (rerunFromTask != null) {
+            // set workflow as RUNNING
             workflow.setStatus(WorkflowModel.Status.RUNNING);
+            // Reset failure reason from previous run to default
             workflow.setReasonForIncompletion(null);
             workflow.setFailedTaskId(null);
             workflow.setFailedReferenceTaskNames(new HashSet<>());
@@ -1612,13 +1618,17 @@ public class WorkflowExecutor {
             if (workflowInput != null) {
                 workflow.setInput(workflowInput);
             }
+            // Add to decider queue
             queueDAO.push(
                     DECIDER_QUEUE,
                     workflow.getWorkflowId(),
                     workflow.getPriority(),
                     properties.getWorkflowOffsetTimeout().getSeconds());
             executionDAOFacade.updateWorkflow(workflow);
+            // update tasks in datastore to update workflow-tasks relationship for archived
+            // workflows
             executionDAOFacade.updateTasks(workflow.getTasks());
+            // Remove all tasks after the "rerunFromTask"
             List<TaskModel> filteredTasks = new ArrayList<>();
             for (TaskModel task : workflow.getTasks()) {
                 if (task.getSeq() > rerunFromTask.getSeq()) {
@@ -1628,6 +1638,7 @@ public class WorkflowExecutor {
                 }
             }
             workflow.setTasks(filteredTasks);
+            // reset fields before restarting the task
             rerunFromTask.setScheduledTime(System.currentTimeMillis());
             rerunFromTask.setStartTime(0);
             rerunFromTask.setUpdateTime(0);
@@ -1636,6 +1647,7 @@ public class WorkflowExecutor {
             rerunFromTask.setRetried(false);
             rerunFromTask.setExecuted(false);
             if (rerunFromTask.getTaskType().equalsIgnoreCase(TaskType.TASK_TYPE_SUB_WORKFLOW)) {
+                // if task is sub workflow set task as IN_PROGRESS and reset start time
                 rerunFromTask.setStatus(IN_PROGRESS);
                 rerunFromTask.setStartTime(System.currentTimeMillis());
             } else {
@@ -1644,10 +1656,12 @@ public class WorkflowExecutor {
                 }
                 if (systemTaskRegistry.isSystemTask(rerunFromTask.getTaskType())
                         && !systemTaskRegistry.get(rerunFromTask.getTaskType()).isAsync()) {
+                    // Start the synchronous system task directly
                     systemTaskRegistry
                             .get(rerunFromTask.getTaskType())
                             .start(workflow, rerunFromTask, this);
                 } else {
+                    // Set the task to rerun as SCHEDULED
                     rerunFromTask.setStatus(SCHEDULED);
                     addTaskToQueue(rerunFromTask);
                 }
