@@ -121,38 +121,41 @@ public class Event extends WorkflowSystemTask {
         queue.ack(List.of(message));
     }
 
-    @Nullable
-    @VisibleForTesting
-    String computeQueueName(WorkflowModel workflow, TaskModel task) {
-        String sinkValueRaw = (String) task.getInputData().get("sink");
-        Map<String, Object> input = new HashMap<>();
-        input.put("sink", sinkValueRaw);
-        Map<String, Object> replaced =
-                parametersUtils.getTaskInputV2(input, workflow, task.getTaskId(), null);
-        String sinkValue = (String) replaced.get("sink");
-        String queueName = sinkValue;
-
-        if (sinkValue.startsWith("conductor")) {
-            if ("conductor".equals(sinkValue)) {
-                queueName =
-                        sinkValue
-                                + ":"
-                                + workflow.getWorkflowName()
-                                + ":"
-                                + task.getReferenceTaskName();
-            } else if (sinkValue.startsWith("conductor:")) {
-                queueName =
-                        "conductor:"
-                                + workflow.getWorkflowName()
-                                + ":"
-                                + sinkValue.replaceAll("conductor:", "");
-            } else {
-                throw new IllegalStateException(
-                        "Invalid / Unsupported sink specified: " + sinkValue);
+    @Nullable @VisibleForTesting
+        String computeQueueName(WorkflowModel workflow, TaskModel task) {
+            String sinkValueRaw = (String) task.getInputData().get("sink");
+            Map<String, Object> input = new HashMap<>();
+            input.put("sink", sinkValueRaw);
+            Map<String, Object> replaced =
+                    parametersUtils.getTaskInputV2(input, workflow, task.getTaskId(), null);
+            String sinkValue = (String) replaced.get("sink");
+            if (sinkValue == null) {
+                return null;
             }
-        }
-        return queueName;
-    }
+    
+            String queueName = sinkValue;
+    
+            if (sinkValue.startsWith("conductor")) {
+                if ("conductor".equals(sinkValue)) {
+                    queueName =
+                            sinkValue
+                                    + ":"
+                                    + workflow.getWorkflowName()
+                                    + ":"
+                                    + task.getReferenceTaskName();
+                } else if (sinkValue.startsWith("conductor:")) {
+                    queueName =
+                            "conductor:"
+                                    + workflow.getWorkflowName()
+                                    + ":"
+                                    + sinkValue.replaceAll("conductor:", "");
+                } else {
+                    throw new IllegalStateException(
+                            "Invalid / Unsupported sink specified: " + sinkValue);
+                }
+            }
+            return queueName;
+      }
 
     @VisibleForTesting
     ObservableQueue getQueue(@Nullable String queueName, String taskId) {
