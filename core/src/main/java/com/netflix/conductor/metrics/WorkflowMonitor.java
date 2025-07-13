@@ -53,19 +53,21 @@ public class WorkflowMonitor {
     private int refreshCounter = 0;
 
     public WorkflowMonitor(
-            MetadataService metadataService,
-            QueueDAO queueDAO,
-            ExecutionDAOFacade executionDAOFacade,
-            @Value("${conductor.workflow-monitor.metadata-refresh-interval:10}")
-                    int metadataRefreshInterval,
-            @Qualifier(ASYNC_SYSTEM_TASKS_QUALIFIER) Set<WorkflowSystemTask> asyncSystemTasks) {
-        this.metadataService = metadataService;
-        this.queueDAO = queueDAO;
-        this.executionDAOFacade = executionDAOFacade;
-        this.metadataRefreshInterval = metadataRefreshInterval;
-        this.asyncSystemTasks = asyncSystemTasks;
-        LOGGER.info("{} initialized.", WorkflowMonitor.class.getSimpleName());
-    }
+                MetadataService metadataService,
+                QueueDAO queueDAO,
+                ExecutionDAOFacade executionDAOFacade,
+                @Value("${conductor.workflow-monitor.metadata-refresh-interval:10}")
+                        int metadataRefreshInterval,
+                @Qualifier(ASYNC_SYSTEM_TASKS_QUALIFIER) Set<WorkflowSystemTask> asyncSystemTasks) {
+            this.metadataService = metadataService;
+            this.queueDAO = queueDAO;
+            this.executionDAOFacade = executionDAOFacade;
+            this.metadataRefreshInterval = metadataRefreshInterval;
+            this.asyncSystemTasks = asyncSystemTasks;
+            this.taskDefs = new ArrayList<>();
+            this.workflowDefs = new ArrayList<>();
+            LOGGER.info("{} initialized.", WorkflowMonitor.class.getSimpleName());
+        }
 
     @Scheduled(
             initialDelayString = "${conductor.workflow-monitor.stats.initial-delay:120000}",
