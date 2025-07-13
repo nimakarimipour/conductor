@@ -370,8 +370,11 @@ public class TaskModel {
     }
 
     public String getTaskId() {
-        return taskId;
-    }
+          if (taskId == null) {
+              throw new IllegalStateException("taskId cannot be null");
+          }
+          return taskId;
+      }
 
     public void setTaskId(String taskId) {
         this.taskId = taskId;
