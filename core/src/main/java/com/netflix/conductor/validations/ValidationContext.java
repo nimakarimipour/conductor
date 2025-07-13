@@ -30,6 +30,9 @@ public class ValidationContext {
     }
 
     public static MetadataDAO getMetadataDAO() {
-        return metadataDAO;
-    }
+          if (metadataDAO == null) {
+              throw new IllegalStateException("MetadataDAO has not been initialized");
+          }
+          return metadataDAO;
+      }
 }
