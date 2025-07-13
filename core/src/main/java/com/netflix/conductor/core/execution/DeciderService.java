@@ -827,51 +827,49 @@ public class DeciderService {
     }
 
     public List<TaskModel> getTasksToBeScheduled(
-            WorkflowModel workflow,
-            WorkflowTask taskToSchedule,
-            int retryCount,
-            @Nullable String retriedTaskId) {
-        Map<String, Object> input =
-                parametersUtils.getTaskInput(
-                        taskToSchedule.getInputParameters(), workflow, null, null);
-
-        String type = taskToSchedule.getType();
-
-        // get tasks already scheduled (in progress/terminal) for  this workflow instance
-        List<String> tasksInWorkflow =
-                workflow.getTasks().stream()
-                        .filter(
-                                runningTask ->
-                                        runningTask.getStatus().equals(TaskModel.Status.IN_PROGRESS)
-                                                || runningTask.getStatus().isTerminal())
-                        .map(TaskModel::getReferenceTaskName)
-                        .collect(Collectors.toList());
-
-        String taskId = idGenerator.generate();
-        TaskMapperContext taskMapperContext =
-                TaskMapperContext.newBuilder()
-                        .withWorkflowModel(workflow)
-                        .withTaskDefinition(taskToSchedule.getTaskDefinition())
-                        .withWorkflowTask(taskToSchedule)
-                        .withTaskInput(input)
-                        .withRetryCount(retryCount)
-                        .withRetryTaskId(retriedTaskId)
-                        .withTaskId(taskId)
-                        .withDeciderService(this)
-                        .build();
-
-        // For static forks, each branch of the fork creates a join task upon completion for
-        // dynamic forks, a join task is created with the fork and also with each branch of the
-        // fork.
-        // A new task must only be scheduled if a task, with the same reference name is not already
-        // in this workflow instance
-        return taskMappers
-                .getOrDefault(type, taskMappers.get(USER_DEFINED.name()))
-                .getMappedTasks(taskMapperContext)
-                .stream()
-                .filter(task -> !tasksInWorkflow.contains(task.getReferenceTaskName()))
-                .collect(Collectors.toList());
-    }
+                WorkflowModel workflow,
+                WorkflowTask taskToSchedule,
+                int retryCount,
+                @Nullable String retriedTaskId) {
+            Map<String, Object> input =
+                    parametersUtils.getTaskInput(
+                            taskToSchedule.getInputParameters(), workflow, null, null);
+    
+            String type = taskToSchedule.getType();
+    
+            List<String> tasksInWorkflow =
+                    workflow.getTasks().stream()
+                            .filter(
+                                    runningTask ->
+                                            runningTask.getStatus().equals(TaskModel.Status.IN_PROGRESS)
+                                                    || runningTask.getStatus().isTerminal())
+                            .map(TaskModel::getReferenceTaskName)
+                            .collect(Collectors.toList());
+    
+            String taskId = idGenerator.generate();
+            TaskMapperContext taskMapperContext =
+                    TaskMapperContext.newBuilder()
+                            .withWorkflowModel(workflow)
+                            .withTaskDefinition(taskToSchedule.getTaskDefinition())
+                            .withWorkflowTask(taskToSchedule)
+                            .withTaskInput(input)
+                            .withRetryCount(retryCount)
+                            .withRetryTaskId(retriedTaskId)
+                            .withTaskId(taskId)
+                            .withDeciderService(this)
+                            .build();
+    
+            TaskMapper taskMapper = taskMappers.getOrDefault(type, taskMappers.get(USER_DEFINED.name()));
+            if (taskMapper == null) {
+                throw new IllegalStateException("TaskMapper not found for type: " + type);
+            }
+    
+            return taskMapper
+                    .getMappedTasks(taskMapperContext)
+                    .stream()
+                    .filter(task -> !tasksInWorkflow.contains(task.getReferenceTaskName()))
+                    .collect(Collectors.toList());
+        }
 
     private boolean isTaskSkipped(WorkflowTask taskToSchedule, WorkflowModel workflow) {
         try {
