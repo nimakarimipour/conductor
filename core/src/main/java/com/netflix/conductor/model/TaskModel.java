@@ -443,8 +443,11 @@ public class TaskModel {
     }
 
     public WorkflowTask getWorkflowTask() {
-        return workflowTask;
-    }
+          if (workflowTask == null) {
+              throw new NullPointerException("workflowTask is null");
+          }
+          return workflowTask;
+      }
 
     public void setWorkflowTask(WorkflowTask workflowTask) {
         this.workflowTask = workflowTask;
