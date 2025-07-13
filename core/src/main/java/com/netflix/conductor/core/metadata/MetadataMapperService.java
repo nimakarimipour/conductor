@@ -38,8 +38,6 @@ import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
-import edu.ucr.cs.riple.annotator.util.Nullability;
-
 /**
  * Populates metadata definitions within workflow objects. Benefits of loading and populating
  * metadata definitions upfront could be:
@@ -125,28 +123,16 @@ public class MetadataMapperService {
 
     private void populateWorkflowTaskWithDefinition(WorkflowTask workflowTask) {
         Utils.checkNotNull(workflowTask, "WorkflowTask cannot be null");
-        if (shouldPopulateTaskDefinition(
-                Nullability.castToNonnull(workflowTask, "not null after check"))) {
-            Nullability.castToNonnull(workflowTask, "not null after check")
-                    .setTaskDefinition(metadataDAO.getTaskDef(workflowTask.getName()));
-            if (Nullability.castToNonnull(workflowTask, "not null after check").getTaskDefinition()
-                            == null
-                    && Nullability.castToNonnull(workflowTask, "not null after check")
-                            .getType()
-                            .equals(TaskType.SIMPLE.name())) {
-                Nullability.castToNonnull(workflowTask, "not null after check")
-                        .setTaskDefinition(
-                                new TaskDef(
-                                        Nullability.castToNonnull(
-                                                        workflowTask, "not null after check")
-                                                .getName()));
+        if (shouldPopulateTaskDefinition(workflowTask)) {
+            workflowTask.setTaskDefinition(metadataDAO.getTaskDef(workflowTask.getName()));
+            if (workflowTask.getTaskDefinition() == null
+                    && workflowTask.getType().equals(TaskType.SIMPLE.name())) {
+                // ad-hoc task def
+                workflowTask.setTaskDefinition(new TaskDef(workflowTask.getName()));
             }
         }
-        if (Nullability.castToNonnull(workflowTask, "not null after check")
-                .getType()
-                .equals(TaskType.SUB_WORKFLOW.name())) {
-            populateVersionForSubWorkflow(
-                    Nullability.castToNonnull(workflowTask, "not null after check"));
+        if (workflowTask.getType().equals(TaskType.SUB_WORKFLOW.name())) {
+            populateVersionForSubWorkflow(workflowTask);
         }
     }
 

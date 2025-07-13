@@ -31,8 +31,6 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 
-import edu.ucr.cs.riple.annotator.util.Nullability;
-
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_DO_WHILE;
 
 @Component(TASK_TYPE_DO_WHILE)
@@ -60,16 +58,15 @@ public class DoWhile extends WorkflowSystemTask {
         StringBuilder failureReason = new StringBuilder();
         Map<String, Object> output = new HashMap<>();
 
+        /*
+         * Get the latest set of tasks (the ones that have the highest retry count). We don't want to evaluate any tasks
+         * that have already failed if there is a more current one (a later retry count).
+         */
         Map<String, TaskModel> relevantTasks = new LinkedHashMap<>();
         TaskModel relevantTask;
-
-        Optional<WorkflowTask> optionalWorkflowTask =
-                Optional.ofNullable(doWhileTaskModel.getWorkflowTask());
-
         for (TaskModel t : workflow.getTasks()) {
-            if (optionalWorkflowTask.isPresent()
-                    && optionalWorkflowTask
-                            .get()
+            if (doWhileTaskModel
+                            .getWorkflowTask()
                             .has(TaskUtils.removeIterationFromTaskRefName(t.getReferenceTaskName()))
                     && !doWhileTaskModel.getReferenceTaskName().equals(t.getReferenceTaskName())
                     && doWhileTaskModel.getIteration() == t.getIteration()) {
@@ -91,6 +88,8 @@ public class DoWhile extends WorkflowSystemTask {
                     doWhileTaskModel.getIteration());
         }
 
+        // if the loopOverTasks collection is empty, no tasks inside the loop have been scheduled.
+        // so schedule it and exit the method.
         if (loopOverTasks.isEmpty()) {
             doWhileTaskModel.setIteration(1);
             doWhileTaskModel.addOutput("iteration", doWhileTaskModel.getIteration());
@@ -122,9 +121,12 @@ public class DoWhile extends WorkflowSystemTask {
         }
 
         if (!isIterationComplete(doWhileTaskModel, relevantTasks)) {
+            // current iteration is not complete (all tasks inside the loop are not terminal)
             return false;
         }
 
+        // if we are here, the iteration is complete, and we need to check if there is a next
+        // iteration by evaluating the loopCondition
         boolean shouldContinue;
         try {
             shouldContinue = evaluateCondition(workflow, doWhileTaskModel);
@@ -147,10 +149,7 @@ public class DoWhile extends WorkflowSystemTask {
             String message =
                     String.format(
                             "Unable to evaluate condition %s, exception %s",
-                            Nullability.castToNonnull(
-                                            doWhileTaskModel.getWorkflowTask(), "checked for null")
-                                    .getLoopCondition(),
-                            e.getMessage());
+                            doWhileTaskModel.getWorkflowTask().getLoopCondition(), e.getMessage());
             LOGGER.error(message);
             return markTaskFailure(
                     doWhileTaskModel, TaskModel.Status.FAILED_WITH_TERMINAL_ERROR, message);
@@ -168,9 +167,7 @@ public class DoWhile extends WorkflowSystemTask {
     private boolean isIterationComplete(
             TaskModel doWhileTaskModel, Map<String, TaskModel> referenceNameToModel) {
         List<WorkflowTask> workflowTasksInsideDoWhile =
-                Optional.ofNullable(doWhileTaskModel.getWorkflowTask())
-                        .map(WorkflowTask::getLoopOver)
-                        .orElse(Collections.emptyList());
+                doWhileTaskModel.getWorkflowTask().getLoopOver();
         int iteration = doWhileTaskModel.getIteration();
         boolean allTasksTerminal = true;
         for (WorkflowTask workflowTaskInsideDoWhile : workflowTasksInsideDoWhile) {
@@ -196,11 +193,10 @@ public class DoWhile extends WorkflowSystemTask {
         LOGGER.debug(
                 "Scheduling loop tasks for task {} as condition {} evaluated to true",
                 doWhileTaskModel.getTaskId(),
-                Optional.ofNullable(doWhileTaskModel.getWorkflowTask())
-                        .map(WorkflowTask::getLoopCondition)
-                        .orElse("No condition")); // Default message or value if null
+                doWhileTaskModel.getWorkflowTask().getLoopCondition());
         workflowExecutor.scheduleNextIteration(doWhileTaskModel, workflow);
-        return true;
+        return true; // Return true even though status not changed. Iteration has to be updated in
+        // execution DAO.
     }
 
     boolean markTaskFailure(TaskModel taskModel, TaskModel.Status status, String failureReason) {
@@ -222,16 +218,10 @@ public class DoWhile extends WorkflowSystemTask {
     @VisibleForTesting
     boolean evaluateCondition(WorkflowModel workflow, TaskModel task) throws ScriptException {
         TaskDef taskDefinition = task.getTaskDefinition().orElse(null);
-
-        // Get the WorkflowTask using Optional to avoid NullPointerException
-        Optional<WorkflowTask> optionalWorkflowTask = Optional.ofNullable(task.getWorkflowTask());
-
         // Use paramUtils to compute the task input
         Map<String, Object> conditionInput =
                 parametersUtils.getTaskInputV2(
-                        optionalWorkflowTask
-                                .map(WorkflowTask::getInputParameters)
-                                .orElse(Collections.emptyMap()),
+                        task.getWorkflowTask().getInputParameters(),
                         workflow,
                         task.getTaskId(),
                         taskDefinition);
@@ -240,15 +230,12 @@ public class DoWhile extends WorkflowSystemTask {
                 workflow.getTasks().stream()
                         .filter(
                                 tttt ->
-                                        (optionalWorkflowTask
-                                                        .map(
-                                                                wfTask ->
-                                                                        wfTask.has(
-                                                                                TaskUtils
-                                                                                        .removeIterationFromTaskRefName(
-                                                                                                tttt
-                                                                                                        .getReferenceTaskName())))
-                                                        .orElse(false)
+                                        (task.getWorkflowTask()
+                                                        .has(
+                                                                TaskUtils
+                                                                        .removeIterationFromTaskRefName(
+                                                                                tttt
+                                                                                        .getReferenceTaskName()))
                                                 && !task.getReferenceTaskName()
                                                         .equals(tttt.getReferenceTaskName())))
                         .collect(Collectors.toList());
@@ -259,7 +246,7 @@ public class DoWhile extends WorkflowSystemTask {
                     loopOverTask.getOutputData());
         }
 
-        String condition = optionalWorkflowTask.map(WorkflowTask::getLoopCondition).orElse(null);
+        String condition = task.getWorkflowTask().getLoopCondition();
         boolean result = false;
         if (condition != null) {
             LOGGER.debug("Condition: {} is being evaluated", condition);
