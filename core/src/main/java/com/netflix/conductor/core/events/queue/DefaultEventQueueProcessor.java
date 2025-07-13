@@ -34,6 +34,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
 
@@ -89,7 +90,6 @@ public class DefaultEventQueueProcessor {
                                 String taskRefName = getValue("taskRefName", json);
                                 String taskId = getValue("taskId", json);
                                 if (workflowId == null || "".equals(workflowId)) {
-                                    // This is a bad message, we cannot process it
                                     LOGGER.error(
                                             "No workflow id found in the message. {}", payload);
                                     queue.ack(Collections.singletonList(msg));
@@ -104,7 +104,11 @@ public class DefaultEventQueueProcessor {
                                                     .filter(
                                                             task ->
                                                                     !task.getStatus().isTerminal()
-                                                                            && task.getTaskId()
+                                                                            && Nullability
+                                                                                    .castToNonnull(
+                                                                                            task
+                                                                                                    .getTaskId(),
+                                                                                            "taskId validated")
                                                                                     .equals(taskId))
                                                     .findFirst();
                                 } else if (StringUtils.isEmpty(taskRefName)) {

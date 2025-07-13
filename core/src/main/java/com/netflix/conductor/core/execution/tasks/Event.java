@@ -34,6 +34,7 @@ import com.netflix.conductor.model.WorkflowModel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.ucr.cs.riple.annotator.util.Nullability;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_EVENT;
 
@@ -115,9 +116,13 @@ public class Event extends WorkflowSystemTask {
 
     @Override
     public void cancel(WorkflowModel workflow, TaskModel task, WorkflowExecutor workflowExecutor) {
-        Message message = new Message(task.getTaskId(), null, task.getTaskId());
+        Message message =
+                new Message(
+                        Nullability.castToNonnull(task.getTaskId()),
+                        null,
+                        Nullability.castToNonnull(task.getTaskId()));
         String queueName = computeQueueName(workflow, task);
-        ObservableQueue queue = getQueue(queueName, task.getTaskId());
+        ObservableQueue queue = getQueue(queueName, Nullability.castToNonnull(task.getTaskId()));
         queue.ack(List.of(message));
     }
 
