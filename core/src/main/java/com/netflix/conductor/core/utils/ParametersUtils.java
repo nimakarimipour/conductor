@@ -40,7 +40,6 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import edu.ucr.cs.riple.annotator.util.Nullability;
 
 /** Used to parse and resolve the JSONPath bindings in the workflow and task definitions. */
 @Component
@@ -226,12 +225,14 @@ public class ParametersUtils {
             @Nullable String paramString,
             DocumentContext documentContext,
             @Nullable String taskId) {
-        String[] values = Nullability.castToNonnull(paramString).split("(?=(?<!\\$)\\$\\{)|(?<=})");
+        String[] values = paramString.split("(?=(?<!\\$)\\$\\{)|(?<=})");
         Object[] convertedValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
             convertedValues[i] = values[i];
             if (values[i].startsWith("${") && values[i].endsWith("}")) {
                 String paramPath = values[i].substring(2, values[i].length() - 1);
+                // if the paramPath is blank, meaning no value in between ${ and }
+                // like ${}, ${  } etc, set the value to empty string
                 if (StringUtils.isBlank(paramPath)) {
                     convertedValues[i] = "";
                     continue;
@@ -259,6 +260,7 @@ public class ParametersUtils {
         }
 
         Object retObj = convertedValues[0];
+        // If the parameter String was "v1 v2 v3" then make sure to stitch it back
         if (convertedValues.length > 1) {
             for (int i = 0; i < convertedValues.length; i++) {
                 Object val = convertedValues[i];
