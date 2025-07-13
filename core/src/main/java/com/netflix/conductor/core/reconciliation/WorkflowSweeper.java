@@ -119,9 +119,8 @@ public class WorkflowSweeper {
         long postponeDurationSeconds = 0;
         for (TaskModel taskModel : workflowModel.getTasks()) {
             if (taskModel.getStatus() == Status.IN_PROGRESS) {
-                String taskType = taskModel.getTaskType();
-                if (TaskType.TASK_TYPE_WAIT.equals(taskType)
-                        || TaskType.TASK_TYPE_HUMAN.equals(taskType)) {
+                if (taskModel.getTaskType().equals(TaskType.TASK_TYPE_WAIT)
+                        || taskModel.getTaskType().equals(TaskType.TASK_TYPE_HUMAN)) {
                     postponeDurationSeconds =
                             (taskModel.getWaitTimeout() != 0)
                                     ? taskModel.getWaitTimeout() + 1

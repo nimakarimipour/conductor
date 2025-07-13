@@ -32,8 +32,6 @@ import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.Timer;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 
-import edu.ucr.cs.riple.annotator.util.Nullability;
-
 public class Monitors {
 
     private static final Registry registry = Spectator.globalRegistry();
@@ -177,7 +175,7 @@ public class Monitors {
     }
 
     public static void recordQueueWaitTime(String taskType, long queueWaitTime) {
-        getTimer(classQualifier, "task_queue_wait", "taskType", Nullability.castToNonnull(taskType))
+        getTimer(classQualifier, "task_queue_wait", "taskType", taskType)
                 .record(queueWaitTime, TimeUnit.MILLISECONDS);
     }
 
@@ -187,7 +185,7 @@ public class Monitors {
                         classQualifier,
                         "task_execution",
                         "taskType",
-                        Nullability.castToNonnull(taskType),
+                        taskType,
                         "includeRetries",
                         "" + includesRetries,
                         "status",
@@ -346,7 +344,7 @@ public class Monitors {
     }
 
     public static void recordUpdateConflict(
-            @Nullable String taskType, String workflowType, TaskModel.Status status) {
+            String taskType, String workflowType, TaskModel.Status status) {
         counter(
                 classQualifier,
                 "task_update_conflict",

@@ -47,7 +47,6 @@ public class QueueUtils {
      *
      * @return domain:taskType@eexecutionNameSpace-isolationGroupId.
      */
-    @SuppressWarnings("NullAway")
     public static String getQueueName(
             String taskType,
             @Nullable String domain,

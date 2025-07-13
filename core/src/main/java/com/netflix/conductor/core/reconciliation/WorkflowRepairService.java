@@ -141,7 +141,7 @@ public class WorkflowRepairService {
                 Monitors.recordQueueMessageRepushFromRepairService(task.getTaskDefName());
                 return true;
             }
-        } else if (TaskType.TASK_TYPE_SUB_WORKFLOW.equals(task.getTaskType())
+        } else if (task.getTaskType().equals(TaskType.TASK_TYPE_SUB_WORKFLOW)
                 && task.getStatus() == TaskModel.Status.IN_PROGRESS) {
             WorkflowModel subWorkflow = executionDAO.getWorkflow(task.getSubWorkflowId(), false);
             if (subWorkflow.getStatus().isTerminal()) {

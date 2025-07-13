@@ -104,9 +104,8 @@ public class DefaultEventQueueProcessor {
                                                     .filter(
                                                             task ->
                                                                     !task.getStatus().isTerminal()
-                                                                            && taskId.equals(
-                                                                                    task
-                                                                                            .getTaskId()))
+                                                                            && task.getTaskId()
+                                                                                    .equals(taskId))
                                                     .findFirst();
                                 } else if (StringUtils.isEmpty(taskRefName)) {
                                     LOGGER.error(
@@ -117,10 +116,9 @@ public class DefaultEventQueueProcessor {
                                                     .filter(
                                                             task ->
                                                                     !task.getStatus().isTerminal()
-                                                                            && TASK_TYPE_WAIT
+                                                                            && task.getTaskType()
                                                                                     .equals(
-                                                                                            task
-                                                                                                    .getTaskType()))
+                                                                                            TASK_TYPE_WAIT))
                                                     .findFirst();
                                 } else {
                                     optionalTaskModel =
@@ -128,9 +126,9 @@ public class DefaultEventQueueProcessor {
                                                     .filter(
                                                             task ->
                                                                     !task.getStatus().isTerminal()
-                                                                            && taskRefName.equals(
-                                                                                    task
-                                                                                            .getReferenceTaskName()))
+                                                                            && task.getReferenceTaskName()
+                                                                                    .equals(
+                                                                                            taskRefName))
                                                     .findFirst();
                                 }
 
