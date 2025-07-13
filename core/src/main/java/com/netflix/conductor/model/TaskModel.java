@@ -70,7 +70,7 @@ public class TaskModel {
 
     private String taskType;
 
-    private Status status = new Status(); // Initialize with a default Status object
+    private Status status;
 
     @Nullable private String referenceTaskName;
 
